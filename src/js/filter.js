@@ -177,9 +177,13 @@ export async function getExportData(filter) {
       // Dados do Horizon Chart
       const horizonData = rawData.map(d => {
         const data = new Date(d.CO_ANO, d.CO_MES, 1); // ts
-        const sh4 = d.SH4.toString(); // series
+        const sh4 = d.SH4; // series
         const fob = d.VL_FOB; // value
-        return { data, sh4, fob }
+
+        const produto = d.SH4;
+        const peso = d.KG_LIQUIDO;
+        const descricao = d.NO_SH4_POR;
+        return { data, sh4, produto, fob, peso, descricao }
       })
       console.log('Horizon Data', horizonData);
 

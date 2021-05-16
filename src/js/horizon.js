@@ -1,4 +1,4 @@
-import { createDraggable, finishLoading } from "./extra";
+import { createDraggable, finishLoading, formatValues } from "./extra";
 import HorizonTSChart from 'horizon-timeseries-chart';
 
 
@@ -8,34 +8,68 @@ export const parseDate = d3.timeParse('%m/%Y');
 // Slider do número de bands
 export function createBandSlider() {
   $('#overlap-slider').on("input", function () {
+    const bandNumber = $(this).val().toString();
 
-    $('#overlap-label').html("Bandas: " + $(this).val().toString());
+    $('#overlap-label').html("Bandas: " + bandNumber);
   });
-
-  // $('#overlap-slider').on("change", function () {
-  //   updateHorizon($(this).val());
-  // });
 }
 
 export function buildHorizon(df, bands) {
+  if (df.length == 0) {
+    alert("Nenhum dado foi encontrado!");
+    d3.select('#horizon-wrapper').select('div').remove();
+    return
+  };
+
   const domElem = document.createElement('div');
 
-  HorizonTSChart()(domElem)
-    .data(df)
-    // .height(100*count)
-    .series('sh4')
-    .ts('data')
-    .val('fob')
-    .horizonBands(bands)
-    .tooltipContent(({ points: [{ data, fob, sh4 }] }) => `
-      ${sh4}
-      <br><br>
-      ${data.toLocaleDateString()}: U$ <b>${fob}</b>
-      <br>
-    `);
+  const sh4Num = new Set();
+  for (let i of df)
+    sh4Num.add(i.sh4);
 
+  const count = sh4Num.size;
+
+  const horizon = HorizonTSChart()(domElem) // Elemento onde o chart será criado
+    .data(df) // Dataframe
+    .height(100 * count) // Altura total: 100px * quantidade de charts
+    .series('sh4') // Indicador do titulo de cada chart
+    .ts('data') // Indicador da data do dado
+    .val('fob') // Indicador do valor do chart
+    .horizonBands(bands)
+    .transitionDuration([1]) // Duração das tranformações do gráfico
+    // .interpolationCurve(d3.curveStep) // curveBasis, curveLinear, curveStep
+    // .positiveColors(['lightblue', 'midnightBlue']) // Cores, minimo duas, intermediarias são interpoladas
+    .enableZoom(true) // Zoom
+    // .seriesComparator((a, b) => {  // Forma de ordenação dos charts
+    //   console.log('a', a)
+    //   console.log('b', b)
+    //   return 
+    // })
+    .yAggregation(vals => vals.reduce((a, b) => a + b))  // Soma valores iguais
+    // .tooltipContent(({ points: [{ data, produto, fob, peso, descricao }] }) => // Conteudo do tooltip onhover
+    //   `
+    //   <b>${produto}</b> - ${descricao}
+    //   <br><br>
+    //   <b>${data.toLocaleDateString()}</b>
+    //   <br>
+    //   <b>Valor FOB:</b> U$ ${formatValues(fob)}
+    //   <br>
+    //   <b>Peso líquido:</b> ${formatValues(peso)} kg
+    // `);
+    .tooltipContent(({ series, ts, val }) => `<b>${series}</b><br>${new Date(ts).toLocaleDateString()}: ${formatValues(val)}`)
+
+  // Limpa o horizon chart antigo
   d3.select('#horizon-wrapper').select('div').remove();
+  // Renderiza o novo
   d3.select('#horizon-wrapper').node().append(domElem);
+
+  // Muda o numero de bandas dinamicamente
+  $('#overlap-slider').on("input", function () {
+    // Número de bands
+    const bandNumber = $(this).val().toString();
+    // Re-renderiza o gráfico
+    horizon.horizonBands(bandNumber);
+  });
 }
 
 
