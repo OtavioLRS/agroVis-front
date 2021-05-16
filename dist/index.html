@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="CP1552">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/loading.css">
+  <title>Main</title>
+  <script defer="defer" src="bundle.js"></script>
+</head>
+
+<body>
+  <div class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>
+  <div class="wrapper hidden">
+    <div class="container" id="mapContainer"></div>
+    <div class="container" id="filterContainer"><label for="city-filter">Cidade</label> <select class="filter"
+        id="city-filter" style="width: 50%;" multiple="multiple"></select> <label for="year-filter"
+        style="margin-top: 20px;">Ano</label> <select class="filter" id="year-filter" style="width: 50%;"
+        multiple="multiple"></select> <label for="month-filter" style="margin-top: 20px;">Mês</label> <select
+        class="filter" id="month-filter" style="width: 50%;" multiple="multiple"></select> <label for="sh4-filter"
+        style="margin-top: 20px;">SH4</label> <select class="filter" id="sh4-filter" style="width: 50%;"
+        multiple="multiple"></select> <button style="margin-top: 50px;" onclick="handleFilter()">Filtrar</button></div>
+    <div class="container" id="horizon-container"></div>
+    <div class="container" id="tableContainer"></div>
+  </div>
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+<script src="https://d3js.org/d3-array.v2.min.js"></script>
+
+</html>

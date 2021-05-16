@@ -1,0 +1,209 @@
+html,
+body {
+  margin: 0px;
+  padding: 0px;
+  width: 100%;
+  height: 100%;
+  /* background-color: lightblue; */
+  background: linear-gradient(to top left, lightblue 67%, #000066 100%);
+}
+
+.container {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+}
+
+.draggable {
+  position: absolute;
+  z-index: 9;
+  background-color: #fff;
+  border: 1px solid black;
+  border-radius: 25px;
+  text-align: center;
+  text-shadow: #f5f5f5 0 1px 0;
+  opacity: 1.0;
+  font-size: small;
+  padding: .5em;
+  max-width: 300px;
+  cursor: grab;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+/* ***************************************************** */
+/* Map  */
+#map-container {
+  left: 0px;
+  top: 0px;
+  width: 50%;
+  height: 50%;
+}
+
+.hidden {
+  display: none;
+}
+
+.tooltip {
+  background-color: #fff;
+  border: 1px solid black;
+  border-radius: 25px;
+  text-shadow: #f5f5f5 0 1px 0;
+  padding: .5em;
+  opacity: 0.9;
+  position: absolute;
+  font-size: small;
+  max-width: 500px;
+}
+
+.city {
+  stroke: #000;
+  stroke-width: 0.4px;
+  fill: white;
+}
+
+.city:hover {
+  fill: gray;
+}
+
+.city:active {
+  fill: black;
+}
+
+.city-active {
+  fill: blue;
+}
+
+.city-active:hover {
+  fill: lightskyblue;
+}
+
+.city-active:active {
+  fill: lightblue;
+}
+/* ***************************************************** */
+/* Filter */
+#filter-container {
+  right: 0px;
+  top: 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: scroll;
+}
+
+#filter-container::-webkit-scrollbar {
+  display: none;
+}
+
+#filter-button {
+  margin-top: 50px;
+}
+
+.filter-input {
+  box-sizing:border-box;
+  width: 50%;
+}
+/* ***************************************************** */
+/* Table */
+#table-container {
+  left: 0px;
+  bottom: 0px;
+  overflow-y: scroll;
+}
+
+#table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow-x: scroll;
+}
+/* ***************************************************** */
+/* Horizon */
+#horizon-container {
+  right: 0px;
+  bottom: 0px;
+}
+
+#horizonfilter-wrapper {
+  width: 100%;
+  height: 10%;
+  position: relative;
+}
+
+#horizon-wrapper {
+  width: 100%;
+  height: 90%;
+  overflow: scroll;
+}
+
+.horizon-rowname {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.slider {
+  margin-left: 100px;
+  width: 25%;
+  height: 25px;
+}
+
+.line {
+  pointer-events: none;
+  width: 1px;
+  background: #000;
+  position: absolute;
+  top: calc(10% + 30px); /* Wrapper + margin */
+  bottom: 10px; /* Scrollbar */
+}
+/* ***************************************************** */
+/* Table */
+tr:nth-of-type(odd) {
+  background: #eee;
+}
+
+tr:nth-of-type(even) {
+  background: #ccc;
+}
+
+th {
+  background: #333;
+  color: white;
+  font-weight: bold;
+  background-repeat: no-repeat;
+  background-position: 3% center;
+}
+
+td,
+th {
+  padding: 6px;
+  border: 1px solid #000;
+  text-align: left;
+}
+/* ***************************************************** */
+/* Scroll bar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* Track e Buttons */
+::-webkit-scrollbar-track {
+  background: lightblue;
+}
+
+::-webkit-scrollbar-corner {
+  background: lightblue;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
