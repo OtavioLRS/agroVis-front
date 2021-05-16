@@ -159,37 +159,28 @@ export async function getExportData(filter) {
       filter,
     })
   }).then(response => response.json()
-    .then(response => {
-      console.log('Dados brutos', response)
+    .then(rawData => {
+      console.log('Dados brutos', rawData)
+      /*
+        CO_ANO: int - Ano
+        CO_MES: int - Mês
+        CO_MUN: string - Código do município
+        CO_PAIS: string - Pais de destino
+        KG_LIQUIDO: int - Peso líquido
+        NO_MUN_MIN: string - Nome do município
+        NO_PAIS: string - Nome do país de destino
+        NO_SH4_POR: string - Descrição do SH4
+        SH4: int - Código SH4
+        VL_FOB: int - Valor FOB em U$
+      */
 
-      // Formatando os dados
-      const tableData = response.map((d) => {
-        // console.log(d);
-        return {
-          "Ano": d.CO_ANO,
-          "Mês": d.CO_MES, // Escrever o mes, e nao o numero
-          "Cod. do Município": d.CO_MUN,
-          "Nome do Município": d.NO_MUN_MIN,
-          "Pais de destino": d.NO_PAIS,
-          "SH4": d.SH4,
-          "Descrição": d.NO_SH4_POR,
-          "Valor FOB (U$)": d.VL_FOB
-        }
-      });
-
-      // Dados formatados
-      console.log('Dados formatados', tableData)
-
-      // Dados para atualizar o Horizon Chart
-      const horizonData = tableData.map(row => {
-        const ano = row['Ano'];
-        const mes = row['Mês'];
-        const sh4 = row['SH4'];
-        const fob = row['Valor FOB (U$)']
-
-        return { ano, mes, sh4, fob }
+      // Dados do Horizon Chart
+      const horizonData = rawData.map(d => {
+        const data = new Date(d.CO_ANO, d.CO_MES, 1); // ts
+        const sh4 = d.SH4.toString(); // series
+        const fob = d.VL_FOB; // value
+        return { data, sh4, fob }
       })
-
       console.log('Horizon Data', horizonData);
 
       // Constrói o Horizon Chart

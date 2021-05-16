@@ -11,7 +11,6 @@ drawMap();
 // Filtros
 buildFilters();
 
-
 createBandSlider();
 
 finishLoading();
