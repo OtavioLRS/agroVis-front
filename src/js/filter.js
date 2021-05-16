@@ -49,8 +49,10 @@ async function buildSH4Filter() {
       response.forEach((product) => {
         // console.log(city);
 
-        let option = $('<option></option>').attr({ "value": product.CO_SH4 });
+        let option = $('<option></option>')
+        option.attr({ "value": product.CO_SH4 });
         option.text(product.CO_SH4 + " - " + product.NO_SH4_POR);
+        option.attr({ "label": product.CO_SH4 });
         option.addClass("option-sh4");
 
         $('#sh4-filter').append(option);
@@ -189,9 +191,6 @@ export async function getExportData(filter) {
       })
 
       console.log('Horizon Data', horizonData);
-
-      // Constrói a tabela
-      printTableData(tableData);
 
       // Constrói o Horizon Chart
       const overlap = $('#overlap-slider').val();

@@ -4,7 +4,7 @@ body {
   padding: 0px;
   width: 100%;
   height: 100%;
-  /* background-color: lightblue; */
+  /* background-color: black; */
   background: linear-gradient(to top left, lightblue 67%, #000066 100%);
 }
 
@@ -107,23 +107,11 @@ body {
   width: 50%;
 }
 /* ***************************************************** */
-/* Table */
-#table-container {
-  left: 0px;
-  bottom: 0px;
-  overflow-y: scroll;
-}
-
-#table {
-  width: 100%;
-  border-collapse: collapse;
-  overflow-x: scroll;
-}
-/* ***************************************************** */
 /* Horizon */
 #horizon-container {
   right: 0px;
   bottom: 0px;
+  width: 100%;
 }
 
 #horizonfilter-wrapper {
