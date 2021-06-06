@@ -4,6 +4,13 @@
 export function preLoad() {
   // Limitamento de datas no input do filtro
   $('#input-date1').on("input", limitDate0);
+
+  // Criando o slider de numero de bandas
+  $('#overlap-slider').on("input", function () {
+    const bandNumber = $(this).val().toString();
+
+    $('#overlap-label').html("Bandas: " + bandNumber);
+  });
 }
 
 /*
