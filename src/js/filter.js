@@ -1,32 +1,6 @@
 import { startLoading, finishLoading } from './extra.js'
-import { buildHorizon } from './horizon.js';
+import { buildHorizon, HorizonUnit, HorizonData, structureHorizonData } from './horizon.js';
 import { headerTitles, printTableData } from './table.js';
-
-
-// Função para construir o filtro de anos e meses
-function buildTemporalFilter(initialYear, finalYear) {
-
-  // Opção padrão com todos os anos
-  $('#year-filter').append($('<option value=0 selected>Todos os anos</option>'));
-
-  for (let year = initialYear; year <= finalYear; year++) {
-    let option = $('<option></option>').attr({ "value": year });
-    option.text(year);
-
-    $('#year-filter').append(option);
-  }
-
-  // Opção padrão com todos os meses
-  $('#month-filter').append($('<option value=0 selected>Todos os meses</option>'));
-
-  let meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-  for (let month = 1; month <= 12; month++) {
-    let option = $('<option></option>').attr({ "value": month });
-    option.text(meses[month - 1]);
-
-    $('#month-filter').append(option);
-  }
-}
 
 // Função para construir o filtro de sh4 (produtos)
 async function buildSH4Filter() {
@@ -43,52 +17,64 @@ async function buildSH4Filter() {
     .then(response => {
       console.log('SH4', response);
 
-      // Opção padrão com todos os anos
-      $('#sh4-filter').append($('<option value=0 selected>Todos os produtos</option>'));
+      // Opção padrão com todos os produtos
+      $('#input-sh4').append($('<option value=0 selected>Todos os produtos</option>'));
 
       response.forEach((product) => {
-        // console.log(city);
-
         let option = $('<option></option>')
         option.attr({ "value": product.CO_SH4 });
         option.text(product.CO_SH4 + " - " + product.NO_SH4_POR);
         option.attr({ "label": product.CO_SH4 });
         option.addClass("option-sh4");
 
-        $('#sh4-filter').append(option);
+        $('#input-sh4').append(option);
       });
     });
 }
 
 // Função principal para a construção dos filtros
 export function buildFilters() {
-  buildTemporalFilter(1996, 2020);
+  // buildTemporalFilter(1996, 2020);
   buildSH4Filter();
+
+  $('#input-sh4').select2();
+  $('#input-city').select2();
 
   $('#filter-button').click(() => { handleFilter(); });
 }
 
 // Atualiza os municipios selecionados
 function updateMap(cities) {
+  // Seleciona todas
+  if (cities.length == 0)
+    $('.city').each(function () {
+      $(this).addClass('city-active');
+    })
 
-  // Deseleciona todas as cidades
-  $('.city-active').each(function () {
-    $(this).removeClass('city-active');
-  })
+  else {
+    // Desseleciona todas as cidades
+    $('.city-active').each(function () {
+      $(this).removeClass('city-active');
+    })
 
-  // Seleciona as cidades novas
-  cities.forEach(e => { $('#' + e).addClass('city-active'); });
+    // Seleciona as cidades novas
+    cities.forEach(e => { $('#' + e).addClass('city-active'); });
+  }
 }
 
 // Estrutura os dados do filtro para realizar a requisição dos dados
-export function handleFilter() {
-  let cities = $('#city-filter').select2('data');
-  let years = $('#year-filter').select2('data');
-  let months = $('#month-filter').select2('data');
-  let products = $('#sh4-filter').select2('data');
+export async function handleFilter() {
+  let cities = $('#input-city').select2('data');
+  let products = $('#input-sh4').select2('data');
+  let date0 = $('#input-date0').val();
+  let date1 = $('#input-date1').val();
 
   if (products.length == 0) { // Nenhum produto foi selecionado, aborda
     alert('Por favor, selecione um SH4!');
+    return;
+  }
+  if (cities.length == 0) { // Nenhum produto foi selecionado, aborda
+    alert('Por favor, selecione uma cidade!');
     return;
   }
 
@@ -96,59 +82,45 @@ export function handleFilter() {
 
   let filter = {
     cities: [],
-    years: [],
-    months: [],
-    products: []
+    products: [],
+    beginPeriod: null,
+    endPeriod: null
   }
 
   // Ids das cidades que devem ser selecionadas no mapa
-  let cityIds = cities.map((e) => { return e.id });
-  // console.log(cityIds)
+  let cityIds = [];
 
-  // Atualizando as cidades selecionadas no mapa
-  updateMap(cityIds);
+  // Adicionando cidades no filtro
+  for (let c of cities) {
+    // Todos os produtos selecionados, não é necessário filtro
+    if (c.id == '0') { filter.cities = []; cityIds = []; break; }
 
-  // Adicionando codigos das cidades no filtro
-  cities.forEach(e => { filter.cities.push(e.id) });
-
-
-  // Adicionando anos no filtro
-  for (let e of years) {
-    // console.log(e)
-    // Todos os anos selecionados, não é necessário filtro
-    if (e.id == '0') { filter.years = []; break; }
-
-    else filter.years.push(e.id)
-  }
-
-  // Adicionando meses no filtro
-  for (let e of months) {
-    // console.log(e)
-    // Todos os meses selecionados, não é necessário filtro
-    if (e.id == '0') { filter.months = []; break; }
-
-    else filter.months.push(e.id)
+    // Caso normal, apenas adiciona cidade escolhida
+    else {
+      filter.cities.push(c.id);
+      cityIds.push(c.id);
+    }
   }
 
   // Adicionando produtos no filtro
   for (let e of products) {
-    // console.log(e)
-    // Todos os produtos selecionados, não é necessário filtro
+    // Todos as cidades selecionadas, não é necessário filtro
     if (e.id == '0') { filter.products = []; break; }
 
     // Caso normal, apenas adiciona produto escolhido
     else filter.products.push(e.id)
   }
 
-  getExportData(filter);
-}
+  // Adicionando período de tempo no filtro
+  filter.beginPeriod = date0;
+  filter.endPeriod = date1;
 
-// Função para requisitar os dados ao banco de acordo com um filtro
-export async function getExportData(filter) {
-  console.log('Filtro', filter);
+  // Atualiza as cidades destacadas no mapa
+  updateMap(cityIds);
 
+  // Filtro foi construído, agora serão feitos os processamentos:
 
-  // Requisição com os filtros dos dados requisitados
+  // Requisição dos dados com os filtros requisitados
   await fetch('http://localhost:3333/exportacao', {
     method: 'POST',
     headers: {
@@ -175,28 +147,32 @@ export async function getExportData(filter) {
       */
 
       // Dados do Horizon Chart
-      const horizonData = rawData.map(d => {
-        const data = new Date(d.CO_ANO, d.CO_MES, 1); // ts
-        const sh4 = d.SH4; // series
-        const fob = d.VL_FOB; // value
+      const horizonData = new HorizonData();
 
-        const produto = d.SH4;
-        const peso = d.KG_LIQUIDO;
-        const descricao = d.NO_SH4_POR;
-        return { data, sh4, produto, fob, peso, descricao }
-      })
+
+      horizonData.addArray(rawData.map(d => new HorizonUnit(new Date(d.CO_ANO, d.CO_MES, 1), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO)));
+      // const rawHorizonData = rawData.map(d => {
+      //   const data = new Date(d.CO_ANO, d.CO_MES, 1); // ts
+      //   const sh4 = d.SH4; // series
+      //   const fob = d.VL_FOB; // value
+
+      //   const produto = d.SH4;
+      //   const peso = d.KG_LIQUIDO;
+      //   const descricao = d.NO_SH4_POR;
+      //   return { data, sh4, produto, fob, peso, descricao }
+      // })
       console.log('Horizon Data', horizonData);
 
       // Constrói o Horizon Chart
       const overlap = $('#overlap-slider').val();
       console.log(overlap, 'overlap')
+
       buildHorizon(horizonData, parseInt(overlap));
     }))
     .then(() => {
       finishLoading();
     });
 }
-
 
 
 

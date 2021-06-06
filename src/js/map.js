@@ -1,5 +1,3 @@
-import { handleFilter } from './filter.js'
-
 // Função para desenhar os shapes do mapa
 export function drawMap() {
   const h1 = window.innerHeight
@@ -73,15 +71,15 @@ export function drawMap() {
         tooltip.classed('hidden', true);
       })
 
-      // Trata o clique na cidade
-      .on('click', (clickedShape) => {
-        // Adiciona a cidade clicada ao filtro
-        $('#city-filter').val(clickedShape.properties.codarea);
-        $('#city-filter').select2().trigger('change');
+    // Trata o clique na cidade
+    // .on('click', (clickedShape) => {
+    //   // Adiciona a cidade clicada ao filtro
+    //   $('#city-filter').val(clickedShape.properties.codarea);
+    //   $('#city-filter').select2().trigger('change');
 
-        // Trata o filtro
-        handleFilter();
-      })
+    //   // Trata o filtro
+    //   handleFilter();
+    // })
 
     // Cor de fundo
     // .style('fill', 'green')
@@ -98,11 +96,11 @@ export function drawMap() {
   svg.call(zoom)
 
   // Recupera os nomes das cidades
-  writeCityNamesOnMap();
+  getCitiesData();
 }
 
 // Função para recuperar os nomes das cidades do banco
-async function writeCityNamesOnMap() {
+async function getCitiesData() {
 
   // Requisição para recuperar os dados dos municípios
   await fetch('http://localhost:3333/municipios', {
@@ -116,16 +114,17 @@ async function writeCityNamesOnMap() {
       .then(response => {
         console.log('Cidades', response)
 
+        // Aproveita para construir o input de cidades (opção padrão com todas as cidades)
+        $('#input-city').append($('<option value=0 selected>Todas as cidades</option>'));
+
         response.forEach((city) => {
           // Para cada cidade, busca o shape equivalente pela classe, e atualiza o HTML interno com seu nome
           $('#' + city.CO_MUN_GEO.toString()).text(city.NO_MUN_MIN);
 
-          // Adiciona a cidade no select do filtro
+          // Adiciona a cidade no input de cidades
           let option = $('<option></option>').attr({ "value": city.CO_MUN_GEO });
           option.text(city.NO_MUN_MIN);
-          $('#city-filter').append(option);
+          $('#input-city').append(option);
         });
-
-        $('.filter-input').select2();
       }));
 }

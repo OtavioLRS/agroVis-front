@@ -14,8 +14,9 @@ export function createBandSlider() {
   });
 }
 
+// Constroi o horizon chart
 export function buildHorizon(df, bands) {
-  if (df.length == 0) {
+  if (df.units.length == 0) {
     alert("Nenhum dado foi encontrado!");
     d3.select('#horizon-wrapper').select('div').remove();
     return
@@ -23,40 +24,52 @@ export function buildHorizon(df, bands) {
 
   const domElem = document.createElement('div');
 
+  // Contando quantos SH4s diferentes foram recuperados
   const sh4Num = new Set();
-  for (let i of df)
-    sh4Num.add(i.sh4);
-
+  for (let i of df.units)
+    sh4Num.add(i.sh4_codigo);
   const count = sh4Num.size;
 
   const horizon = HorizonTSChart()(domElem) // Elemento onde o chart será criado
-    .data(df) // Dataframe
+    .data(df.units) // Dataframe
     .height(100 * count) // Altura total: 100px * quantidade de charts
-    .series('sh4') // Indicador do titulo de cada chart
+    .series('sh4_codigo') // Indicador do titulo de cada chart
     .ts('data') // Indicador da data do dado
     .val('fob') // Indicador do valor do chart
     .horizonBands(bands)
     .transitionDuration([1]) // Duração das tranformações do gráfico
+    .seriesComparator((a, b) => { // Ordem dos charts
+      const aTotal = df.findTotalValueOf(a, 'peso');
+      const bTotal = df.findTotalValueOf(b, 'peso');
+      console.log(aTotal, bTotal);
+
+      if (aTotal <= bTotal) return 1;
+      else return -1;
+    })
     // .interpolationCurve(d3.curveStep) // curveBasis, curveLinear, curveStep
     // .positiveColors(['lightblue', 'midnightBlue']) // Cores, minimo duas, intermediarias são interpoladas
-    .enableZoom(true) // Zoom
+    // .enableZoom(true) // Zoom
     // .seriesComparator((a, b) => {  // Forma de ordenação dos charts
     //   console.log('a', a)
     //   console.log('b', b)
     //   return 
     // })
-    .yAggregation(vals => vals.reduce((a, b) => a + b))  // Soma valores iguais
-    // .tooltipContent(({ points: [{ data, produto, fob, peso, descricao }] }) => // Conteudo do tooltip onhover
-    //   `
-    //   <b>${produto}</b> - ${descricao}
-    //   <br><br>
-    //   <b>${data.toLocaleDateString()}</b>
-    //   <br>
-    //   <b>Valor FOB:</b> U$ ${formatValues(fob)}
-    //   <br>
-    //   <b>Peso líquido:</b> ${formatValues(peso)} kg
-    // `);
-    .tooltipContent(({ series, ts, val }) => `<b>${series}</b><br>${new Date(ts).toLocaleDateString()}: ${formatValues(val)}`)
+    // .yAggregation(vals => vals.reduce((a, b) => a + b))  // Soma valores iguais
+    // .tooltipContent(({ series, ts, val, points: [{ sh4_descricao, peso }] }) =>
+    //   series + " - " + sh4_descricao + "\nData: " +
+    //   new Date(ts).toLocaleDateString().substring(3) + "\nValor FOB: U$ " +
+    //   formatValues(val) + "\nPeso Líquido: " +
+    //   formatValues(peso) + " kg"
+    // )
+    .tooltipContent(({ series, ts, val, points: [{ sh4_descricao, peso }] }) =>
+      ` <b>${series}</b> - ${sh4_descricao}
+    <br>
+    Data: ${new Date(ts).toLocaleDateString().substring(3)}
+    <br>
+    Valor FOB: U$ ${formatValues(val)}
+    <br>
+    Peso Líquido: ${formatValues(peso)} kg
+  `)
 
   // Limpa o horizon chart antigo
   d3.select('#horizon-wrapper').select('div').remove();
@@ -70,12 +83,76 @@ export function buildHorizon(df, bands) {
     // Re-renderiza o gráfico
     horizon.horizonBands(bandNumber);
   });
+
+  // Muda a ordenação do gráfico dinamicamente
 }
 
+export class HorizonUnit {
 
+  constructor(data, sh4_codigo, sh4_descricao, fob, peso) {
+    this.data = data;
+    this.sh4_codigo = sh4_codigo;
+    this.sh4_descricao = sh4_descricao;
+    this.fob = fob;
+    this.peso = peso;
+  }
 
+  equivalent(other) {
+    const ano = this.data.getYear() == other.data.getYear();
+    const mes = this.data.getMonth() == other.data.getMonth();
+    const sh4 = this.sh4_codigo == other.sh4_codigo;
+    return (ano && mes && sh4);
+  }
+}
 
+// Classe container para os dados do Horizon Chart
+export class HorizonData {
+  // Conjunto de unidades de dados, identificados pela data e codigo do SH4
+  constructor() {
+    this.units = [];
+  }
 
+  // Adiciona um vetor HorizonUnit em 'units'
+  addArray(units) {
+    // Para dada HorizonUnit, 
+    units.map(unit => {
+      // Verifica se já há uma HorizonUnit equivalente
+      const index = this.alreadyIn(unit);
+      // Se sim, concatena nela, senão, adiciona uma nova
+      // console.log(index)
+      index != -1 ? this.concatUnit(unit, index) : this.addUnit(unit);
+    });
+  }
+
+  // Verifica se uma unit já está na estrutura
+  alreadyIn(unit) {
+    const result = this.units.findIndex(obj => obj.equivalent(unit));
+    // Retorna o index do elemento, se não encontrar, retorna -1
+    return result;
+  }
+
+  // Adiciona uma HorizonUnit em 'units'
+  addUnit(unit) {
+    this.units.push(unit);
+  }
+
+  // Funde os valores de uma HorizonUnit com os de uma já existente em 'unit'
+  concatUnit(unit, index) {
+    this.units[index].fob += unit.fob;
+    this.units[index].peso += unit.peso;
+  }
+
+  // Encontra o valor total de um sh4 ('fob' ou 'peso')
+  findTotalValueOf(sh4, mode) {
+    const filtered = this.units.filter(unit => unit.sh4_codigo == sh4)
+
+    let valueSum = 0;
+    for (let un of filtered) {
+      valueSum += un[mode];
+    }
+    return valueSum;
+  }
+}
 
 
 

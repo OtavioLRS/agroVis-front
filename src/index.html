@@ -21,14 +21,34 @@
   <div class="wrapper hidden">´
     <div class="container" id="map-container"></div>
     <div class="container" id="filter-container">
-      <label for="city-filter">Cidade</label>
+      <!-- <label for="city-filter">Cidade</label>
       <select class="filter-input" id="city-filter" style="width: 50%;" multiple="multiple"></select>
       <label for="year-filter" style=" margin-top: 20px;">Ano</label>
       <select class="filter-input" id="year-filter" style="width: 50%;" multiple="multiple"></select>
       <label for="month-filter" style=" margin-top: 20px;">Mês </label>
       <select class="filter-input" id="month-filter" style="width: 50%;" multiple="multiple"></select>
       <label for="sh4-filter" style=" margin-top: 20px;">SH4</label>
-      <select class="filter-input" id="sh4-filter" style="width: 50%;" multiple="multiple"></select>
+      <select class="filter-input" id="sh4-filter" style="width: 50%;" multiple="multiple"></select> -->
+      <label id="label-city" for="input-city">Cidades</label>
+      <input class="filter-input" type="text" id="input-city" multiple="multiple" style="width: 100%;">
+
+      <div id="container-date-aggregation-labels">
+        <label id="label-date0" for="input-date0" style="width: 60%">Período</label>
+        <label id="label-aggregation" for="input-aggregation" style="width: 40%">Agregação</label>
+      </div>
+      <div id="container-date-aggregation">
+        <div style="width: 55%; justify-content: space-between; display: flex;">
+          <input class="filter-input" type="month" id="input-date0" value="1997-01" min="1997-01" max="2020-12">
+          até
+          <input class="filter-input" type="month" id="input-date1" value="2020-12" min="1997-01" max="2020-12">
+        </div>
+        <input class="filter-input" type="text" id="input-aggregation">
+      </div>
+
+      <label id="label-sh4" for="input-sh4">SH4</label>
+      <input class="filter-input" type="text" id="input-sh4" multiple="multiple" style="width: 100%;">
+
+
       <button id="filter-button">Filtrar</button>
     </div>
     <div class="container" id="horizon-container">
@@ -45,6 +65,7 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script src="https://d3js.org/d3-array.v2.min.js"></script>
+
 <!-- <script src="//unpkg.com/horizon-timeseries-chart"></script> -->
 
 </html>

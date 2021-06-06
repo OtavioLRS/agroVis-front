@@ -22,6 +22,6 @@
   "dependencies": {
     "@observablehq/runtime": "^4.8.2",
     "d3": "^6.6.2",
-    "horizon-timeseries-chart": "^1.7.1"
+    "horizon-timeseries-chart": "^1.8.0"
   }
 }
