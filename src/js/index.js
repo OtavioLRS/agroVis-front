@@ -2,7 +2,7 @@ import "@babel/polyfill";
 import { preLoad, startLoading, finishLoading } from './extra.js'
 import { drawMap } from "./map.js";
 import { buildFilters } from "./filter.js";
-import { createBandSlider } from "./horizon.js";
+import { createBandSlider } from "./horizon/horizon.js";
 
 // Pré coisas
 preLoad();
@@ -12,7 +12,5 @@ drawMap();
 
 // Filtros
 buildFilters();
-
-createBandSlider();
 
 finishLoading();

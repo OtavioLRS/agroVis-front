@@ -1,5 +1,5 @@
 import { startLoading, finishLoading } from './extra.js'
-import { buildHorizon, HorizonUnit, HorizonData, structureHorizonData } from './horizon.js';
+import { buildHorizon, HorizonUnit, HorizonData, structureHorizonData } from './horizon/horizon.js';
 import { headerTitles, printTableData } from './table.js';
 
 // Função para construir o filtro de sh4 (produtos)
@@ -163,11 +163,16 @@ export async function handleFilter() {
       // })
       console.log('Horizon Data', horizonData);
 
-      // Constrói o Horizon Chart
+      // Número de bandas dos gráficos
       const overlap = $('#overlap-slider').val();
       console.log(overlap, 'overlap')
 
-      buildHorizon(horizonData, parseInt(overlap));
+      // Modo de ordenação dos gráficos
+      const sortMode = $('#fob-radio').prop("checked") ? 'fob' : 'peso';
+      console.log(sortMode, 'ordenação')
+
+      // Constrói o Horizon Chart
+      buildHorizon(horizonData, parseInt(overlap), sortMode);
     }))
     .then(() => {
       finishLoading();

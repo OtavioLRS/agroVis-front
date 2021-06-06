@@ -137,10 +137,19 @@ body {
   width: 100%;
 }
 
-#horizonfilter-wrapper {
+#horizonoptions-wrapper{
   width: 100%;
   height: 10%;
   position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#horizonband-wrapper, #horizonsort-wrapper {
+  width: 50%;
+  align-items: center;
+  padding: 10px;
 }
 
 #horizon-wrapper {
@@ -155,9 +164,9 @@ body {
 }
 
 .slider {
-  margin-left: 100px;
-  width: 25%;
-  height: 25px;
+  margin-left: 10%;
+  width: 80%;
+  height: 100%;
 }
 
 .line {

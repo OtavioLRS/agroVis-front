@@ -1,23 +1,15 @@
-import { createDraggable, finishLoading, formatValues } from "./extra";
+import { createDraggable, finishLoading, formatValues } from '../extra';
+import { HorizonUnit, HorizonData } from './horizonClasses';
 import HorizonTSChart from 'horizon-timeseries-chart';
 
 
 
 export const parseDate = d3.timeParse('%m/%Y');
 
-// Slider do número de bands
-export function createBandSlider() {
-  $('#overlap-slider').on("input", function () {
-    const bandNumber = $(this).val().toString();
-
-    $('#overlap-label').html("Bandas: " + bandNumber);
-  });
-}
-
 // Constroi o horizon chart
-export function buildHorizon(df, bands) {
+export function buildHorizon(df, bands, sort) {
   if (df.units.length == 0) {
-    alert("Nenhum dado foi encontrado!");
+    alert('Nenhum dado foi encontrado!');
     d3.select('#horizon-wrapper').select('div').remove();
     return
   };
@@ -39,9 +31,9 @@ export function buildHorizon(df, bands) {
     .horizonBands(bands)
     .transitionDuration([1]) // Duração das tranformações do gráfico
     .seriesComparator((a, b) => { // Ordem dos charts
-      const aTotal = df.findTotalValueOf(a, 'peso');
-      const bTotal = df.findTotalValueOf(b, 'peso');
-      console.log(aTotal, bTotal);
+      const aTotal = df.findTotalValueOf(a, sort);
+      const bTotal = df.findTotalValueOf(b, sort);
+      // console.log(aTotal, bTotal);
 
       if (aTotal <= bTotal) return 1;
       else return -1;
@@ -56,10 +48,10 @@ export function buildHorizon(df, bands) {
     // })
     // .yAggregation(vals => vals.reduce((a, b) => a + b))  // Soma valores iguais
     // .tooltipContent(({ series, ts, val, points: [{ sh4_descricao, peso }] }) =>
-    //   series + " - " + sh4_descricao + "\nData: " +
-    //   new Date(ts).toLocaleDateString().substring(3) + "\nValor FOB: U$ " +
-    //   formatValues(val) + "\nPeso Líquido: " +
-    //   formatValues(peso) + " kg"
+    //   series + ' - ' + sh4_descricao + '\nData: ' +
+    //   new Date(ts).toLocaleDateString().substring(3) + '\nValor FOB: U$ ' +
+    //   formatValues(val) + '\nPeso Líquido: ' +
+    //   formatValues(peso) + ' kg'
     // )
     .tooltipContent(({ series, ts, val, points: [{ sh4_descricao, peso }] }) =>
       ` <b>${series}</b> - ${sh4_descricao}
@@ -77,82 +69,34 @@ export function buildHorizon(df, bands) {
   d3.select('#horizon-wrapper').node().append(domElem);
 
   // Muda o numero de bandas dinamicamente
-  $('#overlap-slider').on("input", function () {
+  $('#overlap-slider').on('input', function () {
     // Número de bands
     const bandNumber = $(this).val().toString();
     // Re-renderiza o gráfico
     horizon.horizonBands(bandNumber);
   });
 
-  // Muda a ordenação do gráfico dinamicamente
+  // Muda a ordenação do gráfico dinamicamente por fob
+  $('#fob-radio').on('change', function () {
+    horizon.seriesComparator((a, b) => compareBy(a, b, df, 'fob'))
+  });
+
+  // Muda a ordenação do gráfico dinamicamente por peso
+  $('#peso-radio').on('change', function () {
+    horizon.seriesComparator((a, b) => compareBy(a, b, df, 'peso'))
+  });
 }
 
-export class HorizonUnit {
+// Função auxiliar para ordenar os charts de acordo com o modo escolhido (mode = 'fob' | 'peso')
+function compareBy(a, b, df, mode) {
+  const aTotal = df.findTotalValueOf(a, mode);
+  const bTotal = df.findTotalValueOf(b, mode);
 
-  constructor(data, sh4_codigo, sh4_descricao, fob, peso) {
-    this.data = data;
-    this.sh4_codigo = sh4_codigo;
-    this.sh4_descricao = sh4_descricao;
-    this.fob = fob;
-    this.peso = peso;
-  }
-
-  equivalent(other) {
-    const ano = this.data.getYear() == other.data.getYear();
-    const mes = this.data.getMonth() == other.data.getMonth();
-    const sh4 = this.sh4_codigo == other.sh4_codigo;
-    return (ano && mes && sh4);
-  }
+  if (aTotal <= bTotal) return 1;
+  else return -1;
 }
 
-// Classe container para os dados do Horizon Chart
-export class HorizonData {
-  // Conjunto de unidades de dados, identificados pela data e codigo do SH4
-  constructor() {
-    this.units = [];
-  }
 
-  // Adiciona um vetor HorizonUnit em 'units'
-  addArray(units) {
-    // Para dada HorizonUnit, 
-    units.map(unit => {
-      // Verifica se já há uma HorizonUnit equivalente
-      const index = this.alreadyIn(unit);
-      // Se sim, concatena nela, senão, adiciona uma nova
-      // console.log(index)
-      index != -1 ? this.concatUnit(unit, index) : this.addUnit(unit);
-    });
-  }
-
-  // Verifica se uma unit já está na estrutura
-  alreadyIn(unit) {
-    const result = this.units.findIndex(obj => obj.equivalent(unit));
-    // Retorna o index do elemento, se não encontrar, retorna -1
-    return result;
-  }
-
-  // Adiciona uma HorizonUnit em 'units'
-  addUnit(unit) {
-    this.units.push(unit);
-  }
-
-  // Funde os valores de uma HorizonUnit com os de uma já existente em 'unit'
-  concatUnit(unit, index) {
-    this.units[index].fob += unit.fob;
-    this.units[index].peso += unit.peso;
-  }
-
-  // Encontra o valor total de um sh4 ('fob' ou 'peso')
-  findTotalValueOf(sh4, mode) {
-    const filtered = this.units.filter(unit => unit.sh4_codigo == sh4)
-
-    let valueSum = 0;
-    for (let un of filtered) {
-      valueSum += un[mode];
-    }
-    return valueSum;
-  }
-}
 
 
 
@@ -179,7 +123,7 @@ export class HorizonData {
 //   let horizonData = structureHorizonData(dataRaw)
 //   console.log('Final', horizonData)
 
-//   if (!horizonData) { alert("Nenhum dado foi encontrado!"); return };
+//   if (!horizonData) { alert('Nenhum dado foi encontrado!'); return };
 
 //   const overlap = ov;
 //   const extent = d3.extent(horizonData.dates);
@@ -191,8 +135,8 @@ export class HorizonData {
 
 //   const margin = ({ top: 30, right: 10, bottom: 0, left: 10 });
 
-//   // const color = i => d3["schemeReds"][Math.max(3, overlap)][i + Math.max(0, 3 - overlap)]
-//   const color = i => d3["schemeOrRd"][Math.max(3, overlap)][i + Math.max(0, 3 - overlap)]
+//   // const color = i => d3['schemeReds'][Math.max(3, overlap)][i + Math.max(0, 3 - overlap)]
+//   const color = i => d3['schemeOrRd'][Math.max(3, overlap)][i + Math.max(0, 3 - overlap)]
 
 //   const width = 150 * extentAbs;
 //   const height = horizonData.series.length * (step + 1) + margin.top + margin.bottom;
@@ -212,10 +156,10 @@ export class HorizonData {
 
 //   // Legenda do eixo
 //   const xAxis = g => g
-//     .attr("transform", `translate(0,${margin.top})`)
+//     .attr('transform', `translate(0,${margin.top})`)
 //     .call(d3.axisTop(x).ticks(width / 80).tickSizeOuter(0))
-//     .call(g => g.selectAll(".tick").filter(d => x(d) < margin.left || x(d) >= width - margin.right).remove())
-//     .call(g => g.select(".domain").remove())
+//     .call(g => g.selectAll('.tick').filter(d => x(d) < margin.left || x(d) >= width - margin.right).remove())
+//     .call(g => g.select('.domain').remove())
 
 //   const area = d3.area()
 //     .curve(d3.curveBasis)
@@ -230,66 +174,66 @@ export class HorizonData {
 //     .attr('class', 'hidden tooltip');
 
 //   const rule = d3.select('#horizon-wrapper')
-//     .append("div")
-//     .classed("rule", true)
+//     .append('div')
+//     .classed('rule', true)
 
-//   const line = rule.append("div")
-//     .classed("line", true)
-//     .classed("hidden", true)
+//   const line = rule.append('div')
+//     .classed('line', true)
+//     .classed('hidden', true)
 
-//   const svgHorizon = d3.create("svg")
-//     .attr("viewBox", [0, 0, width, height])
-//     .style("font", "10px sans-serif")
-//     .style("height", height)
-//     .style("width", width)
-//     .on("mouseover", () => {
+//   const svgHorizon = d3.create('svg')
+//     .attr('viewBox', [0, 0, width, height])
+//     .style('font', '10px sans-serif')
+//     .style('height', height)
+//     .style('width', width)
+//     .on('mouseover', () => {
 //       line.classed('hidden', false);
 //     })
-//     .on("mousemove", function () {
+//     .on('mousemove', function () {
 //       let mouseCoords = d3.mouse(d3.select('#horizon-wrapper').node()).map((coord) => parseInt(coord));
-//       line.style("left", mouseCoords[0] + "px");
+//       line.style('left', mouseCoords[0] + 'px');
 //       // const e = document.elementFromPoint(mouseCoords[0] + window.innerWidth / 2, mouseCoords[1] + window.innerHeight / 2);
 //       // console.log('?', d3.select(this).html());
 //     })
-//     .on("mouseout", () => {
+//     .on('mouseout', () => {
 //       line.classed('hidden', true);
 //     })
 
-//   const g = svgHorizon.append("g")
-//     .selectAll("g")
+//   const g = svgHorizon.append('g')
+//     .selectAll('g')
 //     .data(horizonData.series.map(d => Object.assign({
 //       clipId: (Math.random() * 100).toFixed(2),
 //       pathId: (Math.random() * 100).toFixed(2)
 //     }, d)))
-//     .join("g")
-//     .attr("transform", (d, i) => `translate(0,${i * (step + 1) + margin.top})`);
+//     .join('g')
+//     .attr('transform', (d, i) => `translate(0,${i * (step + 1) + margin.top})`);
 
-//   g.append("clipPath")
-//     .attr("id", d => d.clipId)
-//     .append("rect")
-//     .attr("width", width)
-//     .attr("height", step)
+//   g.append('clipPath')
+//     .attr('id', d => d.clipId)
+//     .append('rect')
+//     .attr('width', width)
+//     .attr('height', step)
 
-//   g.append("defs").append("path")
-//     .attr("id", d => d.pathId)
-//     .attr("d", d => area(d.values))
+//   g.append('defs').append('path')
+//     .attr('id', d => d.pathId)
+//     .attr('d', d => area(d.values))
 
-//   g.append("g")
-//     .attr("clip-path", d => 'url(http://localhost:8080#' + d.clipId + ')')
-//     .selectAll("use")
+//   g.append('g')
+//     .attr('clip-path', d => 'url(http://localhost:8080#' + d.clipId + ')')
+//     .selectAll('use')
 //     .data(d => new Array(overlap).fill(d))
-//     .join("use")
-//     .attr("fill", (d, i) => color(i))
-//     .attr("transform", (d, i) => `translate(0,${(i + 1) * step})`)
-//     .attr("href", d => '#' + d.pathId);
+//     .join('use')
+//     .attr('fill', (d, i) => color(i))
+//     .attr('transform', (d, i) => `translate(0,${(i + 1) * step})`)
+//     .attr('href', d => '#' + d.pathId);
 
-//   g.append("text")
-//     .attr("x", 4)
-//     // .attr("y", step / 2)
-//     .attr("y", 1)
-//     .attr("dy", "1.0em")
+//   g.append('text')
+//     .attr('x', 4)
+//     // .attr('y', step / 2)
+//     .attr('y', 1)
+//     .attr('dy', '1.0em')
 //     .text(d => d.name)
-//     .classed("horizon-rowname", true)
+//     .classed('horizon-rowname', true)
 //     .on('mouseover', function (d) { // Mostra a descrição do SH4
 //       let mouseCoords = d3.mouse(d3.select('#horizon-wrapper').node()).map((coord) => {
 //         return parseInt(coord);
@@ -310,7 +254,7 @@ export class HorizonData {
 //       $('body').append(draggable);
 //     })
 
-//   svgHorizon.append("g")
+//   svgHorizon.append('g')
 //     .call(xAxis);
 
 //   d3.select('#horizon-wrapper').select('svg').remove();

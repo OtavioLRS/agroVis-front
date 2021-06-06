@@ -52,10 +52,21 @@
       <button id="filter-button">Filtrar</button>
     </div>
     <div class="container" id="horizon-container">
-      <div id="horizonfilter-wrapper">
-        <input type="range" min="1" max="8" value="4" class="slider" id="overlap-slider">
-        <label for="overlap-slider" id="overlap-label">Bandas: 4</label>
+      <div id="horizonoptions-wrapper">
+
+        <div id="horizonband-wrapper">
+          <input type="range" min="1" max="8" value="4" class="slider" id="overlap-slider">
+          <label for="overlap-slider" id="overlap-label">Bandas: 4</label>
+        </div>
+        <div id="horizonsort-wrapper">
+          Ordenação:
+          <input type="radio" id="fob-radio" name="sort" value="fob" checked>
+          <label for="fob-radio">FOB</label>
+          <input type="radio" id="peso-radio" name="sort" value="peso">
+          <label for="peso-radio">Peso</label>
+        </div>
       </div>
+
       <div id="horizon-wrapper"></div>
     </div>
   </div>

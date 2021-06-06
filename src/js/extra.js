@@ -113,4 +113,3 @@ export function compareDates(d0, d1) {
 
   return date0.getTime() > date1.getTime();
 }
-
