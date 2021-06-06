@@ -1,6 +1,6 @@
 import { startLoading, finishLoading } from './extra.js'
-import { buildHorizon, HorizonUnit, HorizonData, structureHorizonData } from './horizon/horizon.js';
-import { headerTitles, printTableData } from './table.js';
+import { buildHorizon } from './horizon/horizon.js';
+import { HorizonUnit, HorizonData } from './horizon/horizonClasses';
 
 // Função para construir o filtro de sh4 (produtos)
 async function buildSH4Filter() {

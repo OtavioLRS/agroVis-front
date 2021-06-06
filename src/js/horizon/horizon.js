@@ -1,8 +1,5 @@
-import { createDraggable, finishLoading, formatValues } from '../extra';
-import { HorizonUnit, HorizonData } from './horizonClasses';
+import { finishLoading, formatValues } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
-
-
 
 export const parseDate = d3.timeParse('%m/%Y');
 
