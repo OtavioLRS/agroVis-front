@@ -25,6 +25,7 @@ export function buildHorizon(df, bands, sort) {
     .series('sh4_codigo') // Indicador do titulo de cada chart
     .ts('data') // Indicador da data do dado
     .val('fob') // Indicador do valor do chart
+    .useUtc(true)
     .horizonBands(bands)
     .transitionDuration([1]) // Duração das tranformações do gráfico
     .seriesComparator((a, b) => { // Ordem dos charts
@@ -50,7 +51,7 @@ export function buildHorizon(df, bands, sort) {
     //   formatValues(val) + '\nPeso Líquido: ' +
     //   formatValues(peso) + ' kg'
     // )
-    .tooltipContent(({ series, ts, val, points: [{ sh4_descricao, peso }] }) =>
+    .tooltipContent(({ series, ts, val, points: [{ fob, sh4_descricao, peso }] }) =>
       ` <b>${series}</b> - ${sh4_descricao}
     <br>
     Data: ${new Date(ts).toLocaleDateString().substring(3)}

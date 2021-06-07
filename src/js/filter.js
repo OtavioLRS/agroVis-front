@@ -149,18 +149,7 @@ export async function handleFilter() {
       // Dados do Horizon Chart
       const horizonData = new HorizonData();
 
-
-      horizonData.addArray(rawData.map(d => new HorizonUnit(new Date(d.CO_ANO, d.CO_MES, 1), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO)));
-      // const rawHorizonData = rawData.map(d => {
-      //   const data = new Date(d.CO_ANO, d.CO_MES, 1); // ts
-      //   const sh4 = d.SH4; // series
-      //   const fob = d.VL_FOB; // value
-
-      //   const produto = d.SH4;
-      //   const peso = d.KG_LIQUIDO;
-      //   const descricao = d.NO_SH4_POR;
-      //   return { data, sh4, produto, fob, peso, descricao }
-      // })
+      horizonData.addArray(rawData.map(d => new HorizonUnit(new Date(Date.UTC(d.CO_ANO, d.CO_MES, 1)), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO)));
       console.log('Horizon Data', horizonData);
 
       // Número de bandas dos gráficos

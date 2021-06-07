@@ -27,11 +27,14 @@ export class HorizonData {
   addArray(units) {
     // Para dada HorizonUnit, 
     units.map(unit => {
+      this.addUnit(unit);
+
       // Verifica se já há uma HorizonUnit equivalente
-      const index = this.alreadyIn(unit);
+      // const index = this.alreadyIn(unit);
+      // const index = -1;
       // Se sim, concatena nela, senão, adiciona uma nova
       // console.log(index)
-      index != -1 ? this.concatUnit(unit, index) : this.addUnit(unit);
+      // index != -1 ? this.concatUnit(unit, index) : this.addUnit(unit);
     });
   }
 
