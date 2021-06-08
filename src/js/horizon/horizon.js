@@ -1,4 +1,4 @@
-import { finishLoading, formatValues } from '../extra';
+import { changeLoadingMessage, finishLoading, formatValues, startLoading } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
 
 export const parseDate = d3.timeParse('%m/%Y');
@@ -31,8 +31,6 @@ export function buildHorizon(df, bands, sort) {
     .seriesComparator((a, b) => { // Ordem dos charts
       const aTotal = df.findTotalValueOf(a, sort);
       const bTotal = df.findTotalValueOf(b, sort);
-      // console.log(aTotal, bTotal);
-
       if (aTotal <= bTotal) return 1;
       else return -1;
     })

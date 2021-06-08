@@ -31,6 +31,13 @@ export function finishLoading() {
 }
 
 /*
+  Inicia a tela de carregamento
+*/
+export function changeLoadingMessage(message) {
+  $('.loader-message').html(message);
+}
+
+/*
   Cria uma div arrastavel com conteudo 'data'
 */
 export function createDraggable(data) {

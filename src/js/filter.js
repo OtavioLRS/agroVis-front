@@ -1,11 +1,10 @@
-import { startLoading, finishLoading } from './extra.js'
+import { startLoading, finishLoading, changeLoadingMessage } from './extra.js'
 import { buildHorizon } from './horizon/horizon.js';
 import { HorizonUnit, HorizonData } from './horizon/horizonClasses';
 
-// Função para construir o filtro de sh4 (produtos)
-async function buildSH4Filter() {
-
-  // Requisição para buscar os anos presentes no banco
+// Função principal para a construção dos filtros
+export async function buildFilters() {
+  // Requisição para buscar os SH4s presentes no banco
   await fetch('http://localhost:3333/produtos', {
     method: 'GET',
     headers: {
@@ -30,12 +29,6 @@ async function buildSH4Filter() {
         $('#input-sh4').append(option);
       });
     });
-}
-
-// Função principal para a construção dos filtros
-export function buildFilters() {
-  // buildTemporalFilter(1996, 2020);
-  buildSH4Filter();
 
   $('#input-sh4').select2();
   $('#input-city').select2();
@@ -79,6 +72,7 @@ export async function handleFilter() {
   }
 
   startLoading();
+  changeLoadingMessage('Requisitando dados...')
 
   let filter = {
     cities: [],
@@ -132,6 +126,7 @@ export async function handleFilter() {
     })
   }).then(response => response.json()
     .then(rawData => {
+      changeLoadingMessage('Estruturando dados...')
       console.log('Dados brutos', rawData)
       /*
         CO_ANO: int - Ano
@@ -160,6 +155,7 @@ export async function handleFilter() {
       const sortMode = $('#fob-radio').prop("checked") ? 'fob' : 'peso';
       console.log(sortMode, 'ordenação')
 
+      changeLoadingMessage('Construindo visualizações...')
       // Constrói o Horizon Chart
       buildHorizon(horizonData, parseInt(overlap), sortMode);
     }))
