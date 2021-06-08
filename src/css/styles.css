@@ -185,13 +185,13 @@ body {
 }
 
 /* Track e Buttons */
-::-webkit-scrollbar-track {
+/* ::-webkit-scrollbar-track {
   background: lightblue;
 }
 
 ::-webkit-scrollbar-corner {
   background: lightblue;
-}
+} */
  
 /* Handle */
 ::-webkit-scrollbar-thumb {

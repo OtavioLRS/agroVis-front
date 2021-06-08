@@ -1,5 +1,5 @@
 import "@babel/polyfill";
-import { preLoad, startLoading, finishLoading, changeLoadingMessage } from './extra.js'
+import { preLoad, startLoading, changeLoadingMessage, finishLoading } from './extra.js'
 import { drawMap } from "./map.js";
 import { buildFilters } from "./filter.js";
 

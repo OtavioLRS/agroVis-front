@@ -31,7 +31,7 @@ export function finishLoading() {
 }
 
 /*
-  Inicia a tela de carregamento
+  Muda a mensagem da tela de carregamento
 */
 export function changeLoadingMessage(message) {
   $('.loader-message').html(message);

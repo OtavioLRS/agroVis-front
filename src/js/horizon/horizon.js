@@ -1,4 +1,4 @@
-import { changeLoadingMessage, finishLoading, formatValues, startLoading } from '../extra';
+import { startLoading, changeLoadingMessage, finishLoading, formatValues, } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
 
 export const parseDate = d3.timeParse('%m/%Y');
@@ -34,22 +34,10 @@ export function buildHorizon(df, bands, sort) {
       if (aTotal <= bTotal) return 1;
       else return -1;
     })
-    // .interpolationCurve(d3.curveStep) // curveBasis, curveLinear, curveStep
-    // .positiveColors(['lightblue', 'midnightBlue']) // Cores, minimo duas, intermediarias são interpoladas
     // .enableZoom(true) // Zoom
-    // .seriesComparator((a, b) => {  // Forma de ordenação dos charts
-    //   console.log('a', a)
-    //   console.log('b', b)
-    //   return 
-    // })
+    // .interpolationCurve(d3.curveStep) // curveBasis, curveLinear, curveStep
     // .yAggregation(vals => vals.reduce((a, b) => a + b))  // Soma valores iguais
-    // .tooltipContent(({ series, ts, val, points: [{ sh4_descricao, peso }] }) =>
-    //   series + ' - ' + sh4_descricao + '\nData: ' +
-    //   new Date(ts).toLocaleDateString().substring(3) + '\nValor FOB: U$ ' +
-    //   formatValues(val) + '\nPeso Líquido: ' +
-    //   formatValues(peso) + ' kg'
-    // )
-    .tooltipContent(({ series, ts, val, points: [{ fob, sh4_descricao, peso }] }) =>
+    .tooltipContent(({ series, ts, val, points: [{ sh4_descricao, peso }] }) =>
       ` <b>${series}</b> - ${sh4_descricao}
       <br>
       Data: ${new Date(ts).toLocaleDateString().substring(3)}
