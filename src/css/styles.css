@@ -159,7 +159,7 @@ body {
 }
 
 .horizon-tooltip {
-  text-overflow: ellipsis !important;
+  word-break: break-word !important;
   width: 500px;
 }
 

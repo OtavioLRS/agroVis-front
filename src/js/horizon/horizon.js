@@ -53,13 +53,13 @@ export function buildHorizon(df, bands, sort) {
     // )
     .tooltipContent(({ series, ts, val, points: [{ fob, sh4_descricao, peso }] }) =>
       ` <b>${series}</b> - ${sh4_descricao}
-    <br>
-    Data: ${new Date(ts).toLocaleDateString().substring(3)}
-    <br>
-    Valor FOB: U$ ${formatValues(val)}
-    <br>
-    Peso Líquido: ${formatValues(peso)} kg
-  `)
+      <br>
+      Data: ${new Date(ts).toLocaleDateString().substring(3)}
+      <br>
+      Valor FOB: U$ ${formatValues(val)}
+      <br>
+      Peso Líquido: ${formatValues(peso)} kg
+      `)
 
   // Limpa o horizon chart antigo
   d3.select('#horizon-wrapper').select('div').remove();
@@ -154,7 +154,7 @@ function compareBy(a, b, df, mode) {
 
 //   // Legenda do eixo
 //   const xAxis = g => g
-//     .attr('transform', `translate(0,${margin.top})`)
+//     .attr('transform', `translate(0, ${ margin.top })`)
 //     .call(d3.axisTop(x).ticks(width / 80).tickSizeOuter(0))
 //     .call(g => g.selectAll('.tick').filter(d => x(d) < margin.left || x(d) >= width - margin.right).remove())
 //     .call(g => g.select('.domain').remove())
@@ -204,7 +204,7 @@ function compareBy(a, b, df, mode) {
 //       pathId: (Math.random() * 100).toFixed(2)
 //     }, d)))
 //     .join('g')
-//     .attr('transform', (d, i) => `translate(0,${i * (step + 1) + margin.top})`);
+//     .attr('transform', (d, i) => `translate(0, ${ i * (step + 1) + margin.top})`);
 
 //   g.append('clipPath')
 //     .attr('id', d => d.clipId)
@@ -222,7 +222,7 @@ function compareBy(a, b, df, mode) {
 //     .data(d => new Array(overlap).fill(d))
 //     .join('use')
 //     .attr('fill', (d, i) => color(i))
-//     .attr('transform', (d, i) => `translate(0,${(i + 1) * step})`)
+//     .attr('transform', (d, i) => `translate(0, ${(i + 1) * step})`)
 //     .attr('href', d => '#' + d.pathId);
 
 //   g.append('text')
