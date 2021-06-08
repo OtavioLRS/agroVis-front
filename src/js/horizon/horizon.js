@@ -21,6 +21,7 @@ export function buildHorizon(df, bands, sort) {
 
   const horizon = HorizonTSChart()(domElem) // Elemento onde o chart será criado
     .data(df.units) // Dataframe
+    .width(window.innerWidth * 0.99 - 15)
     .height(100 * count) // Altura total: 100px * quantidade de charts
     .series('sh4_codigo') // Indicador do titulo de cada chart
     .ts('data') // Indicador da data do dado
@@ -37,6 +38,7 @@ export function buildHorizon(df, bands, sort) {
     // .enableZoom(true) // Zoom
     // .interpolationCurve(d3.curveStep) // curveBasis, curveLinear, curveStep
     // .yAggregation(vals => vals.reduce((a, b) => a + b))  // Soma valores iguais
+    .seriesLabelFormatter(label => label + ' - Max: ' + formatValues(df.findMaxValueOf(label, 'fob').toString())) // label identificador
     .tooltipContent(({ series, ts, val, points: [{ sh4_descricao, peso }] }) =>
       ` <b>${series}</b> - ${sh4_descricao}
       <br>

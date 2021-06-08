@@ -153,14 +153,22 @@ body {
 }
 
 #horizon-wrapper {
-  width: 100%;
+  width: 99%;
   height: 90%;
+  margin-left: 0.5%;
+  margin-right: 0.5%;
   overflow: scroll;
+}
+
+span.label{
+  font-weight: 700;
+  background-color: rgba(255, 255, 255, 0.5);
+  text-shadow: 1px 1px 2px white;
 }
 
 .horizon-tooltip {
   word-break: break-word !important;
-  width: 500px;
+  /* width: 500px; */
 }
 
 .slider {

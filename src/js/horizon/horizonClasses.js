@@ -25,35 +25,13 @@ export class HorizonData {
 
   // Adiciona um vetor HorizonUnit em 'units'
   addArray(units) {
-    // Para dada HorizonUnit, 
-    units.map(unit => {
-      this.addUnit(unit);
-
-      // Verifica se já há uma HorizonUnit equivalente
-      // const index = this.alreadyIn(unit);
-      // const index = -1;
-      // Se sim, concatena nela, senão, adiciona uma nova
-      // console.log(index)
-      // index != -1 ? this.concatUnit(unit, index) : this.addUnit(unit);
-    });
-  }
-
-  // Verifica se uma unit já está na estrutura
-  alreadyIn(unit) {
-    const result = this.units.findIndex(obj => obj.equivalent(unit));
-    // Retorna o index do elemento, se não encontrar, retorna -1
-    return result;
+    // Adiciona as HorizonUnits no vetor
+    units.map(unit => this.addUnit(unit))
   }
 
   // Adiciona uma HorizonUnit em 'units'
   addUnit(unit) {
     this.units.push(unit);
-  }
-
-  // Funde os valores de uma HorizonUnit com os de uma já existente em 'unit'
-  concatUnit(unit, index) {
-    this.units[index].fob += unit.fob;
-    this.units[index].peso += unit.peso;
   }
 
   // Encontra o valor total de um sh4 ('fob' ou 'peso')
@@ -66,4 +44,27 @@ export class HorizonData {
     }
     return valueSum;
   }
+
+  // Encontra o maior valor de um sh4 ('fob' ou 'peso')
+  findMaxValueOf(sh4, mode) {
+    const filtered = this.units.filter(unit => unit.sh4_codigo == sh4)
+
+    // console.log('sh4', sh4, 'valores', mode, filtered.map(unit => unit[mode]))
+    return d3.max(filtered.map(unit => unit[mode]));
+  }
+
+
+
+  // // Funde os valores de uma HorizonUnit com os de uma já existente em 'unit'
+  // concatUnit(unit, index) {
+  //   this.units[index].fob += unit.fob;
+  //   this.units[index].peso += unit.peso;
+  // }
+
+  // // Verifica se uma unit já está na estrutura
+  // alreadyIn(unit) {
+  //   const result = this.units.findIndex(obj => obj.equivalent(unit));
+  //   // Retorna o index do elemento, se não encontrar, retorna -1
+  //   return result;
+  // }
 }
