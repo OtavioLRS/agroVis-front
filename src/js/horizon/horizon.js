@@ -1,4 +1,4 @@
-import { startLoading, changeLoadingMessage, finishLoading, formatValues, } from '../extra';
+import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
 
 export const parseDate = d3.timeParse('%m/%Y');
@@ -39,12 +39,12 @@ export function buildHorizon(df, bands, sort) {
     // .interpolationCurve(d3.curveStep) // curveBasis, curveLinear, curveStep
     // .yAggregation(vals => vals.reduce((a, b) => a + b))  // Soma valores iguais
     .seriesLabelFormatter(label => label + ' - Max: ' + formatValues(df.findMaxValueOf(label, 'fob').toString())) // label identificador
-    .tooltipContent(({ series, ts, val, points: [{ sh4_descricao, peso }] }) =>
+    .tooltipContent(({ series, ts, val, points: [{ sh4_descricao, fob, peso }] }) =>
       ` <b>${series}</b> - ${sh4_descricao}
       <br>
       Data: ${new Date(ts).toLocaleDateString().substring(3)}
       <br>
-      Valor FOB: U$ ${formatValues(val)}
+      Valor FOB: U$ ${formatValues(fob)}
       <br>
       Peso Líquido: ${formatValues(peso)} kg
       `)
@@ -64,13 +64,47 @@ export function buildHorizon(df, bands, sort) {
 
   // Muda a ordenação do gráfico dinamicamente por fob
   $('#fob-radio').on('change', function () {
-    horizon.seriesComparator((a, b) => compareBy(a, b, df, 'fob'))
+    showHorizonLoader();
+
+    setTimeout(() => {
+      horizon.seriesComparator((a, b) => compareBy(a, b, df, 'fob'));
+      hideHorizonLoader();
+    }, 100);
+
   });
 
   // Muda a ordenação do gráfico dinamicamente por peso
   $('#peso-radio').on('change', function () {
-    horizon.seriesComparator((a, b) => compareBy(a, b, df, 'peso'))
+    showHorizonLoader();
+
+    setTimeout(() => {
+      horizon.seriesComparator((a, b) => compareBy(a, b, df, 'peso'));
+      hideHorizonLoader();
+    }, 100);
+
   });
+
+  // Muda a ordenação do gráfico para descendente
+  $('#sort-dec').on('click', function () {
+    showHorizonLoader();
+
+    setTimeout(() => {
+      horizon.seriesComparator((a, b) => compareBy(a, b, df, getSortByValue()));
+      hideHorizonLoader();
+    }, 100);
+
+  })
+
+  // Muda a ordenação do gráfico para ascendente
+  $('#sort-asc').on('click', function () {
+    showHorizonLoader();
+
+    setTimeout(() => {
+      horizon.seriesComparator((a, b) => compareBy(b, a, df, getSortByValue()));
+      hideHorizonLoader();
+    }, 100);
+
+  })
 }
 
 // Função auxiliar para ordenar os charts de acordo com o modo escolhido (mode = 'fob' | 'peso')

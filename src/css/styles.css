@@ -6,7 +6,7 @@ body {
   height: 100%;
   /* background-color: rgb(163, 230, 196); */
   background-color: white;
-  /* background: linear-gradient(to top left, lightblue 67%, #000066 100%); */
+  /* background: linear-gradient(to top right, lightblue 67%, #000066 100%); */
 }
 
 .container {
@@ -26,6 +26,10 @@ body {
 
 .hidden {
   display: none;
+}
+
+.show {
+  display: inline-block;
 }
 
 .tooltip {
@@ -144,6 +148,7 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
+  text-align: center;
 }
 
 #horizonband-wrapper, #horizonsort-wrapper {
@@ -177,13 +182,16 @@ span.label{
   height: 100%;
 }
 
-.line {
-  pointer-events: none;
-  width: 1px;
-  background: #000;
-  position: absolute;
-  top: calc(10% + 30px); /* Wrapper + margin */
-  bottom: 10px; /* Scrollbar */
+.sort-icon {
+  cursor: pointer;
+}
+
+#sort-dec {
+  margin-left: 100px;
+}
+
+#sort-asc {
+  margin-left: 10px;
 }
 /* ***************************************************** */
 /* Scroll bar */

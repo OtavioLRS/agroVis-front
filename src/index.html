@@ -14,7 +14,7 @@
 
 
   <div class="loader-wrapper">
-    <span class="loader"></span>
+    <div class="loader"></div>
     <span class="loader-message"></span>
   </div>
 
@@ -30,7 +30,7 @@
 
       <div id="container-date-aggregation-labels">
         <label id="label-date0" for="input-date0" style="width: 60%">Período</label>
-        <label id="label-aggregation" for="input-aggregation" style="width: 40%">Agregação</label>
+        <!-- <label id="label-aggregation" for="input-aggregation" style="width: 40%">Agregação</label> -->
       </div>
       <div id="container-date-aggregation">
         <div style="width: 55%; justify-content: space-between; display: flex;">
@@ -38,7 +38,7 @@
           até
           <input class="filter-input" type="month" id="input-date1" value="2020-12" min="1997-01" max="2020-12">
         </div>
-        <input class="filter-input" type="text" id="input-aggregation">
+        <!-- <input class="filter-input" type="text" id="input-aggregation"> -->
       </div>
 
       <label id="label-sh4" for="input-sh4">SH4</label>
@@ -60,6 +60,11 @@
           <label for="fob-radio">FOB</label>
           <input type="radio" id="peso-radio" name="sort" value="peso">
           <label for="peso-radio">Peso</label>
+
+          <span class="hidden" id="loader-small"></span>
+
+          <img src="../src/png/dec.png" class="sort-icon" id="sort-dec" height="25" width="25">
+          <img src="../src/png/asc.png" class="sort-icon" id="sort-asc" height="25" width="25">
         </div>
       </div>
 

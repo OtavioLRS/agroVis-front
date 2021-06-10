@@ -120,3 +120,20 @@ export function compareDates(d0, d1) {
 
   return date0.getTime() > date1.getTime();
 }
+
+
+
+export function getSortByValue() {
+  return $('input[name=sort]:checked', '#horizonsort-wrapper').val()
+}
+
+
+export function showHorizonLoader() {
+  $('#loader-small').removeClass('hidden')
+  $('#loader-small').addClass('show')
+}
+
+export function hideHorizonLoader() {
+  $('#loader-small').removeClass('show')
+  $('#loader-small').addClass('hidden')
+}

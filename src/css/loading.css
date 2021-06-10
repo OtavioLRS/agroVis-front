@@ -21,6 +21,16 @@
   animation: spin 1s linear infinite;
 }
 
+#loader-small {
+  margin-left: 20px;
+  border: 5px solid #f3f3f3; /* Light grey */
+  border-top: 5px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 5px;
+  height: 5px;
+  animation: spin 1s linear infinite;
+}
+
 .loader-message {
   margin-top: 10px;
   font-size: x-large;
