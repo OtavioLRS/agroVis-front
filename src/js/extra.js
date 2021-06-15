@@ -122,9 +122,14 @@ export function compareDates(d0, d1) {
 }
 
 
-
+// Recupera o tipo de dado que se deseja construir o grafico
 export function getSortByValue() {
-  return $('input[name=sort]:checked', '#horizonsort-wrapper').val()
+  return $('input[name=sort-radio]:checked', '#horizonsort-wrapper').val()
+}
+
+// Recupera o tipo de dados na qual se deve ordenar o grafico
+export function getSortValue() {
+  return $('input[name=datatype-radio]:checked', '#container-datatype').val()
 }
 
 

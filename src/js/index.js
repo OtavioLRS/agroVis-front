@@ -1,6 +1,6 @@
 import "@babel/polyfill";
 import { preLoad, startLoading, changeLoadingMessage, finishLoading } from './extra.js'
-import { drawMap } from "./map.js";
+import { drawMainMap, drawAuxMap } from "./map.js";
 import { buildFilters } from "./filter.js";
 
 // Pré coisas
@@ -9,7 +9,9 @@ preLoad();
 
 // Mapa
 changeLoadingMessage('Desenhando o mapa...')
-drawMap();
+drawMainMap();
+drawAuxMap('#auxmap-container1');
+drawAuxMap('#auxmap-container2');
 
 // Filtros
 changeLoadingMessage('Construindo os filtros...')

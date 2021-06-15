@@ -1,4 +1,4 @@
-import { startLoading, finishLoading, changeLoadingMessage } from './extra.js'
+import { startLoading, finishLoading, changeLoadingMessage, getSortValue, getSortByValue } from './extra.js'
 import { buildHorizon } from './horizon/horizon.js';
 import { HorizonUnit, HorizonData } from './horizon/horizonClasses';
 
@@ -152,12 +152,13 @@ export async function handleFilter() {
       console.log(overlap, 'overlap')
 
       // Modo de ordenação dos gráficos
-      const sortMode = $('#fob-radio').prop("checked") ? 'fob' : 'peso';
+      const sortMode = $('#fob-sort-radio').prop("checked") ? 'fob' : 'peso';
       console.log(sortMode, 'ordenação')
 
       changeLoadingMessage('Construindo visualizações...')
-      // Constrói o Horizon Chart
-      buildHorizon(horizonData, parseInt(overlap), sortMode);
+      // Constrói o Horizon Chart - df, overlapNumber
+      console.log('modo', getSortByValue(), 'dados', getSortValue());
+      buildHorizon(horizonData, parseInt(overlap), getSortValue(), getSortByValue());
     }))
     .then(() => {
       finishLoading();

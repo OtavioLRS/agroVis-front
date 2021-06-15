@@ -4,13 +4,14 @@ import HorizonTSChart from 'horizon-timeseries-chart';
 export const parseDate = d3.timeParse('%m/%Y');
 
 // Constroi o horizon chart
-export function buildHorizon(df, bands, sort) {
+export function buildHorizon(df, bands, sortValue, sortMode) {
   if (df.units.length == 0) {
     alert('Nenhum dado foi encontrado!');
     d3.select('#horizon-wrapper').select('div').remove();
     return
   };
 
+  console.log('dados usados:', sortValue, 'ordenado por: ', sortMode)
   const domElem = document.createElement('div');
 
   // Contando quantos SH4s diferentes foram recuperados
@@ -25,21 +26,16 @@ export function buildHorizon(df, bands, sort) {
     .height(100 * count) // Altura total: 100px * quantidade de charts
     .series('sh4_codigo') // Indicador do titulo de cada chart
     .ts('data') // Indicador da data do dado
-    .val('fob') // Indicador do valor do chart
+    .val(sortValue) // Indicador do valor do chart
     .useUtc(true)
     .horizonBands(bands)
     .transitionDuration([1]) // Duração das tranformações do gráfico
-    .seriesComparator((a, b) => { // Ordem dos charts
-      const aTotal = df.findTotalValueOf(a, sort);
-      const bTotal = df.findTotalValueOf(b, sort);
-      if (aTotal <= bTotal) return 1;
-      else return -1;
-    })
+    .seriesComparator((a, b) => compareBy(a, b, df, sortMode))  // Ordem dos charts 
     // .enableZoom(true) // Zoom
-    // .interpolationCurve(d3.curveStep) // curveBasis, curveLinear, curveStep
+    .interpolationCurve(d3.curveLinear) // curveBasis, curveLinear, curveStep
     // .yAggregation(vals => vals.reduce((a, b) => a + b))  // Soma valores iguais
-    .seriesLabelFormatter(label => label + ' - Max: ' + formatValues(df.findMaxValueOf(label, 'fob').toString())) // label identificador
-    .tooltipContent(({ series, ts, val, points: [{ sh4_descricao, fob, peso }] }) =>
+    .seriesLabelFormatter(label => label + ' - Escala: ' + formatValues(df.findMaxValueOf(label, sortValue).toString())) // label identificador
+    .tooltipContent(({ series, val, ts, points: [{ sh4_descricao, fob, peso }] }) =>
       ` <b>${series}</b> - ${sh4_descricao}
       <br>
       Data: ${new Date(ts).toLocaleDateString().substring(3)}
@@ -47,6 +43,7 @@ export function buildHorizon(df, bands, sort) {
       Valor FOB: U$ ${formatValues(fob)}
       <br>
       Peso Líquido: ${formatValues(peso)} kg
+      <br> val ${val}
       `)
 
   // Limpa o horizon chart antigo
@@ -59,26 +56,32 @@ export function buildHorizon(df, bands, sort) {
     // Número de bands
     const bandNumber = $(this).val().toString();
     // Re-renderiza o gráfico
-    horizon.horizonBands(bandNumber);
+    horizon
+      .horizonBands(bandNumber)
+      .transitionDuration([1]);
   });
 
   // Muda a ordenação do gráfico dinamicamente por fob
-  $('#fob-radio').on('change', function () {
+  $('#fob-sort-radio').on('change', function () {
     showHorizonLoader();
 
     setTimeout(() => {
-      horizon.seriesComparator((a, b) => compareBy(a, b, df, 'fob'));
+      horizon
+        .seriesComparator((a, b) => compareBy(a, b, df, 'fob'))
+        .transitionDuration([1]);
       hideHorizonLoader();
     }, 100);
 
   });
 
   // Muda a ordenação do gráfico dinamicamente por peso
-  $('#peso-radio').on('change', function () {
+  $('#peso-sort-radio').on('change', function () {
     showHorizonLoader();
 
     setTimeout(() => {
-      horizon.seriesComparator((a, b) => compareBy(a, b, df, 'peso'));
+      horizon
+        .seriesComparator((a, b) => compareBy(a, b, df, 'peso'))
+        .transitionDuration([1]);
       hideHorizonLoader();
     }, 100);
 
@@ -89,7 +92,9 @@ export function buildHorizon(df, bands, sort) {
     showHorizonLoader();
 
     setTimeout(() => {
-      horizon.seriesComparator((a, b) => compareBy(a, b, df, getSortByValue()));
+      horizon
+        .seriesComparator((a, b) => compareBy(a, b, df, getSortByValue()))
+        .transitionDuration([1]);
       hideHorizonLoader();
     }, 100);
 
@@ -100,7 +105,9 @@ export function buildHorizon(df, bands, sort) {
     showHorizonLoader();
 
     setTimeout(() => {
-      horizon.seriesComparator((a, b) => compareBy(b, a, df, getSortByValue()));
+      horizon
+        .seriesComparator((a, b) => compareBy(b, a, df, getSortByValue()))
+        .transitionDuration([1]);
       hideHorizonLoader();
     }, 100);
 
