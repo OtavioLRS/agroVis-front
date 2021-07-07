@@ -1,55 +1,107 @@
-import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, } from '../extra';
+import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, getSortValue, cleanDashboard, } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
+import { HorizonUnit, HorizonData } from './horizonClasses';
+import { changeMapTitle, cleanCity } from '../map';
 
-export const parseDate = d3.timeParse('%m/%Y');
+
 
 // Constroi o horizon chart
-export function buildHorizon(df, bands, sortValue, sortMode) {
-  if (df.units.length == 0) {
-    alert('Nenhum dado foi encontrado!');
-    d3.select('#horizon-wrapper').select('div').remove();
-    return
-  };
+export async function buildHorizon(filter) {
+  // Requisição dos dados do horizon 
+  const response = await fetch('http://localhost:3333/horizon_query', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      filter,
+    })
+  });
 
-  console.log('dados usados:', sortValue, 'ordenado por: ', sortMode)
+  const rawData = await response.json();
+
+  changeLoadingMessage('Estruturando dados...');
+  console.log('Dados brutos', rawData);
+  /*
+    CO_ANO: int - Ano
+    CO_MES: int - Mês
+    CO_MUN: string - Código do município
+    CO_PAIS: string - Pais de destino
+    KG_LIQUIDO: int - Peso líquido
+    NO_MUN_MIN: string - Nome do município
+    NO_PAIS: string - Nome do país de destino
+    NO_SH4_POR: string - Descrição do SH4
+    SH4: int - Código SH4
+    VL_FOB: int - Valor FOB em U$
+  */
+
+  const resultVerifier = rawData[0]['CO_MUN'];
+
+  // Dataframe de dados do Horizon Chart
+  const horizonData = new HorizonData();
+
+  // Preenchendo o dataframe
+  horizonData.addArray(rawData.map(d => new HorizonUnit(new Date(Date.UTC(d.CO_ANO, d.CO_MES, 1)), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO)));
+  console.log('Horizon Data', horizonData);
+
+  // Sh4 e Timestamps unicos
+  const uniqueSh4 = horizonData.uniqueValues('sh4_codigo');
+  // const uniqueDates = horizonData.uniqueValues('data');
+  // horizonData.createAuxData(uniqueSh4);
+  // console.log('Horizon Data com Auxs', horizonData);
+
+  // Número de bandas dos gráficos
+  const overlap = $('#overlap-slider').val();
+
+  // Atributo que será exibido no gráfico
+  const sortValue = getSortValue();
+
+  // Modo de ordenação dos gráficos
+  const sortMode = getSortByValue();
+
+  changeLoadingMessage('Construindo visualizações...');
+  // console.log('dados usados:', sortValue, 'ordenado por: ', sortMode)
+
+  // Elemento onde o chart será criado
   const domElem = document.createElement('div');
-
-  // Contando quantos SH4s diferentes foram recuperados
-  const sh4Num = new Set();
-  for (let i of df.units)
-    sh4Num.add(i.sh4_codigo);
-  const count = sh4Num.size;
-
-  const horizon = HorizonTSChart()(domElem) // Elemento onde o chart será criado
-    .data(df.units) // Dataframe
-    .width(window.innerWidth * 0.99 - 15)
-    .height(100 * count) // Altura total: 100px * quantidade de charts
-    .series('sh4_codigo') // Indicador do titulo de cada chart
-    .ts('data') // Indicador da data do dado
-    .val(sortValue) // Indicador do valor do chart
-    .useUtc(true)
-    .horizonBands(bands)
-    .transitionDuration([1]) // Duração das tranformações do gráfico
-    .seriesComparator((a, b) => compareBy(a, b, df, sortMode))  // Ordem dos charts 
-    // .enableZoom(true) // Zoom
-    .interpolationCurve(d3.curveLinear) // curveBasis, curveLinear, curveStep
-    // .yAggregation(vals => vals.reduce((a, b) => a + b))  // Soma valores iguais
-    .seriesLabelFormatter(label => label + ' - Escala: ' + formatValues(df.findMaxValueOf(label, sortValue).toString())) // label identificador
-    .tooltipContent(({ series, val, ts, points: [{ sh4_descricao, fob, peso }] }) =>
-      ` <b>${series}</b> - ${sh4_descricao}
-      <br>
-      Data: ${new Date(ts).toLocaleDateString().substring(3)}
-      <br>
-      Valor FOB: U$ ${formatValues(fob)}
-      <br>
-      Peso Líquido: ${formatValues(peso)} kg
-      <br> val ${val}
-      `)
-
   // Limpa o horizon chart antigo
   d3.select('#horizon-wrapper').select('div').remove();
   // Renderiza o novo
   d3.select('#horizon-wrapper').node().append(domElem);
+
+  const horizon = HorizonTSChart()(domElem)
+    .data(horizonData.units) // Dataframe
+    .width(window.innerWidth - 45) // Largura total, 100% da tela - 40px padding e margin - 5 scroll
+    .height(100 * uniqueSh4.length) // Altura total: 100px * quantidade de charts
+    .series('sh4_codigo') // Indicador do titulo de cada chart
+    .ts('data') // Indicador da data do dado
+    .val(sortValue) // Indicador do valor do chart
+    .useUtc(true)
+    .horizonBands(overlap) // Quantidade de overlaps 
+    .transitionDuration([1]) // Duração das tranformações do gráfico
+    .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, sortMode))  // Ordem dos charts 
+    // .enableZoom(true) // Zoom
+    .interpolationCurve(d3.curveBasis) // curveBasis, curveLinear, curveStep
+    // .yAggregation(vals => vals.reduce((a, b) => a + b))  // Soma valores iguais
+    .seriesLabelFormatter(label => label + ' - Escala: ' + formatValues(horizonData.findMaxValueOf(label, sortValue).toString())) // label identificador
+    .tooltipContent(({ series, val, ts, points: [{ sh4_descricao, fob, peso }] }) => {
+      if (val != 0)
+        return `<b>${series}</b> - ${sh4_descricao.length < 40 ? sh4_descricao : (sh4_descricao.substring(0, 40) + '...')}
+        <br>
+        Data: ${new Date(ts).toLocaleDateString().substring(3)}
+        <br>
+        Valor FOB: U$ ${formatValues(fob)}
+        <br>
+        Peso Líquido: ${formatValues(peso)} kg`
+
+      else
+        return ` <b>${series}</b> - ${sh4_descricao.length < 40 ? sh4_descricao : (sh4_descricao.substring(0, 40) + '...')}
+        <br>
+        Data: ${new Date(ts).toLocaleDateString().substring(3)}
+        <br>
+        Nenhum dado registrado neste período!`
+    });
 
   // Muda o numero de bandas dinamicamente
   $('#overlap-slider').on('input', function () {
@@ -67,7 +119,7 @@ export function buildHorizon(df, bands, sortValue, sortMode) {
 
     setTimeout(() => {
       horizon
-        .seriesComparator((a, b) => compareBy(a, b, df, 'fob'))
+        .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, 'fob'))
         .transitionDuration([1]);
       hideHorizonLoader();
     }, 100);
@@ -80,7 +132,7 @@ export function buildHorizon(df, bands, sortValue, sortMode) {
 
     setTimeout(() => {
       horizon
-        .seriesComparator((a, b) => compareBy(a, b, df, 'peso'))
+        .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, 'peso'))
         .transitionDuration([1]);
       hideHorizonLoader();
     }, 100);
@@ -93,7 +145,7 @@ export function buildHorizon(df, bands, sortValue, sortMode) {
 
     setTimeout(() => {
       horizon
-        .seriesComparator((a, b) => compareBy(a, b, df, getSortByValue()))
+        .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, getSortByValue()))
         .transitionDuration([1]);
       hideHorizonLoader();
     }, 100);
@@ -106,7 +158,7 @@ export function buildHorizon(df, bands, sortValue, sortMode) {
 
     setTimeout(() => {
       horizon
-        .seriesComparator((a, b) => compareBy(b, a, df, getSortByValue()))
+        .seriesComparator((a, b) => compareSeriesBy(b, a, horizonData, getSortByValue()))
         .transitionDuration([1]);
       hideHorizonLoader();
     }, 100);
@@ -115,7 +167,7 @@ export function buildHorizon(df, bands, sortValue, sortMode) {
 }
 
 // Função auxiliar para ordenar os charts de acordo com o modo escolhido (mode = 'fob' | 'peso')
-function compareBy(a, b, df, mode) {
+function compareSeriesBy(a, b, df, mode) {
   const aTotal = df.findTotalValueOf(a, mode);
   const bTotal = df.findTotalValueOf(b, mode);
 
@@ -142,25 +194,26 @@ function compareBy(a, b, df, mode) {
 
 
 
+// export const parseDate = d3.timeParse('%m/%Y');
 
 // Função para construir o Horizon Chart
 // export function buildHorizon(dataRaw, ov) {
 
-//   // Estruturando os dados
-//   let horizonData = structureHorizonData(dataRaw)
-//   console.log('Final', horizonData)
+  //   // Estruturando os dados
+  //   let horizonData = structureHorizonData(dataRaw)
+  //   console.log('Final', horizonData)
 
-//   if (!horizonData) { alert('Nenhum dado foi encontrado!'); return };
+  //   if (!horizonData) { alert('Nenhum dado foi encontrado!'); return };
 
-//   const overlap = ov;
-//   const extent = d3.extent(horizonData.dates);
-//   const extentAbs = extent[1].getYear() - extent[0].getYear() + 1;
+  //   const overlap = ov;
+  //   const extent = d3.extent(horizonData.dates);
+  //   const extentAbs = extent[1].getYear() - extent[0].getYear() + 1;
 
-//   console.log('Periodo dos dados', extentAbs);
+  //   console.log('Periodo dos dados', extentAbs);
 
-//   const step = 100;
+  //   const step = 100;
 
-//   const margin = ({ top: 30, right: 10, bottom: 0, left: 10 });
+  //   const margin = ({ top: 30, right: 10, bottom: 0, left: 10 });
 
 //   // const color = i => d3['schemeReds'][Math.max(3, overlap)][i + Math.max(0, 3 - overlap)]
 //   const color = i => d3['schemeOrRd'][Math.max(3, overlap)][i + Math.max(0, 3 - overlap)]

@@ -1,3 +1,5 @@
+import { changeMapTitle, cleanCity } from "./map";
+
 /*
   Função com processamentos iniciais
 */
@@ -11,13 +13,16 @@ export function preLoad() {
 
     $('#overlap-label').html("Bandas: " + bandNumber);
   });
+
+  $('#input-sh4').select2();
+  $('#input-city').select2();
 }
 
 /*
   Inicia a tela de carregamento
 */
 export function startLoading() {
-  $('.wrapper').addClass('hidden');
+  // $('.wrapper').addClass('hidden');
   $('.loader-wrapper').fadeIn('fast');
 }
 
@@ -26,7 +31,7 @@ export function startLoading() {
 */
 export function finishLoading() {
   $('.loader-wrapper').fadeOut(() => {
-    $('.wrapper').removeClass('hidden');
+    // $('.wrapper').removeClass('hidden');
   });
 }
 
@@ -141,4 +146,17 @@ export function showHorizonLoader() {
 export function hideHorizonLoader() {
   $('#loader-small').removeClass('show')
   $('#loader-small').addClass('hidden')
+}
+
+export function cleanDashboard() {
+  // Deleta o Horizon Chart anterior
+  d3.select('#horizon-wrapper').select('div').remove();
+  // Limpa o mapa
+  $('.city-active').each(function () {
+    cleanCity($(this));
+  });
+  // Retira o titulo do mapa
+  changeMapTitle('-');
+  // Limpa o input de escolha de produto exibido no mapa
+  $('#input-sh4-map-container').html('');
 }

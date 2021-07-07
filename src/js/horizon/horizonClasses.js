@@ -53,6 +53,24 @@ export class HorizonData {
     return d3.max(filtered.map(unit => unit[mode]));
   }
 
+  // Encontra quais os valores únicos de um determinado atributo
+  uniqueValues(key) {
+    return Array.from(new Set(this.units.map(d => d[key])));
+  }
+
+  // Cria e adiciona valores vazios como auxiliares
+  createAuxData(sh4s) {
+    console.log('dados aux', sh4s);
+    for (let sh4 of sh4s) {
+      let ano = 1997;
+      while (ano <= 2020) {
+        let mes = 1;
+        while (mes <= 12) {
+          this.units.push(new HorizonUnit(new Date(Date.UTC(ano, mes, 1)), sh4, 'teste', 0, 0));
+        }
+      }
+    }
+  }
 
 
   // // Funde os valores de uma HorizonUnit com os de uma já existente em 'unit'

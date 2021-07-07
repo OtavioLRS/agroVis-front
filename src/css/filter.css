@@ -1,0 +1,95 @@
+/* ***************************************************** */
+/* Filter */
+#filter-container {
+  left: 0px;
+  top: 0px;
+  width: calc(40% - 15px);
+  height: calc(50% - 30px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* padding-top: 10px; */
+  /* padding-left: 10px; */
+  overflow-x: scroll;
+}
+
+#filter-container::-webkit-scrollbar {
+  display: none;
+}
+
+#filter-container .filter-input {
+  height: 30px;
+  border: 2px solid black;
+  border-radius: 5px;
+}
+
+#filter-container .select2-selection--multiple {
+  overflow: scroll !important;
+  max-height: 70px !important;
+  border: 2px solid black !important; 
+}
+
+#filter-container .select2-selection--multiple::-webkit-scrollbar {
+  display: none;
+}
+
+#filter-container .select2-selection__choice{
+  height: 20px;
+  box-sizing:content-box;
+  font-size: smaller;
+}
+
+#filter-container #container-date-datatype-labels {
+  width: 100%;
+  margin-top: 20px;
+  display: flex;
+  /* justify-content: ; */
+}
+
+#filter-container #label-date {
+  width: 75%;
+}
+
+#filter-container #label-datatype {
+  width: 25%;
+}
+
+#filter-container #container-date-datatype {
+  width: 100%;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#filter-container #container-date {
+  width: 70%; 
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+}
+
+#filter-container #container-datatype {
+  width: 30%;
+  height: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#filter-container #input-date0, #input-date1{
+  width: 42%;
+  font-size: small;
+  text-align: center;
+  padding-left: 2px;
+}
+
+#filter-container #input-aggregation {
+  width: 40%;
+}
+
+#filter-container #filter-button {
+  position: absolute;
+  bottom: 10px;
+  width: 25%;
+}
