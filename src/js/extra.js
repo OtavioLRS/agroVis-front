@@ -11,7 +11,7 @@ export function preLoad() {
   $('#overlap-slider').on("input", function () {
     const bandNumber = $(this).val().toString();
 
-    $('#overlap-label').html("Bandas: " + bandNumber);
+    $('#overlap-label').html("Layers: " + bandNumber);
   });
 
   $('#input-sh4').select2();
@@ -23,14 +23,14 @@ export function preLoad() {
 */
 export function startLoading() {
   // $('.wrapper').addClass('hidden');
-  $('.loader-wrapper').fadeIn('fast');
+  $('.hard-loader-wrapper').fadeIn('fast');
 }
 
 /*
   Fecha a tela de carregamento
 */
 export function finishLoading() {
-  $('.loader-wrapper').fadeOut(() => {
+  $('.hard-loader-wrapper').fadeOut(() => {
     // $('.wrapper').removeClass('hidden');
   });
 }
@@ -40,6 +40,7 @@ export function finishLoading() {
 */
 export function changeLoadingMessage(message) {
   $('.loader-message').html(message);
+  // $('.sr-only').html(message);
 }
 
 /*
@@ -126,6 +127,10 @@ export function compareDates(d0, d1) {
   return date0.getTime() > date1.getTime();
 }
 
+// Recupera o tipo de escala utilizado para construir o gráfico
+export function getScaleByValue() {
+  return $('input[name=scale-radio]:checked', '#horizonscale-wrapper').val()
+}
 
 // Recupera o tipo de dado que se deseja construir o grafico
 export function getSortByValue() {
@@ -137,17 +142,31 @@ export function getSortValue() {
   return $('input[name=datatype-radio]:checked', '#container-datatype').val()
 }
 
-
-export function showHorizonLoader() {
-  $('#loader-small').removeClass('hidden')
-  $('#loader-small').addClass('show')
+export function blurElement(elem) {
+  $(elem).addClass('blured');
 }
 
-export function hideHorizonLoader() {
-  $('#loader-small').removeClass('show')
-  $('#loader-small').addClass('hidden')
+export function unblurElement(elem) {
+  $(elem).removeClass('blured');
 }
 
+// Exibe o loader de ordenação do HorizonChart
+export function showHorizonLoader(elem) {
+  // blurElement(elem);
+  $('#horizon-wrapper').addClass('blured');
+  $('.soft-loader-wrapper').removeClass('hidden');
+  $('.soft-loader-wrapper').addClass('show');
+}
+
+// Esconde o loader de ordenação do HorizonChart
+export function hideHorizonLoader(elem) {
+  $('.soft-loader-wrapper').removeClass('show');
+  $('.soft-loader-wrapper').addClass('hidden');
+  $('#horizon-wrapper').removeClass('blured');
+  // unblurElement(elem);
+}
+
+// Limpa completamente a interface do Dashboard
 export function cleanDashboard() {
   // Deleta o Horizon Chart anterior
   d3.select('#horizon-wrapper').select('div').remove();
@@ -156,7 +175,7 @@ export function cleanDashboard() {
     cleanCity($(this));
   });
   // Retira o titulo do mapa
-  changeMapTitle('-');
+  changeMapTitle('---');
   // Limpa o input de escolha de produto exibido no mapa
   $('#input-sh4-map-container').html('');
 }

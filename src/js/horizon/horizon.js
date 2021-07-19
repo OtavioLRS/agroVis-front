@@ -1,14 +1,18 @@
-import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, getSortValue, cleanDashboard, } from '../extra';
+import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, getSortValue, cleanDashboard, getScaleByValue, } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
 import { HorizonUnit, HorizonData } from './horizonClasses';
 import { changeMapTitle, cleanCity } from '../map';
+import { showHorizonModal } from './horizonModal';
 
 
 
 // Constroi o horizon chart
 export async function buildHorizon(filter) {
-  // Requisição dos dados do horizon 
-  const response = await fetch('http://localhost:3333/horizon_query', {
+  // Primeiro click no HorizonChart
+  await localStorage.setItem('horizonclick', '1');
+
+  // Requisição dos dados do HorizonChart 
+  const response = await fetch('http://localhost:3333/horizondata', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -45,11 +49,26 @@ export async function buildHorizon(filter) {
   horizonData.addArray(rawData.map(d => new HorizonUnit(new Date(Date.UTC(d.CO_ANO, d.CO_MES, 1)), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO)));
   console.log('Horizon Data', horizonData);
 
-  // Sh4 e Timestamps unicos
+  // Sh4s unicos
   const uniqueSh4 = horizonData.uniqueValues('sh4_codigo');
-  // const uniqueDates = horizonData.uniqueValues('data');
-  // horizonData.createAuxData(uniqueSh4);
-  // console.log('Horizon Data com Auxs', horizonData);
+
+  // Filtro de produtos dos dados auxiliares, contém somente SH4s com dados
+  filter.products = uniqueSh4;
+
+  // Dados auxiliares do HorizonChart
+  const responseAux = await fetch('http://localhost:3333/horizondata-aux', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      filter,
+    })
+  });
+  const rawAuxData = await responseAux.json();
+  horizonData.addArray(rawAuxData.map(d => new HorizonUnit(new Date(Date.UTC(d.CO_ANO, d.CO_MES, 1)), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO)));
+  console.log('Horizon Data Aux', horizonData);
 
   // Número de bandas dos gráficos
   const overlap = $('#overlap-slider').val();
@@ -84,7 +103,15 @@ export async function buildHorizon(filter) {
     // .enableZoom(true) // Zoom
     .interpolationCurve(d3.curveBasis) // curveBasis, curveLinear, curveStep
     // .yAggregation(vals => vals.reduce((a, b) => a + b))  // Soma valores iguais
-    .seriesLabelFormatter(label => label + ' - Escala: ' + formatValues(horizonData.findMaxValueOf(label, sortValue).toString())) // label identificador
+    .seriesLabelFormatter((label) => {
+      // Se for escala global, maior valor de todos os dados
+      if (getScaleByValue() == 'global') {
+        const maxValue = d3.max(uniqueSh4.map(sh4 => horizonData.findMaxValueOf(sh4, getSortValue())));
+        return label + ' - Escala: ' + formatValues(maxValue);
+      }
+      // Se for escala unitaria, maior valor daquela series
+      else return label + ' - Escala: ' + formatValues(horizonData.findMaxValueOf(label, sortValue).toString());
+    })
     .tooltipContent(({ series, val, ts, points: [{ sh4_descricao, fob, peso }] }) => {
       if (val != 0)
         return `<b>${series}</b> - ${sh4_descricao.length < 40 ? sh4_descricao : (sh4_descricao.substring(0, 40) + '...')}
@@ -101,69 +128,115 @@ export async function buildHorizon(filter) {
         Data: ${new Date(ts).toLocaleDateString().substring(3)}
         <br>
         Nenhum dado registrado neste período!`
+    })
+    .onClick(async (data) => {
+      /* 
+         false - primeiro click
+         true - segundo click
+      */
+      const click = await JSON.parse(localStorage.getItem('horizonclick'));
+      console.log(click);
+
+      if (click == '1') horizonFirstClick(horizon, data)
+      else horizonSecondClick(horizon, data)
     });
 
   // Muda o numero de bandas dinamicamente
   $('#overlap-slider').on('input', function () {
-    // Número de bands
-    const bandNumber = $(this).val().toString();
-    // Re-renderiza o gráfico
-    horizon
-      .horizonBands(bandNumber)
-      .transitionDuration([1]);
+    showHorizonLoader('#horizon-wrapper');
+
+    setTimeout(async () => {
+      // Número de bands
+      const bandNumber = $(this).val().toString();
+      // Re-renderiza o gráfico
+      await horizon
+        .horizonBands(bandNumber)
+      // .transitionDuration([1]);
+
+      await hideHorizonLoader('#horizon-wrapper');
+    }, 100)
+  });
+
+  // Muda a escala do HorizonChart unitariamente
+  $('#unit-scale-radio').on('change', function () {
+    showHorizonLoader('#horizon-wrapper');
+
+    setTimeout(async () => {
+      await horizon
+        .yExtent(undefined)
+        .seriesLabelFormatter(label => label + ' - Escala: ' + formatValues(horizonData.findMaxValueOf(label, sortValue).toString()))
+        .transitionDuration([1]);
+      await hideHorizonLoader('#horizon-wrapper');
+    }, 100)
+  });
+
+  // Muda a escala do HorizonChart para global
+  $('#global-scale-radio').on('change', function () {
+    showHorizonLoader('#horizon-wrapper');
+
+    // Valor máximo de todos os dados será utilizado como escala
+    const maxValue = d3.max(uniqueSh4.map(sh4 => horizonData.findMaxValueOf(sh4, sortValue)));
+
+    setTimeout(async () => {
+      await horizon
+        .yExtent(maxValue)
+        .seriesLabelFormatter(label => label + ' - Escala: ' + formatValues(maxValue))
+        .transitionDuration([1]);
+      await hideHorizonLoader('#horizon-wrapper');
+    }, 100);
   });
 
   // Muda a ordenação do gráfico dinamicamente por fob
   $('#fob-sort-radio').on('change', function () {
-    showHorizonLoader();
+    showHorizonLoader('#horizon-wrapper');
 
-    setTimeout(() => {
-      horizon
+    setTimeout(async () => {
+      await horizon
         .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, 'fob'))
         .transitionDuration([1]);
-      hideHorizonLoader();
+      hideHorizonLoader('#horizon-wrapper');
     }, 100);
 
   });
 
   // Muda a ordenação do gráfico dinamicamente por peso
   $('#peso-sort-radio').on('change', function () {
-    showHorizonLoader();
+    showHorizonLoader('#horizon-wrapper');
 
-    setTimeout(() => {
-      horizon
+    setTimeout(async () => {
+      await horizon
         .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, 'peso'))
         .transitionDuration([1]);
-      hideHorizonLoader();
+      hideHorizonLoader('#horizon-wrapper');
     }, 100);
-
   });
 
   // Muda a ordenação do gráfico para descendente
-  $('#sort-dec').on('click', function () {
-    showHorizonLoader();
+  $('#sort-dec').on('click', async function () {
+    showHorizonLoader('#horizon-wrapper');
 
-    setTimeout(() => {
-      horizon
+    setTimeout(async () => {
+      await horizon
         .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, getSortByValue()))
         .transitionDuration([1]);
-      hideHorizonLoader();
-    }, 100);
-
-  })
+      hideHorizonLoader('#horizon-wrapper');
+    }, 10);
+  });
 
   // Muda a ordenação do gráfico para ascendente
-  $('#sort-asc').on('click', function () {
-    showHorizonLoader();
+  $('#sort-asc').on('click', async function () {
+    await showHorizonLoader('#horizon-wrapper');
 
-    setTimeout(() => {
-      horizon
+    setTimeout(async () => {
+      await horizon
         .seriesComparator((a, b) => compareSeriesBy(b, a, horizonData, getSortByValue()))
         .transitionDuration([1]);
-      hideHorizonLoader();
-    }, 100);
+      hideHorizonLoader('#horizon-wrapper');
+    }, 10);
+  });
 
-  })
+
+  d3.selectAll('canvas').call(d3.brushX());
 }
 
 // Função auxiliar para ordenar os charts de acordo com o modo escolhido (mode = 'fob' | 'peso')
@@ -175,6 +248,30 @@ function compareSeriesBy(a, b, df, mode) {
   else return -1;
 }
 
+async function horizonFirstClick(chart, data) {
+  await localStorage.setItem('horizonclick', '2');
+  await localStorage.setItem('horizonclickdata', JSON.stringify(data));
+
+  // Adiciona blur nas series
+  $('.horizon-series').each(function () {
+    if (!$(this).children('span').html().startsWith(data.series)) {
+      $(this).addClass('blured');
+    }
+  })
+
+}
+
+async function horizonSecondClick(chart, data1) {
+  await localStorage.setItem('horizonclick', '1');
+
+  const data2 = await JSON.parse(localStorage.getItem('horizonclickdata'));
+
+  // Constrói o modal, do menor 'ts' ao maior
+  data1.ts < data2.ts ? showHorizonModal(data1, data2) : showHorizonModal(data2, data1)
+
+  // Remove o blur das series
+  $('.horizon-series').each(function () { $(this).removeClass('blured'); });
+}
 
 
 

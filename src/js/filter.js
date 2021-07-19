@@ -63,7 +63,8 @@ export async function handleFilter() {
     cities: [],
     products: [],
     beginPeriod: null,
-    endPeriod: null
+    endPeriod: null,
+    sortValue: null
   }
 
   // Adicionando cidades no filtro
@@ -124,6 +125,9 @@ export async function handleFilter() {
         filterMap.products.push(parseInt(d.innerHTML.split(' - ')[0]));
       }
       console.log('Produtos com dados', filterMap.products);
+
+      // Utilizar 'FOB' ou 'PESO'
+      filterMap.sortValue = getSortValue() == 'fob' ? 'VL_FOB' : 'KG_LIQUIDO';
 
       // Seta o filterMap no localStorage, para ser acessado pelo mapa
       await localStorage.setItem('filter', JSON.stringify(filterMap));

@@ -3,7 +3,7 @@ import { finishLoading, formatValues, changeLoadingMessage, getSortValue, cleanD
 // Desenha o mapa
 export async function drawMainMap() {
   const height = window.innerHeight * 0.5 * 0.9 - 30;
-  const width = window.innerWidth * 0.6 - 10;
+  const width = window.innerWidth * 0.6 * 0.5 - 10;
   // const width = window.innerWidth * 0.6 * 0.6;
 
   // Container do mapa
@@ -23,8 +23,8 @@ export async function drawMainMap() {
 
   // Projecao
   const projection = d3.geoMercator()
-    .fitSize([width, height], mapData);
-  // .fitExtent([[10, 10], [width, height]], mapData);
+    // .fitSize([width, height], mapData);
+    .fitExtent([[5, 5], [width, height]], mapData);
 
   // Path
   const path = d3.geoPath()
@@ -47,6 +47,7 @@ export async function drawMainMap() {
       let mouseCoords = d3.mouse(svg.node()).map((coord) => {
         return parseInt(coord);
       });
+
       // Mostra o nome da cidade
       tooltip.classed('hidden', false)
         .attr('style', 'left:' + (mouseCoords[0] + 15) +
@@ -160,7 +161,7 @@ export async function updateMap(selected) {
   updateMapSh4Input(selected);
 
   // Realiza a query do filtro inserido
-  const response = await fetch('http://localhost:3333/map_query', {
+  const response = await fetch('http://localhost:3333/mapdata', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -173,8 +174,20 @@ export async function updateMap(selected) {
   const mapData = await response.json();
   console.log('Map Data', mapData);
 
+  // Função de calculo de cores
+  const colors = createFrequencyScale(mapData, filterAux.sortValue);
+
   // Preenche o mapa com os dados recebidos
-  updateMapData(mapData);
+  updateMapData(mapData, colors, filterAux.sortValue);
+
+
+  $('#input-classnumber').on('change', function () {
+    // Função de calculo de cores
+    const colors = createFrequencyScale(mapData, filterAux.sortValue);
+
+    // Preenche o mapa com os dados recebidos
+    updateMapData(mapData, colors, filterAux.sortValue);
+  });
 }
 
 // Atualiza o input de produtos que podem ser exibidos no mapa
@@ -213,7 +226,7 @@ async function updateMapSh4Input(selected) {
 }
 
 // Atualiza os dados do mapa
-export async function updateMapData(mapData) {
+export async function updateMapData(mapData, colors, sortValue) {
   try {
     // Atualiza o título do mapa
     changeMapTitle(mapData[0]['SH4'] + ' - ' + mapData[0]['NO_SH4_POR']);
@@ -223,12 +236,9 @@ export async function updateMapData(mapData) {
       cleanCity($(this));
     })
 
-    // Função de calculo de cores
-    const colors = createFrequencyScale(mapData, getSortValue() == 'fob' ? 'VL_FOB' : 'KG_LIQUIDO')
-
     // Preenche cada shape de cidade com os dados referentes
     mapData.forEach(d => {
-      fillCity(d, colors(d[getSortValue() == 'fob' ? 'VL_FOB' : 'KG_LIQUIDO']));
+      fillCity(d, colors(d[sortValue]));
     })
   }
 
@@ -253,11 +263,47 @@ export function changeMapTitle(title) {
 
 // Cria uma função para calcular a cor do mapa de uma cidade
 function createFrequencyScale(data, dataType) {
-  let colors = d3.scaleSequential()
+  const numClasses = $('#input-classnumber').val();
+  console.log(numClasses);
+
+  /* Retirado de: https://colorbrewer2.org/#type=sequential&scheme=YlOrRd */
+  const hexColors = [
+    [], [], ["#ffeda0", "#f03b20"],
+    ["#ffeda0", "#feb24c", "#f03b20"],
+    ["#ffffb2", "#fecc5c", "#fd8d3c", "#e31a1c"],
+    ["#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"],
+    ["#ffffb2", "#fed976", "#feb24c", "#fd8d3c", "#f03b20", "#bd0026"],
+    ["#ffffb2", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a", "#e31a1c", "#b10026"],
+    ["#ffffcc", "#ffeda0", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a", "#e31a1c", "#b10026"],
+    ["#ffffcc", "#ffeda0", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a", "#e31a1c", "#bd0026", "#800026"]
+  ];
+
+  const colors = d3.scaleQuantize()
     .domain([0, d3.max(data.map(d => d[dataType]))])
-    .interpolator(d3.interpolateYlOrRd);
+    .range(hexColors[numClasses]);
+
+  // printScaleLegend(0, d3.max(data.map(d => d[dataType])), colors);
 
   return colors;
+}
+
+function printScaleLegend(min, max, colors) {
+  $('#map-legend').remove();
+  const svg = d3.select('#mainmap-container').select('svg');
+
+  const xScale = d3.scaleLinear()
+    .domain(min, max)
+    .range([0, 200]);
+
+  const yScale = d3.scaleBand()
+    .domain([0, 1])
+    .range([0, 20]);
+
+  const scale = d3.legend()
+    .shapeWidth(30)
+    .cells(10)
+    .orient('horizontal')
+    .scale(linear);
 }
 
 // Recebe um elemento jquery referente ao desenho de uma cidade, e limpa seus dados

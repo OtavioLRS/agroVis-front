@@ -23,10 +23,9 @@
   text-align: center;
 }
 
-#horizonband-wrapper, #horizonsort-wrapper {
-  width: 50%;
+#horizonband-wrapper, #horizonsort-wrapper, #horizonscale-wrapper {
+  width: 30%;
   align-items: center;
-  /* padding: 10px; */
 }
 
 #horizon-wrapper {
@@ -53,10 +52,25 @@ span.label{
   cursor: pointer;
 }
 
+.sort-icon:hover {
+  opacity: 0.5;
+}
+
+.sort-icon:active {
+  opacity: 0.3;
+}
+
 #sort-dec {
   margin-left: 100px;
 }
 
 #sort-asc {
   margin-left: 10px;
+}
+
+.horizon-series {
+  -webkit-transition: all 0.8s ease;
+  -moz-transition: all 0.8s ease;
+  -o-transition: all 0.8s ease;
+  transition: all 0.8s ease;
 }
