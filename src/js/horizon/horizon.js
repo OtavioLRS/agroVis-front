@@ -1,10 +1,8 @@
-import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, getSortValue, cleanDashboard, getScaleByValue, } from '../extra';
+import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, getSortValue, cleanDashboard, getScaleByValue, fixMonth, } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
 import { HorizonUnit, HorizonData } from './horizonClasses';
 import { changeMapTitle, cleanCity } from '../map';
 import { showHorizonModal } from './horizonModal';
-
-
 
 // Constroi o horizon chart
 export async function buildHorizon(filter) {
@@ -46,7 +44,7 @@ export async function buildHorizon(filter) {
   const horizonData = new HorizonData();
 
   // Preenchendo o dataframe
-  horizonData.addArray(rawData.map(d => new HorizonUnit(new Date(Date.UTC(d.CO_ANO, d.CO_MES, 1)), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO)));
+  horizonData.addArray(rawData.map(d => new HorizonUnit(new Date(d.CO_ANO, d.CO_MES - 1, 1), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO)));
   console.log('Horizon Data', horizonData);
 
   // Sh4s unicos
@@ -67,7 +65,7 @@ export async function buildHorizon(filter) {
     })
   });
   const rawAuxData = await responseAux.json();
-  horizonData.addArray(rawAuxData.map(d => new HorizonUnit(new Date(Date.UTC(d.CO_ANO, d.CO_MES, 1)), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO)));
+  horizonData.addArray(rawAuxData.map(d => new HorizonUnit(new Date(d.CO_ANO, d.CO_MES - 1, 1), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO)));
   console.log('Horizon Data Aux', horizonData);
 
   // Número de bandas dos gráficos
@@ -96,7 +94,7 @@ export async function buildHorizon(filter) {
     .series('sh4_codigo') // Indicador do titulo de cada chart
     .ts('data') // Indicador da data do dado
     .val(sortValue) // Indicador do valor do chart
-    .useUtc(true)
+    .useUtc(false)
     .horizonBands(overlap) // Quantidade de overlaps 
     .transitionDuration([1]) // Duração das tranformações do gráfico
     .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, sortMode))  // Ordem dos charts 
@@ -113,10 +111,11 @@ export async function buildHorizon(filter) {
       else return label + ' - Escala: ' + formatValues(horizonData.findMaxValueOf(label, sortValue).toString());
     })
     .tooltipContent(({ series, val, ts, points: [{ sh4_descricao, fob, peso }] }) => {
+      ts = new Date(ts);
       if (val != 0)
         return `<b>${series}</b> - ${sh4_descricao.length < 40 ? sh4_descricao : (sh4_descricao.substring(0, 40) + '...')}
         <br>
-        Data: ${new Date(ts).toLocaleDateString().substring(3)}
+        Data: ${fixMonth(ts.getMonth() + 1)}/${ts.getFullYear()}
         <br>
         Valor FOB: U$ ${formatValues(fob)}
         <br>
@@ -125,7 +124,7 @@ export async function buildHorizon(filter) {
       else
         return ` <b>${series}</b> - ${sh4_descricao.length < 40 ? sh4_descricao : (sh4_descricao.substring(0, 40) + '...')}
         <br>
-        Data: ${new Date(ts).toLocaleDateString().substring(3)}
+        Data: ${fixMonth(ts.getMonth() + 1)}/${ts.getFullYear()}
         <br>
         Nenhum dado registrado neste período!`
     })
@@ -252,6 +251,9 @@ async function horizonFirstClick(chart, data) {
   await localStorage.setItem('horizonclick', '2');
   await localStorage.setItem('horizonclickdata', JSON.stringify(data));
 
+  // Mostra o alerta auxiliar
+  showClickAlert();
+
   // Adiciona blur nas series
   $('.horizon-series').each(function () {
     if (!$(this).children('span').html().startsWith(data.series)) {
@@ -264,6 +266,9 @@ async function horizonFirstClick(chart, data) {
 async function horizonSecondClick(chart, data1) {
   await localStorage.setItem('horizonclick', '1');
 
+  // Esconde o alerta auxiliar
+  hideClickAlert();
+
   const data2 = await JSON.parse(localStorage.getItem('horizonclickdata'));
 
   // Constrói o modal, do menor 'ts' ao maior
@@ -275,8 +280,38 @@ async function horizonSecondClick(chart, data1) {
 
 
 
+// Abre o aviso de clique no HorizonChart
+function showClickAlert() {
+  $('body').prepend(`
+  <div class="alert alert-success alert-dismissible shadow-lg fade show" role="alert" id="modal-click">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+    class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
+    <path
+      d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+  </svg>
+  <span> Clique novamente para escolher um período de tempo! </span>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+  `);
 
+  // Fechar pelo botão
+  $('#modal-click').on('closed.bs.alert', () => {
+    hideClickAlert();
+  })
+}
 
+// Fecha o aviso de clique no HorizonChart
+export async function hideClickAlert() {
+  const node = document.querySelector('#modal-click')
+  const alert = bootstrap.Alert.getOrCreateInstance(node);
+  alert.close();
+
+  // Retorna ao estado de aguardo pelo primeiro click
+  await localStorage.setItem('horizonclick', '1');
+
+  // Remove o blur
+  $('.horizon-series').each(function () { $(this).removeClass('blured'); });
+}
 
 
 

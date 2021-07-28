@@ -2,6 +2,7 @@ import "@babel/polyfill";
 import { preLoad, startLoading, changeLoadingMessage, finishLoading } from './extra.js'
 import { drawMainMap, getCitiesNames } from "./map.js";
 import { buildFilters, handleFilter } from "./filter.js";
+import { hideClickAlert } from "./horizon/horizon.js";
 
 // Pré coisas
 changeLoadingMessage('Realizando pré-processamentos...')

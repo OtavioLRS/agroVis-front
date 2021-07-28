@@ -28,6 +28,18 @@
   align-items: center;
 }
 
+#modal-click {
+  z-index: 10;
+  position: absolute;
+  top: 20%;
+  width: fit-content;
+  height: 55px;
+  left: 35%;
+  right: 35%;
+  /* padding: 10px; */
+  /* text-align: center; */
+}
+
 #horizon-wrapper {
   width: 100%;
   height: 90%;
@@ -35,6 +47,59 @@
   padding-right: 10px;
   overflow: scroll;
 }
+
+#modal-horizon-barchart{
+  overflow: scroll;
+}
+
+#modal-horizon-barchart rect:hover {
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+#modal-horizon-barchart text:hover {
+  cursor: pointer;
+}
+
+#modal-horizon-notes {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow-y: scroll;
+  border-radius: 25px;
+  padding: 20px;
+}
+
+#modal-horizon-notes .modal-horizon-note {
+  background-color: white;
+  border-radius: 25px;
+  padding: 10px;
+  padding-bottom: 20px;
+  margin: 10px;
+  width: 90%;
+  height: fit-content;
+  margin-bottom: 20px;
+}
+
+.modal-horizon-note-title{
+  font-size: small;
+  
+}
+
+/* #modal-horizon-notes-input-text{} */
+
+#modal-horizon-notes-input-btn{
+  float: right;
+}
+
+
+
+
+
+
+
+
+
 
 span.label{
   font-weight: 700;

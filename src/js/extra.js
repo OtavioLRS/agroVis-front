@@ -1,3 +1,4 @@
+import { hideClickAlert } from "./horizon/horizon";
 import { changeMapTitle, cleanCity } from "./map";
 
 /*
@@ -16,6 +17,28 @@ export function preLoad() {
 
   $('#input-sh4').select2();
   $('#input-city').select2();
+
+  // 'Esc' fecha aviso
+  $(document).keydown(function (e) {
+    if (e.keyCode === 27) {
+      console.log('esc')
+      hideClickAlert();
+    }
+  });
+
+  $('#filter-container').on('change', async function () {
+    console.log('mudo')
+
+    const cities = $('#filter-container #input-city').select2('data').map(d => d['id']);
+    const products = $('#filter-container #input-sh4').select2('data').map(d => parseInt(d['id']));
+    const beginPeriod = $('#input-date0').val();
+    const endPeriod = $('#input-date1').val();
+    const sortValue = getSortValue() == 'fob' ? 'VL_FOB' : 'KG_LIQUIDO';
+
+    // const baseFilter = await JSON.parse(localStorage.getItem('filter'));
+
+    // console.log(baseFilter, { cities, beginPeriod, endPeriod, products, sortValue });
+  });
 }
 
 /*
@@ -95,6 +118,13 @@ export function createDraggable(data) {
 */
 export function formatValues(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+/*
+  Formata um mês adicionando 0 a ele
+*/
+export function fixMonth(x) {
+  return x <= 9 ? '0' + x.toString() : x;
 }
 
 /*

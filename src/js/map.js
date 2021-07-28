@@ -42,16 +42,11 @@ export async function drawMainMap() {
     })
     .attr('d', path)
     // Mostra cidade no hover
-    .on('mouseover', function (d) {
-      // Posição do mouse
-      let mouseCoords = d3.mouse(svg.node()).map((coord) => {
-        return parseInt(coord);
-      });
-
+    .on('mousemove', function (d) {
       // Mostra o nome da cidade
       tooltip.classed('hidden', false)
-        .attr('style', 'left:' + (mouseCoords[0] + 15) +
-          'px; top:' + (mouseCoords[1] - 35) + 'px')
+        .style("left", (d3.event.pageX + 30).toString() + "px")
+        .style("top", (d3.event.pageY - 50).toString() + "px")
         .html(() => {
           // Exibe o nome do municipio selecionado
           return $('#' + d.properties.codarea).text();
@@ -78,7 +73,7 @@ export async function drawMainMap() {
 
   //Zoom
   const zoom = d3.zoom()
-    .scaleExtent([1, 10])
+    .scaleExtent([0.9, 10])
     .on('zoom', () => {
       svg.selectAll('path').attr('transform', d3.event.transform)
     });
@@ -90,7 +85,17 @@ export async function drawMainMap() {
   //   svg.selectAll('path').fitExtent([[10, 10], [width, height]], mapData)
   // })
 
+  $('#centralize-map-icon').on('click', function () {
+    resetMap(svg, zoom);
+  });
   return fetch('');
+}
+
+// Retorna o mapa para as dimensões originais
+export function resetMap(svg, zoom) {
+  svg.transition()
+    .duration(750)
+    .call(zoom.transform, d3.zoomIdentity);
 }
 
 // Recupera os nomes das cidades do banco e constrói o input de cidades do filtro
@@ -191,7 +196,7 @@ export async function updateMap(selected) {
 }
 
 // Atualiza o input de produtos que podem ser exibidos no mapa
-async function updateMapSh4Input(selected) {
+async function updateMapSh4Input(selectedSh4) {
   // Recupera o filtro para realizar a query dos dados do mapa
   const filter = await JSON.parse(localStorage.getItem('filter'));
 
@@ -213,7 +218,7 @@ async function updateMapSh4Input(selected) {
     $('#input-sh4-map').append(option);
   });
   // Selecionando o primeiro produto escolhido
-  $(`#mainmap-container option[label='${selected}']`).attr('selected', 'selected');
+  $(`#mainmap-container option[label='${selectedSh4}']`).attr('selected', 'selected');
   input.select2();
 
   // Ao trocar a opção selecionada no input ...
@@ -260,6 +265,8 @@ export function changeMapTitle(title) {
   // console.log($(`.label:contains(${sh4})`)[0]);
   // $(`.label:contains(${sh4})`)[0].parentElement.focus();
 }
+
+
 
 // Cria uma função para calcular a cor do mapa de uma cidade
 function createFrequencyScale(data, dataType) {
