@@ -60,4 +60,5 @@
 .soft-loader-wrapper #soft-loader {
   position: absolute;
   bottom: 25%;
+  left: 50%;
 }

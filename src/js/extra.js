@@ -1,3 +1,4 @@
+import { readFile, saveNote, listNotes } from "./filter";
 import { hideClickAlert } from "./horizon/horizon";
 import { changeMapTitle, cleanCity } from "./map";
 
@@ -26,19 +27,46 @@ export function preLoad() {
     }
   });
 
+  // Mostra um ponto vermelho no botão de filtragem, sinalizando que a filtragem atual pode ser atualizada
   $('#filter-container').on('change', async function () {
-    console.log('mudo')
-
-    const cities = $('#filter-container #input-city').select2('data').map(d => d['id']);
-    const products = $('#filter-container #input-sh4').select2('data').map(d => parseInt(d['id']));
-    const beginPeriod = $('#input-date0').val();
-    const endPeriod = $('#input-date1').val();
-    const sortValue = getSortValue() == 'fob' ? 'VL_FOB' : 'KG_LIQUIDO';
-
-    // const baseFilter = await JSON.parse(localStorage.getItem('filter'));
-
-    // console.log(baseFilter, { cities, beginPeriod, endPeriod, products, sortValue });
+    $('#filter-button span').removeClass('hidden');
   });
+
+  // Listener de leitura de arquivo com lista de cidades para o filtro
+  $('#read-cities-input').on('change', (e) => {
+    readFile(e);
+    $('#read-cities-input').val('');
+  })
+
+  // Listener de leitura de arquivo com lista de sh4s para o filtro
+  $('#read-sh4-input').on('change', (e) => {
+    readFile(e);
+    $('#read-sh4-input').val('');
+  })
+
+  // Salva uma nota
+  $('#save-note-button').on('click', saveNote);
+
+  // Lista as notas
+  $('#list-note-modal').on('show.bs.modal', listNotes);
+
+  // Fecha o modal de salvar anotações
+  $('#save-note-modal .btn-close').on('click', () => {
+    $('#save-note-modal-title').val('');
+    $('#save-note-modal-text').val('');
+    $('#save-note-modal').css('top', '30%')
+    $('#save-note-modal').css('bottom', '40%')
+    $('#save-note-modal').css('left', '30%')
+    $('#save-note-modal').css('right', '30%')
+    $('#save-note-modal').css('display', 'none');
+    $('#save-note-modal .modal-footer .btn-success').off();
+  });
+
+  // Quando fechar o modal de lista de anotações
+  $('#list-note-modal').on('hidden.bs.modal', () => {
+    $('#list-note-modal-body').html('');
+  });
+
 }
 
 /*
@@ -67,17 +95,11 @@ export function changeLoadingMessage(message) {
 }
 
 /*
-  Cria uma div arrastavel com conteudo 'data'
+  Transforma o modal em draggable
 */
-export function createDraggable(data) {
-  let div = document.createElement('div');
-
+export function createDraggable() {
   let posX1 = 0, posY1 = 0, posX0 = 0, poxY0 = 0;
-  $(div).text($('.option-sh4').filter(function () { return this.value == data.name }).text())
-    .addClass('draggable')
-    .attr('id', 'draggable-' + data.name)
-    .on('mousedown', dragMouseDown)
-    .on('dblclick', function () { $(this).remove() });
+  $('#save-note-modal .modal-header').on('mousedown', dragMouseDown)
 
   function dragMouseDown(e) {
     e = e || window.event;
@@ -100,8 +122,8 @@ export function createDraggable(data) {
     posX0 = e.clientX;
     poxY0 = e.clientY;
     // set the element's new position:
-    div.style.top = (div.offsetTop - posY1) + "px";
-    div.style.left = (div.offsetLeft - posX1) + "px";
+    $('#save-note-modal')[0].style.top = ($('#save-note-modal')[0].offsetTop - posY1) + "px";
+    $('#save-note-modal')[0].style.left = ($('#save-note-modal')[0].offsetLeft - posX1) + "px";
   }
 
   function closeDragElement() {
@@ -110,7 +132,7 @@ export function createDraggable(data) {
     document.onmousemove = null;
   }
 
-  return div;
+  // return div;
 }
 
 /*
@@ -157,25 +179,38 @@ export function compareDates(d0, d1) {
   return date0.getTime() > date1.getTime();
 }
 
-// Recupera o tipo de escala utilizado para construir o gráfico
-export function getScaleByValue() {
-  return $('input[name=scale-radio]:checked', '#horizonscale-wrapper').val()
+/* 
+  Recupera o tipo de dado que se deseja utilizar como unidade principal
+  'peso' ou 'fob'
+*/
+export async function getSortValue() {
+  const filter = await JSON.parse(localStorage.getItem('filter'));
+  // console.log(filter)
+  return filter['sortValue'];
 }
 
-// Recupera o tipo de dado que se deseja construir o grafico
+/* 
+  Recupera o tipo de dados na qual se deve ordenar o horizonChart
+  'peso' ou 'fob'
+*/
 export function getSortByValue() {
   return $('input[name=sort-radio]:checked', '#horizonsort-wrapper').val()
 }
 
-// Recupera o tipo de dados na qual se deve ordenar o grafico
-export function getSortValue() {
-  return $('input[name=datatype-radio]:checked', '#container-datatype').val()
+/* 
+  Recupera o tipo de escala utilizado para construir o gráfico
+  Individual ou Global
+*/
+export function getScaleByValue() {
+  return $('input[name=scale-radio]:checked', '#horizonscale-wrapper').val()
 }
 
+// Aplica efeito de blur em um elemento HTML
 export function blurElement(elem) {
   $(elem).addClass('blured');
 }
 
+// Remove efeito de blur em um elemento HTML
 export function unblurElement(elem) {
   $(elem).removeClass('blured');
 }
@@ -193,7 +228,6 @@ export function hideHorizonLoader(elem) {
   $('.soft-loader-wrapper').removeClass('show');
   $('.soft-loader-wrapper').addClass('hidden');
   $('#horizon-wrapper').removeClass('blured');
-  // unblurElement(elem);
 }
 
 // Limpa completamente a interface do Dashboard
@@ -208,4 +242,35 @@ export function cleanDashboard() {
   changeMapTitle('---');
   // Limpa o input de escolha de produto exibido no mapa
   $('#input-sh4-map-container').html('');
+
+  // Limpa a legenda do mapa
+  $('#map-legend').html('');
+
+  // Limpa o calendário
+  $('#calendar-title-wrapper').html('');
+  $('.calendar-square-color').css('background-color', 'white');
+  $('.calendar-square-text').html('');
+  $('.calendar-square').each(function () { $(this).removeClass('calendar-square-bordered') });
+}
+
+// Remove todas as options selecionadas de um elemento Select2
+export function clearSelect2Input(path) {
+  $(path).val(null);
+  $(path).trigger('change');
+}
+
+// Calcular mediana de um array
+export function median(values) {
+  if (values.length === 0) return 0;
+
+  values.sort(function (a, b) {
+    return a - b;
+  });
+
+  let half = Math.floor(values.length / 2);
+
+  if (values.length % 2)
+    return values[half];
+
+  return (values[half - 1] + values[half]) / 2.0;
 }

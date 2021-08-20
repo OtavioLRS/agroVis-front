@@ -3,6 +3,7 @@ import { preLoad, startLoading, changeLoadingMessage, finishLoading } from './ex
 import { drawMainMap, getCitiesNames } from "./map.js";
 import { buildFilters, handleFilter } from "./filter.js";
 import { hideClickAlert } from "./horizon/horizon.js";
+import { buildCalendar } from "./calendar.js";
 
 // Pré coisas
 changeLoadingMessage('Realizando pré-processamentos...')
@@ -15,6 +16,8 @@ drawMainMap().then(getCitiesNames);
 // Filtros
 changeLoadingMessage('Construindo os filtros...')
 buildFilters();
+
+buildCalendar();
 
 finishLoading();
 

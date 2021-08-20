@@ -72,7 +72,6 @@ export class HorizonData {
     }
   }
 
-
   // // Funde os valores de uma HorizonUnit com os de uma já existente em 'unit'
   // concatUnit(unit, index) {
   //   this.units[index].fob += unit.fob;

@@ -1,4 +1,4 @@
-import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, getSortValue, cleanDashboard, getScaleByValue, fixMonth, } from '../extra';
+import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, getSortValue, cleanDashboard, getScaleByValue, fixMonth, blurElement, unblurElement, median, } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
 import { HorizonUnit, HorizonData } from './horizonClasses';
 import { changeMapTitle, cleanCity } from '../map';
@@ -72,10 +72,14 @@ export async function buildHorizon(filter) {
   const overlap = $('#overlap-slider').val();
 
   // Atributo que será exibido no gráfico
-  const sortValue = getSortValue();
+  const sortValue = $('input[name="datatype-radio"]:checked', '#container-datatype').val()
 
   // Modo de ordenação dos gráficos
   const sortMode = getSortByValue();
+
+  // Zoom ligado ou não
+  const zoomMode = document.getElementById('zoom-switch').checked;
+  console.log('Zoom', zoomMode)
 
   changeLoadingMessage('Construindo visualizações...');
   // console.log('dados usados:', sortValue, 'ordenado por: ', sortMode)
@@ -96,19 +100,15 @@ export async function buildHorizon(filter) {
     .val(sortValue) // Indicador do valor do chart
     .useUtc(false)
     .horizonBands(overlap) // Quantidade de overlaps 
+    .enableZoom(zoomMode) // Zoom ativado ou não
     .transitionDuration([1]) // Duração das tranformações do gráfico
     .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, sortMode))  // Ordem dos charts 
-    // .enableZoom(true) // Zoom
     .interpolationCurve(d3.curveBasis) // curveBasis, curveLinear, curveStep
-    // .yAggregation(vals => vals.reduce((a, b) => a + b))  // Soma valores iguais
     .seriesLabelFormatter((label) => {
-      // Se for escala global, maior valor de todos os dados
-      if (getScaleByValue() == 'global') {
-        const maxValue = d3.max(uniqueSh4.map(sh4 => horizonData.findMaxValueOf(sh4, getSortValue())));
-        return label + ' - Escala: ' + formatValues(maxValue);
-      }
-      // Se for escala unitaria, maior valor daquela series
-      else return label + ' - Escala: ' + formatValues(horizonData.findMaxValueOf(label, sortValue).toString());
+      // Total de cada series
+      const totalValue = horizonData.findTotalValueOf(label, sortValue);
+      return label + ' - Total: ' +
+        ((sortValue == 'fob') ? 'U$ ' + formatValues(totalValue) : formatValues(totalValue) + ' kg');
     })
     .tooltipContent(({ series, val, ts, points: [{ sh4_descricao, fob, peso }] }) => {
       ts = new Date(ts);
@@ -136,17 +136,79 @@ export async function buildHorizon(filter) {
       const click = await JSON.parse(localStorage.getItem('horizonclick'));
       console.log(click);
 
-      if (click == '1') horizonFirstClick(horizon, data)
-      else horizonSecondClick(horizon, data)
+      click == '1' ? horizonFirstClick(horizon, data) : horizonSecondClick(horizon, data);
+    })
+    .onHover(async ({ series, val, ts }) => {
+      ts = new Date(ts);
+      const year = ts.getFullYear();
+      const month = ts.getMonth() + 1;
+
+      // Atualiza modal da data clicada
+      $('#click-end').html(fixMonth(month) + '/' + year);
+
+      // Atualiza a borda do mes atual
+      $('.calendar-square').each(function () { $(this).removeClass('calendar-square-bordered') });
+      $(`.calendar-month[month-index='${month - 1}'] .calendar-square`).addClass('calendar-square-bordered');
+
+      // Se for ano diferente do exibido, refaz a query
+      if ($('#calendar-title-wrapper').html().split('Ano ')[1] == year) return;
+
+      $('#calendar-title-wrapper').html('SH4 ' + series + ' - Ano ' + year);
+      const filter = await JSON.parse(localStorage.getItem('filter'));
+      const response = await fetch('http://localhost:3333/num-regs', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          products: [series],
+          beginPeriod: year + '-01',
+          endPeriod: year + '-12',
+          cities: filter.cities
+        })
+      });
+      const data = await response.json();
+
+      let numRegs = data.map(e => e['NUM_REG']);
+      let sum = 0;
+      numRegs.forEach(n => sum += n);
+
+      numRegs.sort(function (a, b) {
+        return a - b;
+      });
+
+      // Função de cores é calculada pela mediana
+      const f = d3.scaleLinear()
+        .domain([numRegs[0], median(numRegs), numRegs[numRegs.length - 1]])
+        .range(['yellow', '#FF6D00', 'red'])
+
+      for (let i = 0; i < 12; i++) {
+        const result = data.findIndex(e => e['CO_MES'] - 1 == i);
+        let color = '';
+        let value = '';
+
+        if (result != -1) { value = data[result]['NUM_REG']; color = f(value); }
+        else { value = 0; color = 'white'; }
+
+        $(`.calendar-month[month-index='${i}'] .calendar-square-color`)
+          .css('background-color', color)
+        $(`.calendar-month[month-index='${i}'] .calendar-square-text`)
+          .html(value);
+      }
+
+      // unblurElement('#calendar-wrapper');
     });
 
   // Muda o numero de bandas dinamicamente
+  $('#overlap-slider').off();
   $('#overlap-slider').on('input', function () {
     showHorizonLoader('#horizon-wrapper');
 
     setTimeout(async () => {
       // Número de bands
       const bandNumber = $(this).val().toString();
+      $('#overlap-label').html("Layers: " + bandNumber);
       // Re-renderiza o gráfico
       await horizon
         .horizonBands(bandNumber)
@@ -156,20 +218,33 @@ export async function buildHorizon(filter) {
     }, 100)
   });
 
+  // Controla o zoom
+  $('#zoom-switch').off();
+  $('#zoom-switch').on('change', function () {
+    if (this.checked) horizon.enableZoom(true);
+    else horizon.enableZoom(false);
+  })
+
   // Muda a escala do HorizonChart unitariamente
+  $('#unit-scale-radio').off();
   $('#unit-scale-radio').on('change', function () {
     showHorizonLoader('#horizon-wrapper');
 
     setTimeout(async () => {
       await horizon
         .yExtent(undefined)
-        .seriesLabelFormatter(label => label + ' - Escala: ' + formatValues(horizonData.findMaxValueOf(label, sortValue).toString()))
+        // .seriesLabelFormatter(label => {
+        //   const totalValue = horizonData.findTotalValueOf(label, sortValue);
+        //   return label + ' - Total: ' +
+        //     ((sortValue == 'fob') ? 'U$ ' + formatValues(totalValue) : formatValues(totalValue) + ' kg');
+        // })
         .transitionDuration([1]);
       await hideHorizonLoader('#horizon-wrapper');
     }, 100)
   });
 
   // Muda a escala do HorizonChart para global
+  $('#global-scale-radio').off();
   $('#global-scale-radio').on('change', function () {
     showHorizonLoader('#horizon-wrapper');
 
@@ -179,13 +254,14 @@ export async function buildHorizon(filter) {
     setTimeout(async () => {
       await horizon
         .yExtent(maxValue)
-        .seriesLabelFormatter(label => label + ' - Escala: ' + formatValues(maxValue))
+        // .seriesLabelFormatter(label => label + ' - Escala: ' + formatValues(maxValue))
         .transitionDuration([1]);
       await hideHorizonLoader('#horizon-wrapper');
     }, 100);
   });
 
   // Muda a ordenação do gráfico dinamicamente por fob
+  $('#fob-sort-radio').off();
   $('#fob-sort-radio').on('change', function () {
     showHorizonLoader('#horizon-wrapper');
 
@@ -199,6 +275,7 @@ export async function buildHorizon(filter) {
   });
 
   // Muda a ordenação do gráfico dinamicamente por peso
+  $('#peso-sort-radio').off();
   $('#peso-sort-radio').on('change', function () {
     showHorizonLoader('#horizon-wrapper');
 
@@ -211,6 +288,7 @@ export async function buildHorizon(filter) {
   });
 
   // Muda a ordenação do gráfico para descendente
+  $('#sort-dec').off();
   $('#sort-dec').on('click', async function () {
     showHorizonLoader('#horizon-wrapper');
 
@@ -223,6 +301,7 @@ export async function buildHorizon(filter) {
   });
 
   // Muda a ordenação do gráfico para ascendente
+  $('#sort-asc').off();
   $('#sort-asc').on('click', async function () {
     await showHorizonLoader('#horizon-wrapper');
 
@@ -233,9 +312,6 @@ export async function buildHorizon(filter) {
       hideHorizonLoader('#horizon-wrapper');
     }, 10);
   });
-
-
-  d3.selectAll('canvas').call(d3.brushX());
 }
 
 // Função auxiliar para ordenar os charts de acordo com o modo escolhido (mode = 'fob' | 'peso')
@@ -247,12 +323,13 @@ function compareSeriesBy(a, b, df, mode) {
   else return -1;
 }
 
+// Trata click inicial no horizonChart
 async function horizonFirstClick(chart, data) {
   await localStorage.setItem('horizonclick', '2');
   await localStorage.setItem('horizonclickdata', JSON.stringify(data));
 
   // Mostra o alerta auxiliar
-  showClickAlert();
+  showClickAlert(new Date(data.ts));
 
   // Adiciona blur nas series
   $('.horizon-series').each(function () {
@@ -263,6 +340,7 @@ async function horizonFirstClick(chart, data) {
 
 }
 
+// Trata click final no horizonChart
 async function horizonSecondClick(chart, data1) {
   await localStorage.setItem('horizonclick', '1');
 
@@ -281,15 +359,16 @@ async function horizonSecondClick(chart, data1) {
 
 
 // Abre o aviso de clique no HorizonChart
-function showClickAlert() {
+function showClickAlert(ts) {
   $('body').prepend(`
-  <div class="alert alert-success alert-dismissible shadow-lg fade show" role="alert" id="modal-click">
+  <div class="alert alert-success alert-dismissible shadow-lg fade show border border-5 border-success" role="alert" id="modal-click">
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
     class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
     <path
       d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
   </svg>
-  <span> Clique novamente para escolher um período de tempo! </span>
+  <span> Clique novamente para escolher um período de tempo! </span> <br><br>
+  Período selecionado: <span id="click-begin"> ${fixMonth((ts.getMonth() + 1)) + '/' + ts.getFullYear()} </span> - <span id="click-end"> </span>
   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
   `);
@@ -312,6 +391,9 @@ export async function hideClickAlert() {
   // Remove o blur
   $('.horizon-series').each(function () { $(this).removeClass('blured'); });
 }
+
+
+
 
 
 

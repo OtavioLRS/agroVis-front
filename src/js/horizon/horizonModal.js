@@ -16,7 +16,7 @@ export async function showHorizonModal(data1, data2) {
   const period = month1 + '/' + year1 + ' - ' + month2 + '/' + year2;
 
   $('#modal-horizon-title').html(title);
-  $('#modal-horizon-period').html(period);
+  $('#modal-horizon-period').html("Período: " + period);
 
   const response = await fetch('http://localhost:3333/sh4conversion', {
     method: 'POST',
@@ -99,26 +99,24 @@ export async function showHorizonModal(data1, data2) {
     clearHorizonModal();
   });
 
-  getNotes({ sh4, date1: `${year1}-${month1}-01`, date2: `${year2}-${month2}-01` });
+  // getNotes({ sh4, date1: `${year1}-${month1}-01`, date2: `${year2}-${month2}-01` });
+
+
+  // $('#modal-horizon-notes-input-btn').off('click');
+  // $('#modal-horizon-notes-input-btn').on('click', () => {
+  //   const descricao = $('#modal-horizon-notes-input-text').val();
+  //   const dataIni = year1 + '-' + month1 + '-01';
+  //   const dataFim = year2 + '-' + month2 + '-01';
+
+  //   addNote(sh4, dataIni, dataFim, descricao);
+  // });
 }
-
-
-
-
 
 // quantidade por percentual no modal, no grafico de barra
 // notas no periodo do grafico
 
 async function getNotes(filter) {
-  // const sh4 = d['SH4'];
-  // const dataIni = d['DATA_INI'];
-  // const dataFim = d['DATA_FIM'];
-  // const descricao = d['NOTA'];
-
-  $('#modal-horizon-notes-input').append(`
-  <textarea class="form-control" id="modal-horizon-notes-input-text"></textarea>
-  <button class="btn btn-success" id="modal-horizon-notes-input-btn" onclick="">Anotar</button>
-  `);
+  $('#modal-horizon-notes-input').append(``);
 
   const response = await fetch('http://localhost:3333/notes', {
     method: 'POST',
@@ -134,24 +132,25 @@ async function getNotes(filter) {
 
   console.log(data);
 
-
   data.forEach(d => {
     const date = new Date(d['DATA_REGISTRO']);
     const dateString = date.getDate() + '/' + fixMonth(date.getMonth() + 1) + '/' +
       + date.getFullYear() + ' - ' + date.getHours() + ':' + date.getMinutes();
 
-
-    $('#modal-horizon-notes').append(`
-    <div class="modal-horizon-note shadow">
-      <p class="modal-horizon-note-title">Anotado em: ${dateString}</p>
-      <textarea class="form-control" rows="2" disabled readonly>${d['NOTA']}</textarea>
-    </div>`)
+    printNoteOnModal(dateString, d['NOTA']);
   });
 }
 
+async function printNoteOnModal(dateString, anotacao) {
+  $('#modal-horizon-notes').append(`
+  <div class="modal-horizon-note shadow">
+    <p class="modal-horizon-note-title">Anotado em: ${dateString}</p>
+    <textarea class="form-control" rows="2" disabled readonly>${anotacao}</textarea>
+  </div>`);
+}
 
-async function addNote(sh4, dataIni, dataFim, descricao) {
-  const response = await fetch('http://localhost:3333/addnote', {
+async function addNote(sh4, dataIni, dataFim, anotacao) {
+  await fetch('http://localhost:3333/addnote', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -161,9 +160,12 @@ async function addNote(sh4, dataIni, dataFim, descricao) {
       sh4,
       dataIni,
       dataFim,
-      descricao
+      anotacao
     })
   });
+
+  printNoteOnModal('Agora', anotacao);
+  $('#modal-horizon-notes-input-text').val('');
 }
 
 
@@ -175,33 +177,33 @@ function addBarChartToModal(data, dataType) {
 
   const margin = { top: 30, right: 30, bottom: 100, left: 60 };
 
-  const width = $("#modal-horizon").width() - margin.left - margin.right;
-  // const width = 20 * data.length;
-
-
-  // const height = 500 - margin.top - margin.bottom;
+  const width = 1140 - margin.left - margin.right;
   const height = 400;
+  // Tamanho de cada barra, minimo 20, maximo 100
+  const barSizeRatio = (width / data.length);
+  const barSize = barSizeRatio >= 20 ? (barSizeRatio > 100 ? 100 : barSizeRatio) : 20;
 
   // Valor máximo do barChart
   const maxValue = d3.sum(data.map(d => d[dataType]));
 
+  // SVG
   const svg = d3.select('#modal-horizon-barchart')
     .append("svg")
-    // .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-    .attr("width", width)
-    // .attr("height", height)
+    .attr("width", (barSize * data.length * 1.2) + margin.left + margin.right)
     .append("g")
     .attr("transform",
       "translate(" + margin.left + "," + margin.top + ")");
 
+  // Eixo X
   const x = d3.scaleBand()
-    // .range([0, width])
-    .range([0, (width * 0.5 / data.length) < 20 ? 20 * data.length : (width * 0.5 / data.length) * data.length])
+    .range([0, (barSize * data.length * 1.2)])
     .domain(data.map(d => d['NO_MUN_MIN']))
     .padding(0.2)
 
+  // Adicionando eixo X no gráfico
   svg.append("g")
+    .attr("class", "modal-x-axis")
     .attr("transform", "translate(0," + height + ")")
     .call(d3.axisBottom(x))
     .selectAll("text")
@@ -221,19 +223,24 @@ function addBarChartToModal(data, dataType) {
     })
     .on("mouseout", function (d) { tooltip.style("display", "none"); });
 
+  // Eixo Y
   const y = d3.scaleLinear()
-    .domain([0, d3.max(data.map(d => d[dataType] / maxValue)) * 1.1])
-    .range([height, 0]);
+    .range([height, 0])
+    .domain([0, d3.max(data.map(d => d[dataType] / maxValue)) * 1.1]);
+  // Adicionando eixo Y no gráfico
   svg.append("g")
+    .attr("class", "modal-y-axis")
     .call(d3.axisLeft(y));
 
   // Bars
-  svg.selectAll("modal-bars")
+  svg.append("g")
+    .attr("class", "modal-bars")
+    .selectAll("rect")
     .data(data)
     .enter()
     .append("rect")
-    .attr("x", function (d) { return x(d['NO_MUN_MIN']); })
-    .attr("y", function (d) { return y(d[dataType] / maxValue); })
+    .attr("x", (d) => x(d['NO_MUN_MIN']))
+    .attr("y", (d) => y(d[dataType] / maxValue))
     .attr("width", x.bandwidth())
     .attr("height", d => (height - y(d[dataType] / maxValue)))
     .attr("fill", "#198754")
@@ -249,6 +256,35 @@ function addBarChartToModal(data, dataType) {
     })
     .on("mouseout", function (d) { tooltip.style("display", "none"); });
 
+
+  const extent = [[margin.left, margin.top], [width - margin.right, height - margin.top]];
+
+  // ZOOM
+
+  // svg.call(d3.zoom()
+  //   .scaleExtent([1, 8])
+  //   // .translateExtent(extent)
+  //   // .extent(extent)
+  //   .on("zoom", function (e) {
+  //     console.log(e)
+  //     x.range([margin.left, width - margin.right].map(d => e.transform.applyX(d)));
+  //     svg.selectAll(".modal-bars rect").attr("x", d => x(d['NO_MUN_MIN'])).attr("width", x.bandwidth())
+  //     // svg.selectAll(".modal-x-axis").call(xAxis);
+  //   }));
+
+  // .on('zoom', () => {
+  //   svg.selectAll('path').attr('transform', d3.event.transform)
+  // });
+
+  function zoomed(event) {
+    x.range([margin.left, width - margin.right].map(d => event.transform.applyX(d)));
+    svg.selectAll(".modal-bars rect").attr("x", d => x(d['NO_MUN_MIN'])).attr("width", x.bandwidth())
+    svg.selectAll(".modal-x-axis").call(xAxis);
+  }
+
+
+
+
 }
 
 
@@ -260,9 +296,6 @@ function clearHorizonModal() {
   $('#modal-horizon-period').html('');
   $('#modal-horizon-barchart').html('');
   $('#modal-horizon-conversion').html('');
-  $('#modal-horizon-notes').html('');
-  $('#modal-horizon-notes-input').html('');
-
 }
 
 

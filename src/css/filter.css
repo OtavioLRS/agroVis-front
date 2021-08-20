@@ -93,3 +93,80 @@
   bottom: 10px;
   width: 25%;
 }
+
+#filter-container #save-note-button {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  width: fit-content;
+}
+
+#filter-container #list-note-button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: fit-content;
+}
+
+#filter-container .hover-icon{
+  cursor: pointer;
+}
+
+#filter-container .hover-icon:hover {
+  opacity: 0.7;
+}
+
+#filter-container .hover-icon:active {
+  opacity: 0.5;
+}
+
+.draggable{
+  position: absolute;
+}
+
+#save-note-modal{
+  position: absolute;
+  height: fit-content;
+  width: 40%;
+  top: 30%;
+  bottom: 40%;
+  left: 30%;
+  right: 30%;
+  z-index: 9;
+}
+
+#save-note-modal .modal-dialog{
+  width: 100%;
+  height: fit-content;
+  margin: 0 !important;
+}
+
+#list-note-modal {
+  position: absolute;
+  width: 75%;
+  z-index: 9;
+}
+
+#save-note-modal .modal-header{
+  cursor: move;
+}
+
+/* .modal-backdrop.show {
+  opacity: 0.0 !important;
+} */
+
+/* #save-note-modal {
+  position: relative;
+}
+
+.modal-dialog {
+  position: fixed;
+  width: 100%;
+  margin: 0;
+  padding: 10px;
+} */
+
+
+
+
+
