@@ -230,9 +230,10 @@ async function updateMapSh4Input(selectedSh4) {
     option.text(d);
     $('#input-sh4-map').append(option);
   });
-  // Selecionando o primeiro produto escolhido
   $(`#mainmap-container option[label='${selectedSh4}']`).attr('selected', 'selected');
   input.select2();
+  // Selecionando o primeiro produto escolhido
+  // $(`#input-sh4-map`).val(selectedSh4);
 
   // Ao trocar a opção selecionada no input ...
   input.on('change', () => {
@@ -263,7 +264,7 @@ export async function updateMapData(mapData, colors, sortValue) {
   catch (err) {
     // Nenhum dado foi encontrado para os filtros
     const modal = new bootstrap.Modal(document.getElementById('modal-nodata-found'));
-    modal.toggle();
+    modal.show();
 
     cleanDashboard();
 
@@ -329,17 +330,19 @@ function createFrequencyScale(data, dataType) {
   console.log('cores valor', hexColors[numClasses])
 
   // Cria função para as cores
-  const colors = d3.scaleThreshold()
+  // const colors = d3.scaleThreshold()
+  const colors = d3.scaleQuantize()
     // const colors = d3.scaleLinear()
-    .domain(classes) // Classes por mediana
-    // .domain([0, d3.max(data.map(d => d[dataType]))]) // Classes absolutas de mesmo tamanho
+    // .domain(classes) // Classes por mediana
+    .domain([0, d3.max(data)]) // Classes absolutas de mesmo tamanho
     // .domain([d3.min(data.map(d => d[dataType])), d3.max(data.map(d => d[dataType]))])
     .range(hexColors[numClasses]);
 
-  const index = d3.scaleThreshold()
+  // const index = d3.scaleThreshold()
+  const index = d3.scaleQuantize()
     // const index = d3.scaleLinear()
-    .domain(classes) // Classes por mediana
-    // .domain([0, d3.max(data.map(d => d[dataType]))]) // Classes absolutas de mesmo tamanho
+    // .domain(classes) // Classes por mediana
+    .domain([0, d3.max(data)]) // Classes absolutas de mesmo tamanho
     .range(Array.from(Array(classes.length + 1).keys()))
 
   // Legenda antiga

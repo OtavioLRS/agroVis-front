@@ -48,6 +48,12 @@ export function preLoad() {
   $('#save-note-button').on('click', saveNote);
 
   // Lista as notas
+  $('#list-note-button').on('click', () => {
+    const modal = new bootstrap.Modal(document.getElementById('list-note-modal'));
+    modal.show();
+  });
+
+  // Mostra as notas
   $('#list-note-modal').on('show.bs.modal', listNotes);
 
   // Fecha o modal de salvar anotações

@@ -54,14 +54,16 @@
     </div>
   </div>
 
-  <div class="modal fade" id="list-note-modal">
-    <div class="modal-dialog">
+  <div class="modal fade" id="list-note-modal" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Lista de anotações</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body" id="list-note-modal-body"></div>
+        <div class="modal-body">
+          <div class="list-group" id="list-note-modal-body"> </div>
+        </div>
       </div>
     </div>
   </div>
@@ -212,8 +214,8 @@
         Filtrar
       </button>
 
-      <button id="save-note-button" class="btn btn-warning">Salvar anotação</button>
-      <button id="list-note-button" class="btn btn-warning">Listar anotações</button>
+      <button id="save-note-button" class="btn btn-secondary">Salvar anotação</button>
+      <button id="list-note-button" class="btn btn-secondary">Listar anotações</button>
     </div>
 
 
@@ -345,7 +347,7 @@
           </button>
 
           <ul class="dropdown-menu">
-            <input type="number" min="2" max="9" id="input-classnumber" value="3">
+            Numero de classes: <input type="number" min="2" max="9" id="input-classnumber" value="3">
           </ul>
         </div>
 

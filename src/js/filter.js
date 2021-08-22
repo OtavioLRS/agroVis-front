@@ -62,7 +62,7 @@ export async function handleFilter() {
   }
 
   startLoading();
-  cleanDashboard();
+  // cleanDashboard();
   changeLoadingMessage('Buscando dados...')
 
   const filterHorizon = {
@@ -156,7 +156,7 @@ export async function handleFilter() {
     // Nenhum dado foi encontrado para os filtros
     $('#warning-modal-text').html('Nenhum dado foi encontrado!');
     const modal = new bootstrap.Modal(document.getElementById('modal-nodata-found'));
-    modal.toggle();
+    modal.show();
 
     cleanDashboard();
     localStorage.removeItem('filter');
@@ -234,7 +234,7 @@ export function saveNote() {
     $('#save-note-modal .btn-close').trigger('click');
     $('#warning-modal-text').html('A anotação foi salva com sucesso!');
     const modal = new bootstrap.Modal(document.getElementById('modal-nodata-found'));
-    modal.toggle();
+    modal.show();
 
 
   })
@@ -272,9 +272,68 @@ async function saveQuery() {
 }
 
 
-export function listNotes() {
-  // $('#list-note-modal').css('display', 'block');
+export async function listNotes() {
+  const response = await fetch('http://localhost:3333/getnotes', {
+    method: 'POST',
+  });
+  const notes = await response.json();
 
-  const modal = new bootstrap.Modal(document.getElementById('list-note-modal'));
-  modal.toggle();
+  console.log(notes);
+  notes.forEach(d => {
+    d['REGISTER_DATE'] = new Date(d['REGISTER_DATE'])
+    console.log(d['REGISTER_DATE'].getDate())
+    const year = d['REGISTER_DATE'].getFullYear();
+    const month = d['REGISTER_DATE'].getMonth() + 1;
+    const day = d['REGISTER_DATE'].getDate();
+    const hour = d['REGISTER_DATE'].getHours();
+    const minute = d['REGISTER_DATE'].getMinutes();
+    const dateStr = `${fixMonth(day)}/${fixMonth(month)}/${year} - ${fixMonth(hour)}:${fixMonth(minute)}`;
+
+    $('#list-note-modal-body').append(`
+    <div class="list-group-item list-group-item-action" id="${d['ID']}" aria-current="true">
+      <div class="d-flex w-100 justify-content-between">
+        <h5 class="mb-1" id="note-list-title">${d['TITLE']}</h5>
+        <small id="note-list-date">${dateStr}</small>
+      </div>
+      <p class="mb-1">${d['TEXTO']}</p>
+      <small class="redo-search">Refazer busca</small>
+    </div>`)
+
+    $(`#list-note-modal-body .list-group-item[id='${d['ID']}'] .redo-search`).on('click', () => {
+      const data = notes.filter(a => a['ID'] == d['ID'])
+      // console.log(data)
+
+      setFilter(data[0]);
+    })
+  })
+}
+
+async function setFilter(data) {
+  console.log(data)
+
+  clearSelect2Input('#input-sh4');
+  $('#input-sh4').val(data['PRODUCTS'].split(';'));
+  $('#input-sh4').trigger('change');
+
+  clearSelect2Input('#input-city');
+  $('#input-city').val(data['CITIES'].split(';'));
+  $('#input-city').trigger('change');
+
+
+  const date1 = new Date(data['BEGIN_PERIOD'])
+  const date2 = new Date(data['END_PERIOD'])
+  $('#input-date0').val(date1.getFullYear() + '-' + fixMonth(date1.getMonth() + 1))
+  $('#input-date1').val(date2.getFullYear() + '-' + fixMonth(date2.getMonth() + 1))
+
+  $('#' + data['SORT_VALUE'] + '-datatype-radio').prop('checked', true);
+
+  const modal = bootstrap.Modal.getInstance(document.querySelector('#list-note-modal'))
+  modal.hide();
+
+  handleFilter();
+
+  $('#input-classnumber').val(data['NUM_CLASS']);
+
+  // $(`#mainmap-container option[label='${data['MAP_SH4']}']`).attr('selected', 'selected');
+
 }

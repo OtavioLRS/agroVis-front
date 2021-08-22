@@ -141,30 +141,13 @@
   margin: 0 !important;
 }
 
-#list-note-modal {
-  position: absolute;
-  width: 75%;
-  z-index: 9;
-}
-
 #save-note-modal .modal-header{
   cursor: move;
 }
 
-/* .modal-backdrop.show {
-  opacity: 0.0 !important;
-} */
-
-/* #save-note-modal {
-  position: relative;
+.redo-search {
+  cursor: pointer;
 }
-
-.modal-dialog {
-  position: fixed;
-  width: 100%;
-  margin: 0;
-  padding: 10px;
-} */
 
 
 
