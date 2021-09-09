@@ -106,7 +106,7 @@ export function resetMap(svg, zoom) {
 export async function getCitiesNames() {
 
   // Requisição para recuperar os dados dos municípios
-  await fetch('http://localhost:3333/municipios', {
+  await fetch('https://mighty-taiga-07455.herokuapp.com/municipios', {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -179,7 +179,7 @@ export async function updateMap(selected) {
   updateMapSh4Input(selected);
 
   // Realiza a query do filtro inserido
-  const response = await fetch('http://localhost:3333/mapdata', {
+  const response = await fetch('https://mighty-taiga-07455.herokuapp.com/mapdata', {
     method: 'POST',
     headers: {
       Accept: 'application/json',

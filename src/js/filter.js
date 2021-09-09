@@ -6,7 +6,7 @@ import { updateMap } from './map.js';
 // Função principal para a construção dos filtros
 export async function buildFilters() {
   // Requisição para buscar os SH4s presentes no banco
-  await fetch('http://localhost:3333/produtos', {
+  await fetch('https://mighty-taiga-07455.herokuapp.com/produtos', {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -34,7 +34,8 @@ export async function buildFilters() {
       $('#input-sh4').trigger('change');
       // Remove o aviso que foi exibido com o trigger de change
       $('#filter-button span').addClass('hidden');
-    });
+    })
+    .then(() => { finishLoading() });
 
   $('#filter-button').click(() => { handleFilter(); });
 }
@@ -221,7 +222,7 @@ export function saveNote() {
     if (filter == null) return 'explodiu'
 
     console.log({ filter, map, note: { title, text }, now })
-    const response = await fetch('http://localhost:3333/addnote', {
+    const response = await fetch('https://mighty-taiga-07455.herokuapp.com/addnote', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -273,7 +274,7 @@ async function saveQuery() {
 
 
 export async function listNotes() {
-  const response = await fetch('http://localhost:3333/getnotes', {
+  const response = await fetch('https://mighty-taiga-07455.herokuapp.com/getnotes', {
     method: 'POST',
   });
   const notes = await response.json();

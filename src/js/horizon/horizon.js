@@ -10,7 +10,7 @@ export async function buildHorizon(filter) {
   await localStorage.setItem('horizonclick', '1');
 
   // Requisição dos dados do HorizonChart 
-  const response = await fetch('http://localhost:3333/horizondata', {
+  const response = await fetch('https://mighty-taiga-07455.herokuapp.com/horizondata', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -54,7 +54,7 @@ export async function buildHorizon(filter) {
   filter.products = uniqueSh4;
 
   // Dados auxiliares do HorizonChart
-  const responseAux = await fetch('http://localhost:3333/horizondata-aux', {
+  const responseAux = await fetch('https://mighty-taiga-07455.herokuapp.com/horizondata-aux', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -155,7 +155,7 @@ export async function buildHorizon(filter) {
 
       $('#calendar-title-wrapper').html('SH4 ' + series + ' - Ano ' + year);
       const filter = await JSON.parse(localStorage.getItem('filter'));
-      const response = await fetch('http://localhost:3333/num-regs', {
+      const response = await fetch('https://mighty-taiga-07455.herokuapp.com/num-regs', {
         method: 'POST',
         headers: {
           Accept: 'application/json',

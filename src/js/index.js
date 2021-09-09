@@ -19,6 +19,6 @@ buildFilters();
 
 buildCalendar();
 
-finishLoading();
+// finishLoading();
 
 // async () => await fetch('').then(handleFilter).then(finishLoading)

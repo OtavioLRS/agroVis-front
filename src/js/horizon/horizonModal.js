@@ -18,7 +18,7 @@ export async function showHorizonModal(data1, data2) {
   $('#modal-horizon-title').html(title);
   $('#modal-horizon-period').html("Período: " + period);
 
-  const response = await fetch('http://localhost:3333/sh4conversion', {
+  const response = await fetch('https://mighty-taiga-07455.herokuapp.com/sh4conversion', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -74,7 +74,7 @@ export async function showHorizonModal(data1, data2) {
     endPeriod: year2 + '-' + month2 + '-1',
   }
 
-  const response2 = await fetch('http://localhost:3333/modaldata', {
+  const response2 = await fetch('https://mighty-taiga-07455.herokuapp.com/modaldata', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -118,7 +118,7 @@ export async function showHorizonModal(data1, data2) {
 async function getNotes(filter) {
   $('#modal-horizon-notes-input').append(``);
 
-  const response = await fetch('http://localhost:3333/notes', {
+  const response = await fetch('https://mighty-taiga-07455.herokuapp.com/notes', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -150,7 +150,7 @@ async function printNoteOnModal(dateString, anotacao) {
 }
 
 async function addNote(sh4, dataIni, dataFim, anotacao) {
-  await fetch('http://localhost:3333/addnote', {
+  await fetch('https://mighty-taiga-07455.herokuapp.com/addnote', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
