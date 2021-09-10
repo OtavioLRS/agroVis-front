@@ -2,12 +2,12 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: './src/js/index.js',
-  devServer: {
-    port: process.env.PORT || 3030,
-  },
   output: {
     path: __dirname + '/dist',
     filename: 'bundle.js'
+  },
+  devServer: {
+    port: process.env.PORT || 3030,
   },
   module: {
     rules: [
