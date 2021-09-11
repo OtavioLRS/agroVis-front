@@ -22,7 +22,7 @@ export async function drawMainMap() {
     .attr('class', 'hidden tooltip');
 
   // Requisita o geoJSON da API do IBGE
-  const mapData = await d3.json('http://servicodados.ibge.gov.br/api/v2/malhas/35?resolucao=5&qualidade=4&formato=application/vnd.geo+json');
+  const mapData = await d3.json('https://servicodados.ibge.gov.br/api/v2/malhas/35?resolucao=5&qualidade=4&formato=application/vnd.geo+json');
   console.log('Mapa', mapData, width, height)
 
   // Projecao
