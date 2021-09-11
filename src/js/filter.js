@@ -149,6 +149,8 @@ export async function handleFilter() {
       // Atualiza os dados do mapa - filterMap.products[0] -> primeiro produto a ser exibido no mapa
       await updateMap(filterMap.products[0]);
 
+      // await 
+
       finishLoading();
     }, 100);
   }

@@ -44,7 +44,7 @@ export async function buildHorizon(filter) {
   const horizonData = new HorizonData();
 
   // Preenchendo o dataframe
-  horizonData.addArray(rawData.map(d => new HorizonUnit(new Date(d.CO_ANO, d.CO_MES - 1, 1), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO)));
+  horizonData.addArray(rawData.map(d => new HorizonUnit(new Date(d.CO_ANO, d.CO_MES - 1, 1), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO, d.NUM_REGS)));
   console.log('Horizon Data', horizonData);
 
   // Sh4s unicos
@@ -65,7 +65,7 @@ export async function buildHorizon(filter) {
     })
   });
   const rawAuxData = await responseAux.json();
-  horizonData.addArray(rawAuxData.map(d => new HorizonUnit(new Date(d.CO_ANO, d.CO_MES - 1, 1), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO)));
+  horizonData.addArray(rawAuxData.map(d => new HorizonUnit(new Date(d.CO_ANO, d.CO_MES - 1, 1), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO, d.NUM_REGS)));
   console.log('Horizon Data Aux', horizonData);
 
   // Número de bandas dos gráficos
@@ -138,7 +138,7 @@ export async function buildHorizon(filter) {
 
       click == '1' ? horizonFirstClick(horizon, data) : horizonSecondClick(horizon, data);
     })
-    .onHover(async ({ series, val, ts }) => {
+    .onHover(async ({ series, val, ts, points: [{ num_regs }] }) => {
       ts = new Date(ts);
       const year = ts.getFullYear();
       const month = ts.getMonth() + 1;
@@ -151,45 +151,56 @@ export async function buildHorizon(filter) {
       $(`.calendar-month[month-index='${month - 1}'] .calendar-square`).addClass('calendar-square-bordered');
 
       // Se for ano diferente do exibido, refaz a query
-      if ($('#calendar-title-wrapper').html().split('Ano ')[1] == year) return;
+      // if ($('#calendar-title-wrapper').html().split('Ano ')[1] == year) return;
 
       $('#calendar-title-wrapper').html('SH4 ' + series + ' - Ano ' + year);
-      const filter = await JSON.parse(localStorage.getItem('filter'));
-      const response = await fetch('https://mighty-taiga-07455.herokuapp.com/num-regs', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          products: [series],
-          beginPeriod: year + '-01',
-          endPeriod: year + '-12',
-          cities: filter.cities
-        })
-      });
-      const data = await response.json();
+      // const filter = await JSON.parse(localStorage.getItem('filter'));
+      // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/num-regs', {
+      //   method: 'POST',
+      //   headers: {
+      //     Accept: 'application/json',
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({
+      //     products: [series],
+      //     beginPeriod: year + '-01',
+      //     endPeriod: year + '-12',
+      //     cities: filter.cities
+      //   })
+      // });
+      // const data = await response.json();
 
-      let numRegs = data.map(e => e['NUM_REG']);
+      let numRegs = horizonData.countRegs(series, year);
       let sum = 0;
       numRegs.forEach(n => sum += n);
 
-      numRegs.sort(function (a, b) {
-        return a - b;
-      });
+      console.log(numRegs);
+
+      let numRegsValues = [];
+      numRegs.forEach(d => { if (d != 0) numRegsValues.push(d) });
+      // let numRegs = data.map(e => e['NUM_REG']);
+      // let sum = 0;
+      // numRegs.forEach(n => sum += n);
+
+      // numRegs.sort(function (a, b) {
+      //   return a - b;
+      // });
 
       // Função de cores é calculada pela mediana
       const f = d3.scaleLinear()
-        .domain([numRegs[0], median(numRegs), numRegs[numRegs.length - 1]])
+        .domain([d3.min(numRegsValues), median(numRegsValues), d3.max(numRegsValues)])
         .range(['yellow', '#FF6D00', 'red'])
 
       for (let i = 0; i < 12; i++) {
-        const result = data.findIndex(e => e['CO_MES'] - 1 == i);
-        let color = '';
-        let value = '';
+        // const result = data.findIndex(e => e['CO_MES'] - 1 == i);
+        // let color = '';
+        // let value = '';
 
-        if (result != -1) { value = data[result]['NUM_REG']; color = f(value); }
-        else { value = 0; color = 'white'; }
+        // if (result != -1) { value = data[result]['NUM_REG']; color = f(value); }
+        // else { value = 0; color = 'white'; }
+
+        const value = numRegs[i];
+        const color = numRegs[i] == 0 ? 'white' : f(numRegs[i]);
 
         $(`.calendar-month[month-index='${i}'] .calendar-square-color`)
           .css('background-color', color)

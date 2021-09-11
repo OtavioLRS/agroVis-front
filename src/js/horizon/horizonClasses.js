@@ -1,11 +1,12 @@
 export class HorizonUnit {
 
-  constructor(data, sh4_codigo, sh4_descricao, fob, peso) {
+  constructor(data, sh4_codigo, sh4_descricao, fob, peso, num_regs) {
     this.data = data;
     this.sh4_codigo = sh4_codigo;
     this.sh4_descricao = sh4_descricao;
     this.fob = fob;
     this.peso = peso;
+    this.num_regs = num_regs;
   }
 
   equivalent(other) {
@@ -70,6 +71,20 @@ export class HorizonData {
         }
       }
     }
+  }
+
+  countRegs(sh4, year) {
+    console.log(year, typeof year)
+    console.log(this.units[0].data.getFullYear())
+
+    const filtered = this.units.filter(unit => unit.data.getFullYear() == year && unit.sh4_codigo == sh4 && unit.fob != 0 && unit.peso != 0);
+
+    // console.log('filtro essa buct', filtered);
+
+    let values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    filtered.forEach(d => { console.log(d); values[d.data.getMonth()] = d.num_regs });
+    console.log('valeu', values)
+    return values;
   }
 
   // // Funde os valores de uma HorizonUnit com os de uma já existente em 'unit'
