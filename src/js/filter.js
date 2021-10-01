@@ -299,7 +299,7 @@ export async function listNotes() {
         <small id="note-list-date">${dateStr}</small>
       </div>
       <p class="mb-1">${d['TEXTO']}</p>
-      <small class="redo-search">Refazer busca</small>
+      <small class="redo-search" style="color: blue;">Refazer busca</small>
     </div>`)
 
     $(`#list-note-modal-body .list-group-item[id='${d['ID']}'] .redo-search`).on('click', () => {

@@ -1,10 +1,13 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  entry: './src/js/index.js',
+  entry: {
+    'login': './src/js/login.js',
+    'home': './src/js/home.js',
+  },
   output: {
     path: __dirname + '/dist',
-    filename: 'bundle.js'
+    filename: '[name].js'
   },
   devServer: {
     port: process.env.PORT || 3030,
@@ -20,8 +23,16 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
+      // publicPath: '/',
+      chunks: ['login'],
       filename: 'index.html',
       template: 'src/index.html'
+    }),
+    new HtmlWebpackPlugin({
+      // publicPath: '/home',
+      chunks: ['home'],
+      filename: 'home.html',
+      template: 'src/home.html',
     }),
   ]
 }
