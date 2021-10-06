@@ -1,11 +1,19 @@
 import { readFile, saveNote, listNotes } from "./filter";
 import { hideClickAlert } from "./horizon/horizon";
 import { changeMapTitle, cleanCity } from "./map";
+import { handleSidebarExcel, handleSidebarList, handleSidebarRead, handleSidebarSave, handleLogout } from "./sidebar";
 
 /*
   Função com processamentos iniciais
 */
 export function preLoad() {
+  // Funções da sidebar
+  $('#sidebar-item-excel').on("click", handleSidebarExcel);
+  $('#sidebar-item-save').on("click", handleSidebarSave);
+  $('#sidebar-item-list').on("click", handleSidebarList);
+  $('#sidebar-item-read').on("click", handleSidebarRead);
+  $('#sidebar-item-logout').on("click", handleLogout);
+
   // Limitamento de datas no input do filtro
   $('#input-date1').on("input", limitDate0);
 
@@ -43,15 +51,6 @@ export function preLoad() {
     readFile(e);
     $('#read-sh4-input').val('');
   })
-
-  // Salva uma nota
-  $('#save-note-button').on('click', saveNote);
-
-  // Lista as notas
-  $('#list-note-button').on('click', () => {
-    const modal = new bootstrap.Modal(document.getElementById('list-note-modal'));
-    modal.show();
-  });
 
   // Mostra as notas
   $('#list-note-modal').on('show.bs.modal', listNotes);
@@ -279,4 +278,9 @@ export function median(values) {
     return values[half];
 
   return (values[half - 1] + values[half]) / 2.0;
+}
+
+// Fechar a sidebar
+export function closeSidebar() {
+  $('#close-sidebar-button').trigger('click');
 }

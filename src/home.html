@@ -28,6 +28,78 @@
 </head>
 
 <body>
+
+
+
+
+  <div class="offcanvas offcanvas-start w-20" tabindex="-1" id="offcanvas">
+
+    <div class="offcanvas-header sidebar-header shadow">
+      <h3 class="offcanvas-title d-none d-sm-block bg-transparent text-white" id="offcanvas">AgroVis - FCT
+      </h3>
+      <button type="button" id="close-sidebar-button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+        aria-label="Close"></button>
+    </div>
+
+    <div class="offcanvas-body p-3 sidebar-item">
+      <div
+        class="list-group-item d-flex w-100 justify-content-start flex-row align-items-center px-3 rounded border-0 sidebar-item">
+        <i class="bi bi-person-circle fs-2"></i>
+        <h5 class="mb-1 ms-3">Nome do cidadão</h5>
+      </div>
+
+      <div class="list-group">
+
+        <hr class="mt-1 mb-4">
+
+        <div class="list-group-item px-3 rounded border-0 mb-2 sidebar-item" id="sidebar-item-excel">
+          <div class="d-flex w-100 justify-content-start flex-row align-items-center">
+            <i class="bi bi-file-earmark-excel fs-5"></i>
+            <h6 class="mb-1 ms-3">Modelos excel</h6>
+          </div>
+        </div>
+
+        <div class="list-group-item px-3 rounded border-0 mb-2 sidebar-item" id="sidebar-item-save">
+          <div class="d-flex w-100 justify-content-start flex-row align-items-center">
+            <i class="bi bi-save fs-5"></i>
+            <h6 class="mb-1 ms-3">Salvar pesquisa</h6>
+          </div>
+        </div>
+
+        <div class="list-group-item px-3 rounded border-0 mb-2 sidebar-item" id="sidebar-item-list">
+          <div class="d-flex w-100 justify-content-start flex-row align-items-center">
+            <i class="bi bi-list-ul fs-5"></i>
+            <h6 class="mb-1 ms-3">Listar pesquisas salvas</h6>
+          </div>
+        </div>
+
+        <div class="list-group-item px-3 rounded border-0 mb-2 sidebar-item" id="sidebar-item-read">
+          <div class="d-flex w-100 justify-content-start flex-row align-items-center">
+            <i class="bi bi-book fs-5"></i>
+            <h6 class="mb-1 ms-3">Ler anotação de pesquisa</h6>
+          </div>
+        </div>
+      </div>
+
+      <div class="list-group position-absolute start-0 bottom-0 w-100 ">
+        <hr class="mt-0 mb-0">
+        <a href="/" class="list-group-item px-3 border-0 sidebar-item">
+          <div class="d-flex w-100 justify-content-start flex-row align-items-center">
+            <i class="bi bi-door-open fs-2"></i>
+            <h6 class="mb-1 ms-3">Logout</h6>
+          </div>
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+  <!-- Modal Criar anotação -->
   <div class="modal" id="save-note-modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -55,6 +127,7 @@
     </div>
   </div>
 
+  <!-- Modal Lista de anotações -->
   <div class="modal fade" id="list-note-modal" data-bs-backdrop="static">
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
@@ -146,12 +219,16 @@
 
     <!-- Filtro  -->
     <div class="container shadow-lg" id="filter-container">
-      <!-- anotacoes
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-        class="bi bi-archive hover-icon" viewBox="0 0 16 16">
-        <path
-          d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z" />
-      </svg> -->
+
+
+      <!-- <div id="filter-title"> -->
+
+
+      <!-- </div> -->
+      <button class="btn sidebar-icon" id="sidebar-icon-open" data-bs-toggle="offcanvas" data-bs-target="#offcanvas"
+        role="button">
+        <i class="bi bi-list fs-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvas"></i>
+      </button>
 
       <label id="label-city" for="input-city">Cidades</label>
       <div style="width: 100%">
@@ -170,16 +247,16 @@
 
 
       <div id="container-date-datatype-labels">
-        <label id="label-date" for="input-date0">Período</label>
+        <label id="label-date" for="input-date0">Data</label>
         <label id="label-datatype" for="container-datatype">Dados</label>
       </div>
 
 
       <div id="container-date-datatype">
         <div id="container-date">
-          <input class="filter-input" type="month" id="input-date0" value="2021-01" min="1997-01" max="2021-08">
+          <input class="filter-input" type="month" id="input-date0" value="2021-01" min="1997-01" max="2021-09">
           até
-          <input class="filter-input" type="month" id="input-date1" value="2021-08" min="1997-01" max="2021-08">
+          <input class="filter-input" type="month" id="input-date1" value="2021-09" min="1997-01" max="2021-09">
         </div>
         <div id="container-datatype">
           <span>
@@ -214,9 +291,6 @@
         </span>
         Filtrar
       </button>
-
-      <button id="save-note-button" class="btn btn-secondary">Salvar anotação</button>
-      <button id="list-note-button" class="btn btn-secondary">Listar anotações</button>
     </div>
 
 

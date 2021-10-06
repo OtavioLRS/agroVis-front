@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="CP1552">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="src/css/map.css">
+  <link rel="stylesheet" href="src/css/calendar.css">
+  <link rel="stylesheet" href="src/css/filter.css">
+  <link rel="stylesheet" href="src/css/horizon.css">
+  <link rel="stylesheet" href="src/css/misc.css">
+  <link rel="stylesheet" href="src/css/loading.css">
+  <link rel="shortcut icon" href="src/png/favicon-32x32.png" />
+  <title>AgroVis - FCT</title>
+  <script defer="defer" src="home.js"></script>
+</head>
+
+<body>
+  <div class="modal" id="save-note-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Complete as informações para salvar a anotação!</h5><button type="button"
+          class="btn-close"></button>
+      </div>
+      <div class="modal-body"><span class="fw-light" id="note-ts-modal"></span>
+        <div class="form-floating"><input class="form-control" id="save-note-modal-title" placeholder="Titulo 1"> <label
+            for="save-note-modal-title">Titulo</label></div><br>
+        <div class="form-floating"><textarea class="form-control" id="save-note-modal-text" placeholder="Texto 1"
+            style="height: 100px" maxlength="1000"></textarea> <label for="save-note-modal-text">Anotação</label></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-success" data-dismiss="modal">Salvar</button></div>
+    </div>
+  </div>
+  <div class="modal fade" id="list-note-modal" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Lista de anotações</h5><button type="button" class="btn-close" data-bs-dismiss="modal"
+            aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="list-group" id="list-note-modal-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="modal-nodata-found">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header"><button type="button" class="btn-close" data-bs-dismiss="modal"
+            aria-label="Close"></button></div>
+        <div class="modal-body" id="warning-modal-text"></div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="modal-horizon">
+    <div class="modal-dialog modal-xl" id="modal-horizon-inner">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modal-horizon-title"></h3><button type="button" class="btn-close"
+            data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h4 class="modal-title" id="modal-horizon-period"></h4>
+          <div id="modal-horizon-barchart"></div>
+          <div id="modal-horizon-conversion"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hard-loader-wrapper">
+    <div class="spinner-border text-primary" role="status"><span class="sr-only"></span></div><span
+      class="loader-message"></span>
+  </div>
+  <div class="hidden soft-loader-wrapper">
+    <div class="spinner-border text-primary" id="soft-loader" role="status"><span class="sr-only"></span></div>
+  </div>
+  <div class="wrapper">
+    <div class="container shadow-lg" id="filter-container"><label id="label-city" for="input-city">Cidades</label>
+      <div style="width: 100%"><select class="filter-input" type="text" id="input-city" multiple="multiple"
+          style="width: 90%;"></select> <input type="file" accept=".csv" class="hidden" id="read-cities-input"> <svg
+          xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder hover-icon"
+          id="read-cities-icon" onclick="document.getElementById('read-cities-input').click();" viewBox="0 0 16 16">
+          <path
+            d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z" />
+        </svg></div>
+      <div id="container-date-datatype-labels"><label id="label-date" for="input-date0">Período</label> <label
+          id="label-datatype" for="container-datatype">Dados</label></div>
+      <div id="container-date-datatype">
+        <div id="container-date"><input class="filter-input" type="month" id="input-date0" value="2021-01" min="1997-01"
+            max="2021-08"> até <input class="filter-input" type="month" id="input-date1" value="2021-08" min="1997-01"
+            max="2021-08"></div>
+        <div id="container-datatype"><span><input type="radio" id="fob-datatype-radio" name="datatype-radio" value="fob"
+              checked="checked"> <label for="fob-sort-radio">FOB</label> </span><span><input type="radio"
+              id="peso-datatype-radio" name="datatype-radio" value="peso"> <label
+              for="peso-sort-radio">Peso</label></span></div>
+      </div><label id="label-sh4" for="input-sh4">SH4</label>
+      <div style="width: 100%"><select class="filter-input" type="text" id="input-sh4" multiple="multiple"
+          style="width: 90%;"></select> <input type="file" accept=".csv" class="hidden" id="read-sh4-input"> <svg
+          xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder hover-icon"
+          id="read-sh4-icon" onclick="document.getElementById('read-sh4-input').click();" viewBox="0 0 16 16">
+          <path
+            d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z" />
+        </svg></div><button id="filter-button" class="btn btn-success shadow"><span
+          title="Filtre novamente sua pesquisa!"
+          class="hidden position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"></span>
+        Filtrar</button> <button id="save-note-button" class="btn btn-secondary">Salvar anotação</button> <button
+        id="list-note-button" class="btn btn-secondary">Listar anotações</button>
+    </div>
+    <div class="container shadow-lg" id="calendar-container">
+      <div class="text-center text-wrap" id="calendar-title-wrapper"></div>
+      <div id="calendar-wrapper">
+        <div class="calendar-month" month-index="0">
+          <div class="calendar-square">
+            <div class="calendar-square-color"></div>
+            <div class="calendar-square-text"></div>
+          </div>
+          <div class="calendar-month-name">Jan</div>
+        </div>
+        <div class="calendar-month" month-index="1">
+          <div class="calendar-square">
+            <div class="calendar-square-color"></div>
+            <div class="calendar-square-text"></div>
+          </div>
+          <div class="calendar-month-name">Fev</div>
+        </div>
+        <div class="calendar-month" month-index="2">
+          <div class="calendar-square">
+            <div class="calendar-square-color"></div>
+            <div class="calendar-square-text"></div>
+          </div>
+          <div class="calendar-month-name">Mar</div>
+        </div>
+        <div class="calendar-month" month-index="3">
+          <div class="calendar-square">
+            <div class="calendar-square-color"></div>
+            <div class="calendar-square-text"></div>
+          </div>
+          <div class="calendar-month-name">Abr</div>
+        </div>
+        <div class="calendar-month" month-index="4">
+          <div class="calendar-square">
+            <div class="calendar-square-color"></div>
+            <div class="calendar-square-text"></div>
+          </div>
+          <div class="calendar-month-name">Mai</div>
+        </div>
+        <div class="calendar-month" month-index="5">
+          <div class="calendar-square">
+            <div class="calendar-square-color"></div>
+            <div class="calendar-square-text"></div>
+          </div>
+          <div class="calendar-month-name">Jun</div>
+        </div>
+        <div class="calendar-month" month-index="6">
+          <div class="calendar-square">
+            <div class="calendar-square-color"></div>
+            <div class="calendar-square-text"></div>
+          </div>
+          <div class="calendar-month-name">Jul</div>
+        </div>
+        <div class="calendar-month" month-index="7">
+          <div class="calendar-square">
+            <div class="calendar-square-color"></div>
+            <div class="calendar-square-text"></div>
+          </div>
+          <div class="calendar-month-name">Ago</div>
+        </div>
+        <div class="calendar-month" month-index="8">
+          <div class="calendar-square">
+            <div class="calendar-square-color"></div>
+            <div class="calendar-square-text"></div>
+          </div>
+          <div class="calendar-month-name">Set</div>
+        </div>
+        <div class="calendar-month" month-index="9">
+          <div class="calendar-square">
+            <div class="calendar-square-color"></div>
+            <div class="calendar-square-text"></div>
+          </div>
+          <div class="calendar-month-name">Out</div>
+        </div>
+        <div class="calendar-month" month-index="10">
+          <div class="calendar-square">
+            <div class="calendar-square-color"></div>
+            <div class="calendar-square-text"></div>
+          </div>
+          <div class="calendar-month-name">Nov</div>
+        </div>
+        <div class="calendar-month" month-index="11">
+          <div class="calendar-square">
+            <div class="calendar-square-color"></div>
+            <div class="calendar-square-text"></div>
+          </div>
+          <div class="calendar-month-name">Dez</div>
+        </div>
+      </div>
+    </div>
+    <div class="container shadow-lg" id="map-container">
+      <div id="mainmap-container">
+        <div class="text-center text-wrap" id="maptitle-container">---</div>
+        <div id="input-sh4-map-container"></div>
+        <div id="centralize-container"><svg xmlns="http://www.w3.org/2000/svg" id="centralize-map-icon" width="20"
+            height="20" fill="currentColor" class="bi bi-pin-map-fill" viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M3.1 11.2a.5.5 0 0 1 .4-.2H6a.5.5 0 0 1 0 1H3.75L1.5 15h13l-2.25-3H10a.5.5 0 0 1 0-1h2.5a.5.5 0 0 1 .4.2l3 4a.5.5 0 0 1-.4.8H.5a.5.5 0 0 1-.4-.8l3-4z" />
+            <path fill-rule="evenodd" d="M4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999z" />
+          </svg></div>
+        <div class="btn-group dropstart" id="btn-map-config"><button type="button"
+            class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><svg
+              xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders"
+              viewBox="0 0 16 16">
+              <path fill-rule="evenodd"
+                d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z" />
+            </svg></button>
+          <ul class="dropdown-menu">Numero de classes: <input type="number" min="2" max="9" id="input-classnumber"
+              value="3"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="container shadow-lg" id="horizon-container">
+      <div id="horizonoptions-wrapper">
+        <div id="horizonband-wrapper"><input type="range" min="1" max="8" value="4" class="slider form-range"
+            id="overlap-slider"> &nbsp;&nbsp; <label for="overlap-slider" id="overlap-label">Layers: 4</label></div>
+        <div id="horizonzoom-wrapper">
+          <div class="form-check form-switch"><label class="form-check-label" for="zoom-switch">Zoom</label> <input
+              class="form-check-input" type="checkbox" id="zoom-switch"></div>
+        </div>
+        <div id="horizonscale-wrapper">Escala: &nbsp;&nbsp; <input type="radio" id="unit-scale-radio"
+            class="form-check-input" name="scale-radio" value="unit" checked="checked"> <label for="unit-scale-radio"
+            class="form-check-label">&nbsp;Individual</label> &nbsp; <input type="radio" id="global-scale-radio"
+            class="form-check-input" name="scale-radio" value="global"> <label for="global-scale-radio"
+            class="form-check-label">&nbsp;Global</label></div>
+        <div id="horizonsort-wrapper">Ordenação: &nbsp;&nbsp; <input type="radio" id="fob-sort-radio"
+            class="form-check-input" name="sort-radio" value="fob" checked="checked"> <label for="fob-sort-radio"
+            class="form-check-label">&nbsp;FOB</label> &nbsp; <input type="radio" id="peso-sort-radio"
+            class="form-check-input" name="sort-radio" value="peso"> <label for="peso-sort-radio"
+            class="form-check-label">&nbsp;Peso</label> <svg xmlns="http://www.w3.org/2000/svg" class="sort-icon"
+            id="sort-dec" width="30" height="30" fill="currentColor" class="bi bi-sort-up" viewBox="0 0 16 16">
+            <path
+              d="M3.5 12.5a.5.5 0 0 1-1 0V3.707L1.354 4.854a.5.5 0 1 1-.708-.708l2-1.999.007-.007a.498.498 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L3.5 3.707V12.5zm3.5-9a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zM7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z" />
+          </svg> <svg xmlns="http://www.w3.org/2000/svg" class="sort-icon" id="sort-asc" height="30" width="30"
+            fill="currentColor" class="bi bi-sort-down-alt" viewBox="0 0 16 16">
+            <path
+              d="M3.5 3.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 12.293V3.5zm4 .5a.5.5 0 0 1 0-1h1a.5.5 0 0 1 0 1h-1zm0 3a.5.5 0 0 1 0-1h3a.5.5 0 0 1 0 1h-3zm0 3a.5.5 0 0 1 0-1h5a.5.5 0 0 1 0 1h-5zM7 12.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5z" />
+          </svg></div>
+      </div>
+      <div id="horizon-wrapper"></div>
+    </div>
+  </div>
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://d3js.org/d3-array.v2.min.js"></script>
+
+</html>
