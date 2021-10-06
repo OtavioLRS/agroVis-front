@@ -41,6 +41,9 @@ body::-webkit-scrollbar {
   display: none;
 }
 
+.cursor-pointer{
+  cursor: pointer;
+}
 /* ***************************************************** */
 /* Scroll bar */
 ::-webkit-scrollbar {

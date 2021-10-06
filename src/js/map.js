@@ -14,7 +14,7 @@ export async function drawMainMap() {
     .attr('width', '100%');
 
   const { height, width } = svg.node().getBoundingClientRect();
-  console.log(height, width)
+  // console.log(height, width)
 
   // Div para os hovers com os titulos
   let tooltip = d3.select('#mainmap-container')
@@ -23,7 +23,7 @@ export async function drawMainMap() {
 
   // Requisita o geoJSON da API do IBGE
   const mapData = await d3.json('https://servicodados.ibge.gov.br/api/v2/malhas/35?resolucao=5&qualidade=4&formato=application/vnd.geo+json');
-  console.log('Mapa', mapData, width, height)
+  // console.log('Mapa', mapData, width, height)
 
   // Projecao
   const projection = d3.geoMercator()
@@ -115,7 +115,7 @@ export async function getCitiesNames() {
   })
     .then(response => response.json()
       .then(response => {
-        console.log('Cidades', response)
+        // console.log('Cidades', response)
 
         // Aproveita para construir o input de cidades (opção padrão com todas as cidades)
         // $('#input-city').append($('<option value=0>Todas as cidades</option>'));
@@ -190,7 +190,7 @@ export async function updateMap(selected) {
     })
   });
   const mapData = await response.json();
-  console.log('Map Data', mapData);
+  // console.log('Map Data', mapData);
 
   // Função de calculo de cores
   const colors = createFrequencyScale(mapData, filter.sortValue);
@@ -238,7 +238,7 @@ async function updateMapSh4Input(selectedSh4) {
   // Ao trocar a opção selecionada no input ...
   input.on('change', () => {
     const newProduct = $('option:selected', '#input-sh4-map ').val();
-    console.log('Novo produto selecionado', newProduct);
+    // console.log('Novo produto selecionado', newProduct);
     // ... o mapa é atualizado
     updateMap(parseInt(newProduct));
   })
@@ -283,7 +283,7 @@ export function changeMapTitle(title) {
 // Cria uma função para calcular a cor do mapa de uma cidade
 function createFrequencyScale(data, dataType) {
   const numClasses = $('#input-classnumber').val();
-  console.log(numClasses);
+  // console.log(numClasses);
 
   /* Retirado de: https://colorbrewer2.org/#type=sequential&scheme=YlOrRd */
   const hexColors = [
@@ -304,12 +304,11 @@ function createFrequencyScale(data, dataType) {
     return a - b;
   });
 
-  console.log('Dados ordenados', dataType, data);
+  // console.log('Dados ordenados', dataType, data);
 
 
   // Intervalo entre as classes
   const gap = Math.ceil(data.length / numClasses);
-  console.log('gap', gap)
 
   let classes = new Array(numClasses - 1);
 
@@ -318,16 +317,12 @@ function createFrequencyScale(data, dataType) {
   // Encontra os limites dos intervalos
   for (let i = 0; i < classes.length; i++) {
     classes[i] = (i + 1) * gap;
-    console.log(classes[i]);
   }
 
 
-  console.log('classes index', classes)
   classes.forEach((c, i) => {
     classes[i] = data[c];
   })
-  console.log('classes valor', classes)
-  console.log('cores valor', hexColors[numClasses])
 
   // Cria função para as cores
   // const colors = d3.scaleThreshold()
@@ -380,12 +375,10 @@ function addLegendTick(color, index) {
       // Depois verifica se está selecionado
       if ($(elem[0]).hasClass("legend-tick-clicked")) {
         // Deve-se colorir as cidades associadas
-        console.log('ta clicado, mostra')
         $(`.city[color-index='${index}']`).each(function (x, e) { $(e).css('fill', color) });
       }
       // Senão, fica branco
       else {
-        console.log('nao ta clicado, branco')
         $(`.city[color-index='${index}']`).each(function (x, e) { $(e).css('fill', 'white') });
       }
     })

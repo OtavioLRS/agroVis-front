@@ -61,7 +61,7 @@ export class HorizonData {
 
   // Cria e adiciona valores vazios como auxiliares
   createAuxData(sh4s) {
-    console.log('dados aux', sh4s);
+    // console.log('dados aux', sh4s);
     for (let sh4 of sh4s) {
       let ano = 1997;
       while (ano <= 2020) {
@@ -74,16 +74,16 @@ export class HorizonData {
   }
 
   countRegs(sh4, year) {
-    console.log(year, typeof year)
-    console.log(this.units[0].data.getFullYear())
+    // console.log(year, typeof year)
+    // console.log(this.units[0].data.getFullYear())
 
     const filtered = this.units.filter(unit => unit.data.getFullYear() == year && unit.sh4_codigo == sh4 && unit.fob != 0 && unit.peso != 0);
 
     // console.log('filtro essa buct', filtered);
 
     let values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    filtered.forEach(d => { console.log(d); values[d.data.getMonth()] = d.num_regs });
-    console.log('valeu', values)
+    filtered.forEach(d => { values[d.data.getMonth()] = d.num_regs });
+    // console.log('valeu', values)
     return values;
   }
 

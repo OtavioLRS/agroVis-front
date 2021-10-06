@@ -15,7 +15,7 @@ export async function buildFilters() {
   })
     .then(response => response.json())
     .then(response => {
-      console.log('SH4', response);
+      // console.log('SH4', response);
 
       // Opção padrão com todos os produtos
       $('#input-sh4').append($('<option value=0>Todos os produtos</option>'));
@@ -138,7 +138,7 @@ export async function handleFilter() {
       for (const d of products) {
         filterMap.products.push(parseInt(d.innerHTML.split(' - ')[0]));
       }
-      console.log('Produtos com dados', filterMap.products);
+      // console.log('Produtos com dados', filterMap.products);
 
       // Utilizar 'FOB' ou 'PESO'
       filterMap.sortValue = $('input[name=datatype-radio]:checked', '#container-datatype').val();
@@ -196,7 +196,7 @@ export function readFile(event) {
 
     $(fileModel).val(ids);
     $(fileModel).trigger('change');
-    console.log(ids)
+    // console.log(ids)
   }
 }
 
@@ -207,13 +207,16 @@ export function saveNote() {
   let now = new Date(Date.now());
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
-  const day = now.getDay();
+  const day = now.getDate();
   const hour = now.getHours();
   const minute = now.getMinutes();
+  const seconds = now.getSeconds();
   const dateStr = `${fixMonth(day)}/${fixMonth(month)}/${year} - ${hour}:${fixMonth(minute)}`;
+  console.log(now)
 
-  console.log(now.toISOString().split('T')[0] + ' ' + now.toTimeString().split(' ')[0])
-  now = now.toISOString().split('T')[0] + ' ' + now.toTimeString().split(' ')[0];
+  // now = now.toISOString().split('T')[0] + ' ' + now.toTimeString().split(' ')[0];
+  now = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + seconds;
+  console.log(now)
 
   $('#note-ts-modal').html(dateStr);
   $('#save-note-modal .modal-footer .btn-success').on('click', async () => {
@@ -223,7 +226,7 @@ export function saveNote() {
     const { filter, map } = await saveQuery();
     if (filter == null) return 'explodiu'
 
-    console.log({ filter, map, note: { title, text }, now })
+    // console.log({ filter, map, note: { title, text }, now })
     const response = await fetch('https://mighty-taiga-07455.herokuapp.com/addnote', {
       method: 'POST',
       headers: {
@@ -232,7 +235,7 @@ export function saveNote() {
       },
       body: JSON.stringify({ filter, map, note: { title, text }, now })
     });
-    const data = await response.json();
+    // const data = await response.json();
 
     $('#save-note-modal .btn-close').trigger('click');
     $('#warning-modal-text').html('A anotação foi salva com sucesso!');
@@ -251,17 +254,17 @@ async function saveQuery() {
   const filter = {
     cities: filterAux.cities.length == 0 ? '0' : filterAux.cities.join(';'),
     products: filterAux.length == 0 ? '0' : filterAux.products.join(';'),
-    beginPeriod: filterAux.beginPeriod + '-01',
-    endPeriod: filterAux.endPeriod + '-01',
+    beginPeriod: filterAux.beginPeriod + '-15',
+    endPeriod: filterAux.endPeriod + '-15',
     sortValue: filterAux.sortValue
   }
 
-  console.log(filter);
+  // console.log(filter);
   let map = {
     sh4: $('#select2-input-sh4-map-container').html(),
     numClasses: $('#input-classnumber').val()
   }
-  console.log(map);
+  // console.log(map);
 
   // let horizon = {
   //   layers: 
@@ -283,8 +286,9 @@ export async function listNotes() {
 
   console.log(notes);
   notes.forEach(d => {
-    d['REGISTER_DATE'] = new Date(d['REGISTER_DATE'])
-    console.log(d['REGISTER_DATE'].getDate())
+    // console.log(d['REGISTER_DATE'].substring(0, d['REGISTER_DATE'].length - 1))
+    d['REGISTER_DATE'] = new Date(d['REGISTER_DATE'].substring(0, d['REGISTER_DATE'].length - 1));
+    // console.log(d['REGISTER_DATE'])
     const year = d['REGISTER_DATE'].getFullYear();
     const month = d['REGISTER_DATE'].getMonth() + 1;
     const day = d['REGISTER_DATE'].getDate();
@@ -304,7 +308,7 @@ export async function listNotes() {
 
     $(`#list-note-modal-body .list-group-item[id='${d['ID']}'] .redo-search`).on('click', () => {
       const data = notes.filter(a => a['ID'] == d['ID'])
-      // console.log(data)
+      console.log('data', data)
 
       setFilter(data[0]);
     })
@@ -327,6 +331,9 @@ async function setFilter(data) {
   const date2 = new Date(data['END_PERIOD'])
   $('#input-date0').val(date1.getFullYear() + '-' + fixMonth(date1.getMonth() + 1))
   $('#input-date1').val(date2.getFullYear() + '-' + fixMonth(date2.getMonth() + 1))
+
+  console.log($('#input-date0').val())
+  console.log($('#input-date1').val())
 
   $('#' + data['SORT_VALUE'] + '-datatype-radio').prop('checked', true);
 

@@ -24,7 +24,7 @@ export async function buildHorizon(filter) {
   const rawData = await response.json();
 
   changeLoadingMessage('Estruturando dados...');
-  console.log('Dados brutos', rawData);
+  // console.log('Dados brutos', rawData);
   /*
     CO_ANO: int - Ano
     CO_MES: int - Mês
@@ -45,7 +45,7 @@ export async function buildHorizon(filter) {
 
   // Preenchendo o dataframe
   horizonData.addArray(rawData.map(d => new HorizonUnit(new Date(d.CO_ANO, d.CO_MES - 1, 1), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO, d.NUM_REGS)));
-  console.log('Horizon Data', horizonData);
+  // console.log('Horizon Data', horizonData);
 
   // Sh4s unicos
   const uniqueSh4 = horizonData.uniqueValues('sh4_codigo');
@@ -66,7 +66,7 @@ export async function buildHorizon(filter) {
   });
   const rawAuxData = await responseAux.json();
   horizonData.addArray(rawAuxData.map(d => new HorizonUnit(new Date(d.CO_ANO, d.CO_MES - 1, 1), d.SH4, d.NO_SH4_POR, d.VL_FOB, d.KG_LIQUIDO, d.NUM_REGS)));
-  console.log('Horizon Data Aux', horizonData);
+  // console.log('Horizon Data Aux', horizonData);
 
   // Número de bandas dos gráficos
   const overlap = $('#overlap-slider').val();
@@ -134,7 +134,7 @@ export async function buildHorizon(filter) {
          true - segundo click
       */
       const click = await JSON.parse(localStorage.getItem('horizonclick'));
-      console.log(click);
+      // console.log(click);
 
       click == '1' ? horizonFirstClick(horizon, data) : horizonSecondClick(horizon, data);
     })
@@ -174,7 +174,7 @@ export async function buildHorizon(filter) {
       let sum = 0;
       numRegs.forEach(n => sum += n);
 
-      console.log(numRegs);
+      // console.log(numRegs);
 
       let numRegsValues = [];
       numRegs.forEach(d => { if (d != 0) numRegsValues.push(d) });
