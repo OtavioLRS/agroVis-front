@@ -5,16 +5,19 @@ export function handleSidebarExcel() {
   console.log('1')
 }
 
+// Ação do botão de ler anotação
 export function handleSidebarRead() {
   closeSidebar();
   readNote();
 }
 
+// Ação do botão de salvar anotação
 export function handleSidebarSave() {
   closeSidebar();
   saveNote();
 }
 
+// Ação do botão de abrir lista de anotações
 export function handleSidebarList() {
   closeSidebar();
 
@@ -23,22 +26,22 @@ export function handleSidebarList() {
 }
 
 
+// Ação do botão de logout
+export async function handleLogout() {
+  await localStorage.removeItem('session');
 
-
-
-
-
-
-
-
-export function handleLogout() {
-
+  document.getElementById('logout-link').click();
 }
 
 
 
 
 
+
+
+
+
+// Mostra o modal com dados da anotação atual
 export async function readNote() {
   // Fecha o modal de ler anotação
   $('#read-note-modal .btn-close').on('click', () => {
@@ -53,11 +56,11 @@ export async function readNote() {
     $('#read-note-modal .modal-footer .btn-success').off();
   });
 
+  // Informação da query
   const data = await JSON.parse(localStorage.getItem('queryData'));
 
-  // data['REGISTER_DATE'] = new Date(data['REGISTER_DATE'].substring(0, data['REGISTER_DATE'].length - 1));
+  // Formatando a data de registro da anotação em uma string simplificada
   data['REGISTER_DATE'] = new Date(data['REGISTER_DATE']);
-
   const year = data['REGISTER_DATE'].getFullYear();
   const month = data['REGISTER_DATE'].getMonth() + 1;
   const day = data['REGISTER_DATE'].getDate();
@@ -65,15 +68,17 @@ export async function readNote() {
   const minute = data['REGISTER_DATE'].getMinutes();
   const dateStr = `${fixMonth(day)}/${fixMonth(month)}/${year} - ${fixMonth(hour)}:${fixMonth(minute)}`;
 
+  // Atualiza titulo, texto e data da anotação no modal
   $('#read-note-modal-title').val(data['TITLE']);
   $('#read-note-modal-text').val(data['TEXTO']);
   $('#read-note-ts-modal').html('Cadastrada em: ' + dateStr);
 
+  // Mostra o modal com os dados
   $('#read-note-modal').css('display', 'block');
   createDraggable('#read-note-modal');
 }
 
-
+// Mostra o modal para salvar um anotação
 export function saveNote() {
   // Fecha o modal de salvar anotações
   $('#save-note-modal .btn-close').on('click', () => {
@@ -87,8 +92,7 @@ export function saveNote() {
     $('#save-note-modal .modal-footer .btn-success').off();
   });
 
-  $('#save-note-modal').css('display', 'block');
-  createDraggable('#save-note-modal');
+  // Formatando a data de registro da anotação em uma string simplificada
   let now = new Date(Date.now());
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
@@ -97,18 +101,23 @@ export function saveNote() {
   const minute = now.getMinutes();
   const seconds = now.getSeconds();
   const dateStr = `${fixMonth(day)}/${fixMonth(month)}/${year} - ${hour}:${fixMonth(minute)}`;
-  // console.log(now)
-
   now = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + seconds;
-  // console.log(now)
 
+  // Insere data de inicio do processo de salvamento no modal
   $('#save-note-ts-modal').html(dateStr);
+
+  // Mostra o modal de salvamento de anotação
+  $('#save-note-modal').css('display', 'block');
+  createDraggable('#save-note-modal');
+
+  // Listener para finalizar o processo de salvamento da anotação
   $('#save-note-modal .modal-footer .btn-success').on('click', async () => {
+    // Recupera o titulo e a descrição da anotação inseridas pelo usuário
     const title = $('#save-note-modal-title').val();
     const text = $('#save-note-modal-text').val();
 
+    // Salva o 'state' da query atual para reprodução futura
     const { filter, map } = await saveQuery();
-    if (filter == null) return 'explodiu'
 
     // console.log({ filter, map, note: { title, text }, now })
     const response = await fetch('https://mighty-taiga-07455.herokuapp.com/addnote', {
@@ -119,8 +128,8 @@ export function saveNote() {
       },
       body: JSON.stringify({ filter, map, note: { title, text }, now })
     });
-    // const data = await response.json();
 
+    // Fecha o modal de salvamento, e exibe um aviso de processo concluído
     $('#save-note-modal .btn-close').trigger('click');
     $('#warning-modal-text').html('A anotação foi salva com sucesso!');
     const modal = new bootstrap.Modal(document.getElementById('modal-nodata-found'));
@@ -128,16 +137,18 @@ export function saveNote() {
   })
 }
 
-
+// Mostra o modal com a lista de anotações disponíveis
 export async function listNotes() {
+  // Recupera a lista de anotações
   const response = await fetch('https://mighty-taiga-07455.herokuapp.com/getnotes', {
     method: 'POST',
   });
   const notes = await response.json();
 
+  // Para cada anotação
   notes.forEach(d => {
+    // Formata a data
     d['REGISTER_DATE'] = new Date(d['REGISTER_DATE'].substring(0, d['REGISTER_DATE'].length - 1));
-
     const year = d['REGISTER_DATE'].getFullYear();
     const month = d['REGISTER_DATE'].getMonth() + 1;
     const day = d['REGISTER_DATE'].getDate();
@@ -145,6 +156,7 @@ export async function listNotes() {
     const minute = d['REGISTER_DATE'].getMinutes();
     const dateStr = `${fixMonth(day)}/${fixMonth(month)}/${year} - ${fixMonth(hour)}:${fixMonth(minute)}`;
 
+    // Insere a anotação no modal
     $('#list-note-modal-body').append(`
     <div class="list-group-item list-group-item-action" id="${d['ID']}" aria-current="true">
       <div class="d-flex w-100 justify-content-between">
@@ -155,17 +167,19 @@ export async function listNotes() {
       <small class="redo-search" style="color: blue;">Refazer busca</small>
     </div>`)
 
+    // Adiciona o listener para reprodução das anotações
     $(`#list-note-modal-body .list-group-item[id='${d['ID']}'] .redo-search`).on('click', async () => {
       const data = notes.filter(a => a['ID'] == d['ID']);
-      console.log('data', data);
 
+      // Sinaliza que a aplicação está reproduzindo uma anotação
       await localStorage.setItem('savedQuery', true);
       await localStorage.setItem('queryData', JSON.stringify(d));
+
+      // Preenche o filtro com os dados da anotação escolhida e a reproduz
       setFilter(data[0]);
     })
   })
 }
-
 
 // Salva a query atual do usuário
 async function saveQuery() {

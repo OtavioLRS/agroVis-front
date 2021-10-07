@@ -2,10 +2,13 @@ import "@babel/polyfill";
 import { preLoad, startLoading, changeLoadingMessage, finishLoading } from './extra.js'
 import { drawMainMap, getCitiesNames } from "./map.js";
 import { buildFilters, handleFilter } from "./filter.js";
-import { hideClickAlert } from "./horizon/horizon.js";
 import { buildCalendar } from "./calendar.js";
+import { validateLoginInHome } from "./loginFunctions";
 
-// Pré coisas
+// Verifica login
+validateLoginInHome();
+
+// Pré processamentos
 changeLoadingMessage('Realizando pré-processamentos...')
 preLoad();
 
@@ -20,5 +23,3 @@ buildFilters();
 buildCalendar();
 
 // finishLoading();
-
-// async () => await fetch('').then(handleFilter).then(finishLoading)
