@@ -36,8 +36,6 @@ export async function buildFilters() {
       $('#filter-button span').addClass('hidden');
     })
     .then(() => { finishLoading() });
-
-  $('#filter-button').click(() => { handleFilter(); });
 }
 
 // Realiza a construção das visualizações com base no filtro
@@ -45,8 +43,17 @@ export async function handleFilter() {
   // Remove o aviso de atualização de busca
   $('#filter-button span').addClass('hidden');
 
-  // Fecha o modal de anotações
+  // Se for query salva, habilita visualização de anotação, senão desativa
+  let savedQuery = await JSON.parse(localStorage.getItem('savedQuery'));
+  if (savedQuery) $('#sidebar-item-read').removeClass('disabled');
+  else $('#sidebar-item-read').addClass('disabled');
+
+  // Fez uma query, habilita opção de salva-la
+  $('#sidebar-item-save').removeClass('disabled');
+
+  // Fecha o(s) modal(is) de anotações
   $('#save-note-modal .btn-close').trigger('click');
+  $('#read-note-modal .btn-close').trigger('click');
 
   const cities = $('#input-city').select2('data');
   const products = $('#input-sh4').select2('data');
@@ -169,10 +176,6 @@ export async function handleFilter() {
 }
 
 
-
-
-
-
 // Le um arquivo de cidades ou sh4's
 export function readFile(event) {
   // Identifica origem do arquivo e completa o input de acordo
@@ -201,132 +204,22 @@ export function readFile(event) {
 }
 
 
-export function saveNote() {
-  $('#save-note-modal').css('display', 'block')
-  createDraggable();
-  let now = new Date(Date.now());
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
-  const hour = now.getHours();
-  const minute = now.getMinutes();
-  const seconds = now.getSeconds();
-  const dateStr = `${fixMonth(day)}/${fixMonth(month)}/${year} - ${hour}:${fixMonth(minute)}`;
-  console.log(now)
-
-  // now = now.toISOString().split('T')[0] + ' ' + now.toTimeString().split(' ')[0];
-  now = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + seconds;
-  console.log(now)
-
-  $('#note-ts-modal').html(dateStr);
-  $('#save-note-modal .modal-footer .btn-success').on('click', async () => {
-    const title = $('#save-note-modal-title').val();
-    const text = $('#save-note-modal-text').val();
-
-    const { filter, map } = await saveQuery();
-    if (filter == null) return 'explodiu'
-
-    // console.log({ filter, map, note: { title, text }, now })
-    const response = await fetch('https://mighty-taiga-07455.herokuapp.com/addnote', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ filter, map, note: { title, text }, now })
-    });
-    // const data = await response.json();
-
-    $('#save-note-modal .btn-close').trigger('click');
-    $('#warning-modal-text').html('A anotação foi salva com sucesso!');
-    const modal = new bootstrap.Modal(document.getElementById('modal-nodata-found'));
-    modal.show();
-
-
-  })
-}
-
-// Salva a query atual do usuário
-async function saveQuery() {
-  let filterAux = await JSON.parse(localStorage.getItem('filter'));
-  if (filterAux == null) return null;
-
-  const filter = {
-    cities: filterAux.cities.length == 0 ? '0' : filterAux.cities.join(';'),
-    products: filterAux.length == 0 ? '0' : filterAux.products.join(';'),
-    beginPeriod: filterAux.beginPeriod + '-15',
-    endPeriod: filterAux.endPeriod + '-15',
-    sortValue: filterAux.sortValue
-  }
-
-  // console.log(filter);
-  let map = {
-    sh4: $('#select2-input-sh4-map-container').html(),
-    numClasses: $('#input-classnumber').val()
-  }
-  // console.log(map);
-
-  // let horizon = {
-  //   layers: 
-  //   zoom:
-  //   scale:
-  //   orderType:
-  //   orderBy:
-  // }
-
-  return { filter, map };
-}
-
-
-export async function listNotes() {
-  const response = await fetch('https://mighty-taiga-07455.herokuapp.com/getnotes', {
-    method: 'POST',
-  });
-  const notes = await response.json();
-
-  console.log(notes);
-  notes.forEach(d => {
-    // console.log(d['REGISTER_DATE'].substring(0, d['REGISTER_DATE'].length - 1))
-    d['REGISTER_DATE'] = new Date(d['REGISTER_DATE'].substring(0, d['REGISTER_DATE'].length - 1));
-    // console.log(d['REGISTER_DATE'])
-    const year = d['REGISTER_DATE'].getFullYear();
-    const month = d['REGISTER_DATE'].getMonth() + 1;
-    const day = d['REGISTER_DATE'].getDate();
-    const hour = d['REGISTER_DATE'].getHours();
-    const minute = d['REGISTER_DATE'].getMinutes();
-    const dateStr = `${fixMonth(day)}/${fixMonth(month)}/${year} - ${fixMonth(hour)}:${fixMonth(minute)}`;
-
-    $('#list-note-modal-body').append(`
-    <div class="list-group-item list-group-item-action" id="${d['ID']}" aria-current="true">
-      <div class="d-flex w-100 justify-content-between">
-        <h5 class="mb-1" id="note-list-title">${d['TITLE']}</h5>
-        <small id="note-list-date">${dateStr}</small>
-      </div>
-      <p class="mb-1">${d['TEXTO']}</p>
-      <small class="redo-search" style="color: blue;">Refazer busca</small>
-    </div>`)
-
-    $(`#list-note-modal-body .list-group-item[id='${d['ID']}'] .redo-search`).on('click', () => {
-      const data = notes.filter(a => a['ID'] == d['ID'])
-      console.log('data', data)
-
-      setFilter(data[0]);
-    })
-  })
-}
-
-async function setFilter(data) {
+// Preenche o filtro com base em um objeto recebido por parametro
+export async function setFilter(data) {
   console.log(data)
 
+  // Input de SH4
   clearSelect2Input('#input-sh4');
   $('#input-sh4').val(data['PRODUCTS'].split(';'));
   $('#input-sh4').trigger('change');
 
+  // Input de cidades
   clearSelect2Input('#input-city');
   $('#input-city').val(data['CITIES'].split(';'));
   $('#input-city').trigger('change');
 
 
+  // Input de data inicial e final
   const date1 = new Date(data['BEGIN_PERIOD'])
   const date2 = new Date(data['END_PERIOD'])
   $('#input-date0').val(date1.getFullYear() + '-' + fixMonth(date1.getMonth() + 1))
@@ -335,15 +228,18 @@ async function setFilter(data) {
   console.log($('#input-date0').val())
   console.log($('#input-date1').val())
 
+  // Tipo de dado base
   $('#' + data['SORT_VALUE'] + '-datatype-radio').prop('checked', true);
 
+  // Esconde o modal de lista de anotações
   const modal = bootstrap.Modal.getInstance(document.querySelector('#list-note-modal'))
   modal.hide();
 
+  // Realiza a query
   handleFilter();
 
+  // Número de classes selecionadas no mapa
   $('#input-classnumber').val(data['NUM_CLASS']);
 
   // $(`#mainmap-container option[label='${data['MAP_SH4']}']`).attr('selected', 'selected');
-
 }

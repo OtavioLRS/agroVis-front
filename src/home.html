@@ -45,7 +45,7 @@
       <div
         class="list-group-item d-flex w-100 justify-content-start flex-row align-items-center px-3 rounded border-0 sidebar-item">
         <i class="bi bi-person-circle fs-2"></i>
-        <h5 class="mb-1 ms-3">Nome do cidadão</h5>
+        <h5 class="mb-1 ms-3">Nome</h5>
       </div>
 
       <div class="list-group">
@@ -59,14 +59,16 @@
           </div>
         </div>
 
-        <div class="list-group-item px-3 rounded border-0 mb-2 sidebar-item cursor-pointer" id="sidebar-item-read">
+        <div class="list-group-item px-3 rounded border-0 mb-2 sidebar-item cursor-pointer disabled"
+          id="sidebar-item-read">
           <div class="d-flex w-100 justify-content-start flex-row align-items-center">
             <i class="bi bi-book fs-5"></i>
             <h6 class="mb-1 ms-3">Ler anotação da pesquisa</h6>
           </div>
         </div>
 
-        <div class="list-group-item px-3 rounded border-0 mb-2 sidebar-item cursor-pointer" id="sidebar-item-save">
+        <div class="list-group-item px-3 rounded border-0 mb-2 sidebar-item cursor-pointer disabled"
+          id="sidebar-item-save">
           <div class="d-flex w-100 justify-content-start flex-row align-items-center">
             <i class="bi bi-save fs-5"></i>
             <h6 class="mb-1 ms-3">Salvar pesquisa</h6>
@@ -99,8 +101,36 @@
 
 
 
-  <!-- Modal Criar anotação -->
-  <div class="modal" id="save-note-modal">
+  <!-- Modal ver anotação -->
+  <div class="modal modal-drag" id="read-note-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Anotação</h5>
+        <button type="button" class="btn-close"></button>
+      </div>
+
+      <div class="modal-body">
+        <span class="fw-light" id="read-note-ts-modal"></span>
+        <div class="form-floating">
+          <input class="form-control" id="read-note-modal-title" readonly>
+          <label for="read-note-modal-title">Titulo</label>
+        </div>
+        <br>
+        <div class="form-floating">
+          <textarea class="form-control" id="read-note-modal-text" readonly style="height: 100px"
+            maxlength="1000"></textarea>
+          <label for="read-note-modal-text">Anotação</label>
+        </div>
+      </div>
+
+      <!-- <div class="modal-footer">
+        <button class="btn btn-success" data-dismiss="modal">O</button>
+      </div> -->
+    </div>
+  </div>
+
+  <!-- Modal criar anotação -->
+  <div class="modal modal-drag" id="save-note-modal">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Complete as informações para salvar a anotação!</h5>
@@ -108,7 +138,7 @@
       </div>
 
       <div class="modal-body">
-        <span class="fw-light" id="note-ts-modal"></span>
+        <span class="fw-light" id="save-note-ts-modal"></span>
         <div class="form-floating">
           <input class="form-control" id="save-note-modal-title" placeholder="Titulo 1">
           <label for="save-note-modal-title">Titulo</label>
@@ -141,7 +171,6 @@
       </div>
     </div>
   </div>
-
 
 
 

@@ -94,20 +94,6 @@
   width: 25%;
 }
 
-#filter-container #save-note-button {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  width: fit-content;
-}
-
-#filter-container #list-note-button {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: fit-content;
-}
-
 #filter-container .hover-icon{
   cursor: pointer;
 }
@@ -124,7 +110,7 @@
   position: absolute;
 }
 
-#save-note-modal{
+.modal-drag{
   position: absolute;
   height: fit-content;
   width: 40%;
@@ -135,13 +121,13 @@
   z-index: 9;
 }
 
-#save-note-modal .modal-dialog{
+.modal-drag .modal-dialog{
   width: 100%;
   height: fit-content;
   margin: 0 !important;
 }
 
-#save-note-modal .modal-header{
+.modal-drag .modal-header{
   cursor: move;
 }
 

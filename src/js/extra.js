@@ -1,7 +1,7 @@
-import { readFile, saveNote, listNotes } from "./filter";
+import { readFile, handleFilter } from "./filter";
 import { hideClickAlert } from "./horizon/horizon";
 import { changeMapTitle, cleanCity } from "./map";
-import { handleSidebarExcel, handleSidebarList, handleSidebarRead, handleSidebarSave, handleLogout } from "./sidebar";
+import { handleSidebarExcel, handleSidebarList, handleSidebarRead, handleSidebarSave, handleLogout, listNotes } from "./sidebar";
 
 /*
   Função com processamentos iniciais
@@ -13,6 +13,12 @@ export function preLoad() {
   $('#sidebar-item-list').on("click", handleSidebarList);
   $('#sidebar-item-read').on("click", handleSidebarRead);
   $('#sidebar-item-logout').on("click", handleLogout);
+
+  // Listener do botão Filtrar
+  $('#filter-button').click(async () => {
+    await localStorage.setItem('savedQuery', false);
+    handleFilter();
+  });
 
   // Limitamento de datas no input do filtro
   $('#input-date1').on("input", limitDate0);
@@ -55,17 +61,7 @@ export function preLoad() {
   // Mostra as notas
   $('#list-note-modal').on('show.bs.modal', listNotes);
 
-  // Fecha o modal de salvar anotações
-  $('#save-note-modal .btn-close').on('click', () => {
-    $('#save-note-modal-title').val('');
-    $('#save-note-modal-text').val('');
-    $('#save-note-modal').css('top', '30%')
-    $('#save-note-modal').css('bottom', '40%')
-    $('#save-note-modal').css('left', '30%')
-    $('#save-note-modal').css('right', '30%')
-    $('#save-note-modal').css('display', 'none');
-    $('#save-note-modal .modal-footer .btn-success').off();
-  });
+
 
   // Quando fechar o modal de lista de anotações
   $('#list-note-modal').on('hidden.bs.modal', () => {
@@ -102,9 +98,9 @@ export function changeLoadingMessage(message) {
 /*
   Transforma o modal em draggable
 */
-export function createDraggable() {
+export function createDraggable(elem) {
   let posX1 = 0, posY1 = 0, posX0 = 0, poxY0 = 0;
-  $('#save-note-modal .modal-header').on('mousedown', dragMouseDown)
+  $(elem + ' .modal-header').on('mousedown', dragMouseDown)
 
   function dragMouseDown(e) {
     e = e || window.event;
@@ -127,8 +123,8 @@ export function createDraggable() {
     posX0 = e.clientX;
     poxY0 = e.clientY;
     // set the element's new position:
-    $('#save-note-modal')[0].style.top = ($('#save-note-modal')[0].offsetTop - posY1) + "px";
-    $('#save-note-modal')[0].style.left = ($('#save-note-modal')[0].offsetLeft - posX1) + "px";
+    $(elem)[0].style.top = ($(elem)[0].offsetTop - posY1) + "px";
+    $(elem)[0].style.left = ($(elem)[0].offsetLeft - posX1) + "px";
   }
 
   function closeDragElement() {
@@ -256,6 +252,9 @@ export function cleanDashboard() {
   $('.calendar-square-color').css('background-color', 'white');
   $('.calendar-square-text').html('');
   $('.calendar-square').each(function () { $(this).removeClass('calendar-square-bordered') });
+
+  // Nenhuma query feita, desabilita opção de salvamento de query
+  $('#sidebar-item-save').addClass('disabled');
 }
 
 // Remove todas as options selecionadas de um elemento Select2

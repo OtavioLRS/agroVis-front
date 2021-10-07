@@ -150,25 +150,8 @@ export async function buildHorizon(filter) {
       $('.calendar-square').each(function () { $(this).removeClass('calendar-square-bordered') });
       $(`.calendar-month[month-index='${month - 1}'] .calendar-square`).addClass('calendar-square-bordered');
 
-      // Se for ano diferente do exibido, refaz a query
-      // if ($('#calendar-title-wrapper').html().split('Ano ')[1] == year) return;
-
+      // Atualiza o titulo do calendario
       $('#calendar-title-wrapper').html('SH4 ' + series + ' - Ano ' + year);
-      // const filter = await JSON.parse(localStorage.getItem('filter'));
-      // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/num-regs', {
-      //   method: 'POST',
-      //   headers: {
-      //     Accept: 'application/json',
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({
-      //     products: [series],
-      //     beginPeriod: year + '-01',
-      //     endPeriod: year + '-12',
-      //     cities: filter.cities
-      //   })
-      // });
-      // const data = await response.json();
 
       let numRegs = horizonData.countRegs(series, year);
       let sum = 0;

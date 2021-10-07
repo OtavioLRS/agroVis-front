@@ -124,7 +124,7 @@
   position: absolute;
 }
 
-#save-note-modal{
+.modal-drag{
   position: absolute;
   height: fit-content;
   width: 40%;
@@ -135,13 +135,13 @@
   z-index: 9;
 }
 
-#save-note-modal .modal-dialog{
+.modal-drag .modal-dialog{
   width: 100%;
   height: fit-content;
   margin: 0 !important;
 }
 
-#save-note-modal .modal-header{
+.modal-drag .modal-header{
   cursor: move;
 }
 
@@ -152,7 +152,7 @@
 /* ***************************************************** */
 /* Sidebar */
 #offcanvas {
-  background-color: whitesmoke;
+  background-color: white;
 }
 
 .sidebar-icon {
