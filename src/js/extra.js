@@ -6,7 +6,11 @@ import { handleSidebarExcel, handleSidebarList, handleSidebarRead, handleSidebar
 /*
   Função com processamentos iniciais
 */
-export function preLoad() {
+export async function preLoad() {
+  // Nome do usuário
+  const data = await JSON.parse(localStorage.getItem('session'));
+  $('#sidebar-username').html(data.user.name);
+
   // Funções da sidebar
   $('#sidebar-item-excel').on("click", handleSidebarExcel);
   $('#sidebar-item-save').on("click", handleSidebarSave);

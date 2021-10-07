@@ -1,5 +1,14 @@
 // Valida o login
 export async function validateLogin() {
+  // Se tiver erro de login,
+  const authError = await JSON.parse(localStorage.getItem('authError'));
+  if (authError != null) {
+    // exibe o erro para o usuario
+    document.getElementById('loginError').innerHTML = authError.msg;
+    document.getElementById('loginError').classList.remove('hidden');
+    await localStorage.removeItem('authError');
+  }
+
   const session = await localStorage.getItem('session');
 
   // Se tiver session, vai para a home, senão, permanece no login
@@ -11,7 +20,12 @@ export async function validateLoginInHome() {
   const session = await localStorage.getItem('session');
 
   // Se tiver session, continua na home, senão, volta ao login
-  if (session == null) document.getElementById('logout-link').click();
+  if (session == null) {
+    // Antes de redirecionar, adiciona mensagem de erro
+    await localStorage.setItem('authError', JSON.stringify({ msg: 'Usuário não logado!' }));
+    document.getElementById('logout-link').click();
+  }
+
 }
 
 export async function handleLogin() {
