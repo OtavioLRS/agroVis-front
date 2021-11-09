@@ -6,7 +6,9 @@ import { updateMap } from './map.js';
 // Função principal para a construção dos filtros
 export async function buildFilters() {
   // Requisição para buscar os SH4s presentes no banco
-  await fetch('https://mighty-taiga-07455.herokuapp.com/produtos', {
+  // await fetch('https://mighty-taiga-07455.herokuapp.com/produtos', {
+  await fetch('http://127.0.0.1:5000/produtos', {
+    // await fetch('https://agrovis-back-flask.herokuapp.com/produtos', {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -21,7 +23,7 @@ export async function buildFilters() {
       $('#input-sh4').append($('<option value=0>Todos os produtos</option>'));
 
       response.forEach((product) => {
-        const option = $('<option></option>')
+        const option = $('<option></option>');
         option.attr({ "value": product.CO_SH4 });
         option.text(product.CO_SH4 + " - " + product.NO_SH4_POR);
         option.attr({ "label": product.CO_SH4 });
@@ -34,14 +36,61 @@ export async function buildFilters() {
       $('#input-sh4').trigger('change');
       // Remove o aviso que foi exibido com o trigger de change
       $('#filter-button span').addClass('hidden');
+
+      // Continentes
+      const continents = [
+        { id: 105, name: 'América Central e Caribe' },
+        { id: 107, name: 'América do Norte' },
+        { id: 48, name: 'América do Sul' },
+        { id: 51, name: 'África' },
+        { id: 39, name: 'Ásia (Exclusive Oriente Médio)' },
+        { id: 112, name: 'Europa' },
+        { id: 61, name: 'Oceania' },
+        { id: 41, name: 'Oriente Médio' },
+      ]
+
+      $('#input-continent').append($('<option value=0 index=0>Todos os continentes</option>'));
+      continents.forEach((c, i) => {
+        const option = $('<option></option>')
+        option.attr({ "value": c.id });
+        option.attr({ "index": i + 1 });
+        option.text(c.name);
+        option.addClass("option-continent");
+
+        $('#input-continent').append(option);
+      })
+
+      $('#input-continent').val('0').trigger('change.select2');
     })
     .then(() => { finishLoading() });
 }
 
 // Realiza a construção das visualizações com base no filtro
 export async function handleFilter() {
-  // Remove o aviso de atualização de busca
-  $('#filter-button span').addClass('hidden');
+  // Fecha o(s) modal(is) de anotações
+  $('#save-note-modal .btn-close').trigger('click');
+  $('#read-note-modal .btn-close').trigger('click');
+
+  const cities = $('#input-city').select2('data');
+  const products = $('#input-sh4').select2('data');
+  const continents = $('#input-continent').select2('data');
+  const date0 = $('#input-date0').val();
+  const date1 = $('#input-date1').val();
+
+  if (products.length == 0) { // Nenhum produto foi selecionado, aborda
+    alert('Por favor, selecione pelo menos um SH4!');
+    return;
+  }
+  if (cities.length == 0) { // Nenhum produto foi selecionado, aborda
+    alert('Por favor, selecione pelo menos uma cidade!');
+    return;
+  }
+  if (continents.length == 0) { // Nenhum continente foi selecionado, aborda
+    alert('Por favor, selecione pelo menos um continente!');
+    return;
+  }
+
+  startLoading();
 
   // Se for query salva, habilita visualização de anotação, senão desativa
   let savedQuery = await JSON.parse(localStorage.getItem('savedQuery'));
@@ -51,31 +100,16 @@ export async function handleFilter() {
   // Fez uma query, habilita opção de salva-la
   $('#sidebar-item-save').removeClass('disabled');
 
-  // Fecha o(s) modal(is) de anotações
-  $('#save-note-modal .btn-close').trigger('click');
-  $('#read-note-modal .btn-close').trigger('click');
+  // Remove o aviso de atualização de busca
+  $('#filter-button span').addClass('hidden');
 
-  const cities = $('#input-city').select2('data');
-  const products = $('#input-sh4').select2('data');
-  const date0 = $('#input-date0').val();
-  const date1 = $('#input-date1').val();
-
-  if (products.length == 0) { // Nenhum produto foi selecionado, aborda
-    alert('Por favor, selecione um SH4!');
-    return;
-  }
-  if (cities.length == 0) { // Nenhum produto foi selecionado, aborda
-    alert('Por favor, selecione uma cidade!');
-    return;
-  }
-
-  startLoading();
   // cleanDashboard();
   changeLoadingMessage('Buscando dados...')
 
   const filterHorizon = {
     cities: [],
     products: [],
+    continents: [],
     beginPeriod: null,
     endPeriod: null
   }
@@ -83,6 +117,7 @@ export async function handleFilter() {
   const filterMap = {
     cities: [],
     products: [],
+    continents: [],
     beginPeriod: null,
     endPeriod: null,
     sortValue: null
@@ -118,6 +153,22 @@ export async function handleFilter() {
     }
   }
 
+  // Adicionando continentes no filtro
+  for (const e of continents) {
+    // Todos os continentes selecionadas, não é necessário filtro
+    if (e.id == '0') {
+      filterHorizon.continents = [];
+      filterMap.continents = [];
+      break;
+    }
+
+    // Caso normal, apenas adiciona continente escolhido
+    else {
+      filterHorizon.continents.push(e.id);
+      filterMap.continents.push(e.id);
+    }
+  }
+
   // Adicionando período de tempo no filtro
   filterHorizon.beginPeriod = date0;
   filterHorizon.endPeriod = date1;
@@ -132,6 +183,7 @@ export async function handleFilter() {
       filterHorizon =
         cities - lista de cidades, [] = todas 
         products - lista de produtos, [] = todos
+        continents - lista de continentes, [] = todos
         beginPeriod - data inicial
         endPeriod - data final
     */
@@ -154,9 +206,7 @@ export async function handleFilter() {
       await localStorage.setItem('filter', JSON.stringify(filterMap));
 
       // Atualiza os dados do mapa - filterMap.products[0] -> primeiro produto a ser exibido no mapa
-      await updateMap(filterMap.products[0]);
-
-      // await 
+      await updateMap();
 
       finishLoading();
     }, 100);

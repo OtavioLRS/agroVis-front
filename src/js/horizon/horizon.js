@@ -1,4 +1,4 @@
-import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, getSortValue, cleanDashboard, getScaleByValue, fixMonth, blurElement, unblurElement, median, } from '../extra';
+import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, getSortValue, cleanDashboard, getScaleByValue, fixMonth, blurElement, unblurElement, median, getSortOrder, } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
 import { HorizonUnit, HorizonData } from './horizonClasses';
 import { changeMapTitle, cleanCity } from '../map';
@@ -10,7 +10,9 @@ export async function buildHorizon(filter) {
   await localStorage.setItem('horizonclick', '1');
 
   // Requisição dos dados do HorizonChart 
-  const response = await fetch('https://mighty-taiga-07455.herokuapp.com/horizondata', {
+  // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/horizondata', {
+  const response = await fetch('http://127.0.0.1:5000/exportacao/horizon', {
+    // const response = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/horizon', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -28,14 +30,11 @@ export async function buildHorizon(filter) {
   /*
     CO_ANO: int - Ano
     CO_MES: int - Mês
-    CO_MUN: string - Código do município
-    CO_PAIS: string - Pais de destino
-    KG_LIQUIDO: int - Peso líquido
-    NO_MUN_MIN: string - Nome do município
-    NO_PAIS: string - Nome do país de destino
-    NO_SH4_POR: string - Descrição do SH4
     SH4: int - Código SH4
+    NO_SH4_POR: string - Descrição do SH4
+    KG_LIQUIDO: int - Peso líquido
     VL_FOB: int - Valor FOB em U$
+    NUM_REGS: int - Quantidade de registros
   */
 
   const resultVerifier = rawData[0]['CO_MUN'];
@@ -54,7 +53,9 @@ export async function buildHorizon(filter) {
   filter.products = uniqueSh4;
 
   // Dados auxiliares do HorizonChart
-  const responseAux = await fetch('https://mighty-taiga-07455.herokuapp.com/horizondata-aux', {
+  // const responseAux = await fetch('https://mighty-taiga-07455.herokuapp.com/horizondata-aux', {
+  const responseAux = await fetch('http://127.0.0.1:5000/exportacao/horizon/aux', {
+    // const responseAux = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/horizon/aux', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -72,14 +73,11 @@ export async function buildHorizon(filter) {
   const overlap = $('#overlap-slider').val();
 
   // Atributo que será exibido no gráfico
-  const sortValue = $('input[name="datatype-radio"]:checked', '#container-datatype').val()
-
-  // Modo de ordenação dos gráficos
-  const sortMode = getSortByValue();
+  const sortValue = $('input[name="datatype-radio"]:checked', '#container-datatype').val();
 
   // Zoom ligado ou não
   const zoomMode = document.getElementById('zoom-switch').checked;
-  console.log('Zoom', zoomMode)
+  // console.log('Zoom', zoomMode)
 
   changeLoadingMessage('Construindo visualizações...');
   // console.log('dados usados:', sortValue, 'ordenado por: ', sortMode)
@@ -91,9 +89,14 @@ export async function buildHorizon(filter) {
   // Renderiza o novo
   d3.select('#horizon-wrapper').node().append(domElem);
 
+  const { height, width } = d3.select('#horizon-wrapper').node().getBoundingClientRect();
+  const pl = d3.select('#horizon-wrapper').style('padding-left').replace('px', '');
+  const pr = d3.select('#horizon-wrapper').style('padding-right').replace('px', '');
+  console.log(pl, pr)
+
   const horizon = HorizonTSChart()(domElem)
     .data(horizonData.units) // Dataframe
-    .width(window.innerWidth - 45) // Largura total, 100% da tela - 40px padding e margin - 5 scroll
+    .width(width - pl - pr - 10) // Largura total - paddings - scrollbar
     .height(100 * uniqueSh4.length) // Altura total: 100px * quantidade de charts
     .series('sh4_codigo') // Indicador do titulo de cada chart
     .ts('data') // Indicador da data do dado
@@ -102,7 +105,7 @@ export async function buildHorizon(filter) {
     .horizonBands(overlap) // Quantidade de overlaps 
     .enableZoom(zoomMode) // Zoom ativado ou não
     .transitionDuration([1]) // Duração das tranformações do gráfico
-    .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, sortMode))  // Ordem dos charts 
+    .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, getSortByValue(), getSortOrder()))
     .interpolationCurve(d3.curveBasis) // curveBasis, curveLinear, curveStep
     .seriesLabelFormatter((label) => {
       // Total de cada series
@@ -115,7 +118,7 @@ export async function buildHorizon(filter) {
       if (val != 0)
         return `<b>${series}</b> - ${sh4_descricao.length < 40 ? sh4_descricao : (sh4_descricao.substring(0, 40) + '...')}
         <br>
-        Data: ${fixMonth(ts.getMonth() + 1)}/${ts.getFullYear()}
+        <b>Data: ${fixMonth(ts.getMonth() + 1)}/${ts.getFullYear()}</b>
         <br>
         Valor FOB: U$ ${formatValues(fob)}
         <br>
@@ -124,7 +127,7 @@ export async function buildHorizon(filter) {
       else
         return ` <b>${series}</b> - ${sh4_descricao.length < 40 ? sh4_descricao : (sh4_descricao.substring(0, 40) + '...')}
         <br>
-        Data: ${fixMonth(ts.getMonth() + 1)}/${ts.getFullYear()}
+        <b>Data: ${fixMonth(ts.getMonth() + 1)}/${ts.getFullYear()}</b>
         <br>
         Nenhum dado registrado neste período!`
     })
@@ -151,7 +154,7 @@ export async function buildHorizon(filter) {
       $(`.calendar-month[month-index='${month - 1}'] .calendar-square`).addClass('calendar-square-bordered');
 
       // Atualiza o titulo do calendario
-      $('#calendar-title-wrapper').html('SH4 ' + series + ' - Ano ' + year);
+      $('#calendar-title-wrapper').html('<b>SH4 ' + series + ' - Ano ' + year + '</b>');
 
       let numRegs = horizonData.countRegs(series, year);
       let sum = 0;
@@ -188,7 +191,7 @@ export async function buildHorizon(filter) {
         $(`.calendar-month[month-index='${i}'] .calendar-square-color`)
           .css('background-color', color)
         $(`.calendar-month[month-index='${i}'] .calendar-square-text`)
-          .html(value);
+          .html('<b>' + value + '</b>');
       }
 
       // unblurElement('#calendar-wrapper');
@@ -254,67 +257,36 @@ export async function buildHorizon(filter) {
     }, 100);
   });
 
-  // Muda a ordenação do gráfico dinamicamente por fob
-  $('#fob-sort-radio').off();
-  $('#fob-sort-radio').on('change', function () {
+  // Muda a ordenação do HorizonChart
+  const sortListener = () => {
     showHorizonLoader('#horizon-wrapper');
 
     setTimeout(async () => {
       await horizon
-        .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, 'fob'))
+        .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, getSortByValue(), getSortOrder()))
         .transitionDuration([1]);
       hideHorizonLoader('#horizon-wrapper');
     }, 100);
+  };
 
-  });
-
-  // Muda a ordenação do gráfico dinamicamente por peso
-  $('#peso-sort-radio').off();
-  $('#peso-sort-radio').on('change', function () {
-    showHorizonLoader('#horizon-wrapper');
-
-    setTimeout(async () => {
-      await horizon
-        .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, 'peso'))
-        .transitionDuration([1]);
-      hideHorizonLoader('#horizon-wrapper');
-    }, 100);
-  });
-
-  // Muda a ordenação do gráfico para descendente
-  $('#sort-dec').off();
-  $('#sort-dec').on('click', async function () {
-    showHorizonLoader('#horizon-wrapper');
-
-    setTimeout(async () => {
-      await horizon
-        .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, getSortByValue()))
-        .transitionDuration([1]);
-      hideHorizonLoader('#horizon-wrapper');
-    }, 10);
-  });
-
-  // Muda a ordenação do gráfico para ascendente
-  $('#sort-asc').off();
-  $('#sort-asc').on('click', async function () {
-    await showHorizonLoader('#horizon-wrapper');
-
-    setTimeout(async () => {
-      await horizon
-        .seriesComparator((a, b) => compareSeriesBy(b, a, horizonData, getSortByValue()))
-        .transitionDuration([1]);
-      hideHorizonLoader('#horizon-wrapper');
-    }, 10);
-  });
+  $('#fob-sort-radio').on('click', () => sortListener());
+  $('#peso-sort-radio').on('click', () => sortListener());
+  $('#sort-dec').on('click', () => sortListener());
+  $('#sort-asc').on('click', () => sortListener());
 }
 
-// Função auxiliar para ordenar os charts de acordo com o modo escolhido (mode = 'fob' | 'peso')
-function compareSeriesBy(a, b, df, mode) {
+// Função auxiliar para ordenar os charts (mode = 'fob' | 'peso') (order = 'asc' | 'dec') 
+function compareSeriesBy(a, b, df, mode, order) {
   const aTotal = df.findTotalValueOf(a, mode);
   const bTotal = df.findTotalValueOf(b, mode);
 
-  if (aTotal <= bTotal) return 1;
-  else return -1;
+  // console.log(mode, order)
+  if (order == 'dec')
+    if (aTotal <= bTotal) return 1;
+    else return -1;
+  else
+    if (aTotal >= bTotal) return 1;
+    else return -1;
 }
 
 // Trata click inicial no horizonChart

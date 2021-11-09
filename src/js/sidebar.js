@@ -92,19 +92,8 @@ export function saveNote() {
     $('#save-note-modal .modal-footer .btn-success').off();
   });
 
-  // Formatando a data de registro da anotação em uma string simplificada
-  let now = new Date(Date.now());
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
-  const hour = now.getHours();
-  const minute = now.getMinutes();
-  const seconds = now.getSeconds();
-  const dateStr = `${fixMonth(day)}/${fixMonth(month)}/${year} - ${hour}:${fixMonth(minute)}`;
-  now = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + seconds;
-
   // Insere data de inicio do processo de salvamento no modal
-  $('#save-note-ts-modal').html(dateStr);
+  $('#save-note-ts-modal').html(new Date(Date.now()));
 
   // Mostra o modal de salvamento de anotação
   $('#save-note-modal').css('display', 'block');
@@ -120,13 +109,15 @@ export function saveNote() {
     const { filter, map } = await saveQuery();
 
     // console.log({ filter, map, note: { title, text }, now })
-    const response = await fetch('https://mighty-taiga-07455.herokuapp.com/addnote', {
+    // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/addnote', {
+    // const response = await fetch('https://agrovis-back-flask.herokuapp.com/anotacoes', {
+    const response = await fetch('http://127.0.0.1:5000/anotacoes', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ filter, map, note: { title, text }, now })
+      body: JSON.stringify({ filter, map, note: { title, text } })
     });
 
     // Fecha o modal de salvamento, e exibe um aviso de processo concluído
@@ -140,15 +131,20 @@ export function saveNote() {
 // Mostra o modal com a lista de anotações disponíveis
 export async function listNotes() {
   // Recupera a lista de anotações
-  const response = await fetch('https://mighty-taiga-07455.herokuapp.com/getnotes', {
-    method: 'POST',
+  // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/getnotes', {
+  // const response = await fetch('https://agrovis-back-flask.herokuapp.com/anotacoes', {
+  const response = await fetch('http://127.0.0.1:5000/anotacoes', {
+    method: 'GET',
   });
   const notes = await response.json();
 
   // Para cada anotação
   notes.forEach(d => {
     // Formata a data
-    d['REGISTER_DATE'] = new Date(d['REGISTER_DATE'].substring(0, d['REGISTER_DATE'].length - 1));
+    let fixDate = new Date(d['REGISTER_DATE']);
+    fixDate.setHours(fixDate.getHours() + 3);
+    d['REGISTER_DATE'] = fixDate;
+
     const year = d['REGISTER_DATE'].getFullYear();
     const month = d['REGISTER_DATE'].getMonth() + 1;
     const day = d['REGISTER_DATE'].getDate();

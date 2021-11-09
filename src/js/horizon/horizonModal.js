@@ -18,15 +18,8 @@ export async function showHorizonModal(data1, data2) {
   $('#modal-horizon-title').html(title);
   $('#modal-horizon-period').html("Período: " + period);
 
-  const response = await fetch('https://mighty-taiga-07455.herokuapp.com/sh4conversion', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      sh4,
-    })
+  const response = await fetch(`https://agrovis-back-flask.herokuapp.com/codigos/${sh4}`, {
+    method: 'GET',
   });
 
   const conversion = await response.json();
@@ -70,11 +63,12 @@ export async function showHorizonModal(data1, data2) {
   const reqFilter = {
     cities: auxFilter.cities,
     products: [sh4],
-    beginPeriod: year1 + '-' + month1 + '-1',
-    endPeriod: year2 + '-' + month2 + '-1',
+    beginPeriod: year1 + '-' + month1,
+    endPeriod: year2 + '-' + month2,
   }
 
-  const response2 = await fetch('https://mighty-taiga-07455.herokuapp.com/modaldata', {
+  // const response2 = await fetch('https://mighty-taiga-07455.herokuapp.com/modaldata', {
+  const response2 = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/modal', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -115,58 +109,59 @@ export async function showHorizonModal(data1, data2) {
 // quantidade por percentual no modal, no grafico de barra
 // notas no periodo do grafico
 
-async function getNotes(filter) {
-  $('#modal-horizon-notes-input').append(``);
+// async function getNotes(filter) {
+//   $('#modal-horizon-notes-input').append(``);
 
-  const response = await fetch('https://mighty-taiga-07455.herokuapp.com/notes', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      filter
-    })
-  });
-  const data = await response.json();
+//   // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/notes', {
+//   const response = await fetch('https://agrovis-back-flask.herokuapp.com/notes', {
+//     method: 'POST',
+//     headers: {
+//       Accept: 'application/json',
+//       'Content-Type': 'application/json'
+//     },
+//     body: JSON.stringify({
+//       filter
+//     })
+//   });
+//   const data = await response.json();
 
-  console.log(data);
+//   console.log(data);
 
-  data.forEach(d => {
-    const date = new Date(d['DATA_REGISTRO']);
-    const dateString = date.getDate() + '/' + fixMonth(date.getMonth() + 1) + '/' +
-      + date.getFullYear() + ' - ' + date.getHours() + ':' + date.getMinutes();
+//   data.forEach(d => {
+//     const date = new Date(d['DATA_REGISTRO']);
+//     const dateString = date.getDate() + '/' + fixMonth(date.getMonth() + 1) + '/' +
+//       + date.getFullYear() + ' - ' + date.getHours() + ':' + date.getMinutes();
 
-    printNoteOnModal(dateString, d['NOTA']);
-  });
-}
+//     printNoteOnModal(dateString, d['NOTA']);
+//   });
+// }
 
-async function printNoteOnModal(dateString, anotacao) {
-  $('#modal-horizon-notes').append(`
-  <div class="modal-horizon-note shadow">
-    <p class="modal-horizon-note-title">Anotado em: ${dateString}</p>
-    <textarea class="form-control" rows="2" disabled readonly>${anotacao}</textarea>
-  </div>`);
-}
+// async function printNoteOnModal(dateString, anotacao) {
+//   $('#modal-horizon-notes').append(`
+//   <div class="modal-horizon-note shadow">
+//     <p class="modal-horizon-note-title">Anotado em: ${dateString}</p>
+//     <textarea class="form-control" rows="2" disabled readonly>${anotacao}</textarea>
+//   </div>`);
+// }
 
-async function addNote(sh4, dataIni, dataFim, anotacao) {
-  await fetch('https://mighty-taiga-07455.herokuapp.com/addnote', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      sh4,
-      dataIni,
-      dataFim,
-      anotacao
-    })
-  });
+// async function addNote(sh4, dataIni, dataFim, anotacao) {
+//   await fetch('https://mighty-taiga-07455.herokuapp.com/addnote', {
+//     method: 'POST',
+//     headers: {
+//       Accept: 'application/json',
+//       'Content-Type': 'application/json'
+//     },
+//     body: JSON.stringify({
+//       sh4,
+//       dataIni,
+//       dataFim,
+//       anotacao
+//     })
+//   });
 
-  printNoteOnModal('Agora', anotacao);
-  $('#modal-horizon-notes-input-text').val('');
-}
+//   printNoteOnModal('Agora', anotacao);
+//   $('#modal-horizon-notes-input-text').val('');
+// }
 
 
 

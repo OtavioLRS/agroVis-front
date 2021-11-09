@@ -11,6 +11,67 @@ body::-webkit-scrollbar {
   display: none;
 }
 
+
+
+
+
+
+
+#dashboard-wrapper{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-row{
+  width: 100vw;
+  height: 50vh;
+  background-color: inherit;
+  display: flex;
+  flex-direction: row;
+}
+
+#dashboard-top-row{
+  display: grid;
+  padding: 10px 10px 5px 10px;
+  column-gap: 10px;
+  grid-template-rows: 100%;
+  grid-template-columns: 4fr 1fr 5fr;
+  grid-template-areas: 
+  "f c h"
+}
+
+#dashboard-bottom-row{
+  display: grid;
+  padding: 5px 10px 10px 10px;
+  column-gap: 10px;
+  grid-template-rows: 100%;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+  "m1 m2"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .blured {
   -webkit-transition: all 0.8s ease;
   -moz-transition: all 0.8s ease;
@@ -25,12 +86,8 @@ body::-webkit-scrollbar {
 }
 
 .container {
-  margin: 10px;
   border-radius: 25px;
   background-color: white;
-  position: absolute;
-  width: calc(50% - 5px);
-  height: calc(50% - 5px);
 }
 
 .hidden {
@@ -44,6 +101,21 @@ body::-webkit-scrollbar {
 .cursor-pointer{
   cursor: pointer;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ***************************************************** */
 /* Scroll bar */
 ::-webkit-scrollbar {

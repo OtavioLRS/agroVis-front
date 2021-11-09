@@ -9,7 +9,7 @@ import { handleSidebarExcel, handleSidebarList, handleSidebarRead, handleSidebar
 export async function preLoad() {
   // Nome do usuário
   const data = await JSON.parse(localStorage.getItem('session'));
-  $('#sidebar-username').html(data.user.name);
+  $('#sidebar-username').html(data.name);
 
   // Funções da sidebar
   $('#sidebar-item-excel').on("click", handleSidebarExcel);
@@ -24,7 +24,7 @@ export async function preLoad() {
     handleFilter();
   });
 
-  // Limitamento de datas no input do filtro
+  // Limite de datas no input do filtro
   $('#input-date1').on("input", limitDate0);
 
   // Criando o slider de numero de bandas
@@ -34,8 +34,16 @@ export async function preLoad() {
     $('#overlap-label').html("Layers: " + bandNumber);
   });
 
-  $('#input-sh4').select2();
-  $('#input-city').select2();
+  // Construindo os select2
+  $('#input-sh4').select2({ placeholder: 'Escolha os SH4s!', allowClear: true });
+  $('#input-city').select2({
+    placeholder: 'Escolhas as cidades!', allowClear: true,
+    sorter: data => data.sort((a, b) => a.title.localeCompare(b.title))
+  });
+  $('#input-continent').select2({
+    placeholder: 'Escolha os continentes!', allowClear: true,
+    sorter: data => data.sort((a, b) => a.index > b.index)
+  });
 
   // 'Esc' fecha aviso
   $(document).keydown(function (e) {
@@ -65,13 +73,19 @@ export async function preLoad() {
   // Mostra as notas
   $('#list-note-modal').on('show.bs.modal', listNotes);
 
-
-
   // Quando fechar o modal de lista de anotações
   $('#list-note-modal').on('hidden.bs.modal', () => {
     $('#list-note-modal-body').html('');
   });
 
+  // Quando selecionar a opção global em um input do filtro, desseleciona todas as outras
+  $('.select2-flag').on('change', function () {
+    const selected = $(this).select2('data').map(opt => opt.id);
+    // console.log(selected, selected.indexOf('0'))
+    if (selected.indexOf('0') != -1) {
+      $(this).val('0').trigger('change.select2')
+    }
+  })
 }
 
 /*
@@ -199,7 +213,15 @@ export async function getSortValue() {
   'peso' ou 'fob'
 */
 export function getSortByValue() {
-  return $('input[name=sort-radio]:checked', '#horizonsort-wrapper').val()
+  return $('input[name=sort-radio]:checked', '#horizonsort-wrapper').val();
+}
+
+/* 
+  Recupera a ordem que os dados devem ser ordenados no horizonChart
+  'asc' ou 'dec'
+*/
+export function getSortOrder() {
+  return $('input[name=sortorder-radio]:checked', '#horizonsort-wrapper').val();
 }
 
 /* 

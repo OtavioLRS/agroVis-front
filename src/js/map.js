@@ -1,13 +1,10 @@
 import { finishLoading, formatValues, changeLoadingMessage, getSortValue, cleanDashboard } from "./extra";
+import { updateMapMundi } from "./mundi";
 
 // Desenha o mapa
 export async function drawMainMap() {
-  // const height = window.innerHeight * 0.5 * 0.9 - 30;
-  // const width = window.innerWidth * 0.6 * 0.5 - 10;
-  // const width = window.innerWidth * 0.6 * 0.6;
-
   // Container do mapa
-  let svg = d3.select('#mainmap-container')
+  let svg = d3.select('#map-container #mainmap-container')
     .append('svg') // insere um SVG para o mapa
     .attr('id', 'map-svg')
     .attr('height', '90%')
@@ -17,7 +14,7 @@ export async function drawMainMap() {
   // console.log(height, width)
 
   // Div para os hovers com os titulos
-  let tooltip = d3.select('#mainmap-container')
+  let tooltip = d3.select('#map-container #mainmap-container')
     .append('div')
     .attr('class', 'hidden tooltip');
 
@@ -106,7 +103,9 @@ export function resetMap(svg, zoom) {
 export async function getCitiesNames() {
 
   // Requisição para recuperar os dados dos municípios
-  await fetch('https://mighty-taiga-07455.herokuapp.com/municipios', {
+  // await fetch('https://mighty-taiga-07455.herokuapp.com/municipios', {
+  // await fetch('https://agrovis-back-flask.herokuapp.com/cidades', {
+  await fetch('http://127.0.0.1:5000/cidades', {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -119,15 +118,17 @@ export async function getCitiesNames() {
 
         // Aproveita para construir o input de cidades (opção padrão com todas as cidades)
         // $('#input-city').append($('<option value=0>Todas as cidades</option>'));
-        $('#input-city').append($('<option value=0>Todas as cidades</option>'));
+        $('#input-city').append($('<option value=0 title="1">Todas as cidades</option>'));
 
         response.forEach((city) => {
           // Para cada cidade, busca o shape equivalente pela classe, e atualiza o HTML interno com seu nome
           $('#' + city.CO_MUN_GEO.toString()).text(city.NO_MUN_MIN);
 
           // Adiciona a cidade no input de cidades
-          let option = $('<option></option>').attr({ "value": city.CO_MUN_GEO });
+          let option = $('<option></option>');
+          option.attr({ "value": city.CO_MUN_GEO });
           option.text(city.NO_MUN_MIN);
+          option.attr({ "title": city.NO_MUN_MIN })
           $('#input-city').append(option);
         });
         // Seleciona a opção default com todas as cidades
@@ -138,48 +139,34 @@ export async function getCitiesNames() {
       }));
 }
 
-// Atualiza os dados do mapa com base em um filtro presente no 'localStorage', e
-//  em um produto recebido por parametro 'selected'
-export async function updateMap(selected) {
+// Atualiza os dados do mapa com base em um filtro presente no 'localStorage'
+export async function updateMap(selected = 0) {
   /*
     Recupera o filtro de dados do mapa
  
-    filterAux =
+    filter =
         cities - lista de cidades, [] = todas 
         products - lista de produtos que possuem dados
+        continents - lista de continentes, [] = todos
         beginPeriod - data inicial
         endPeriod - data final
         sortValue - dado utilizado como padrão (peso ou valor fob)
  
     OBS: produtos sem nenhum dado não podem ser selecionados para exibição no mapa
   */
-  const filterAux = await JSON.parse(localStorage.getItem('filter'));
-
-  /*
-    Recupera o filtro de dados do mapa
- 
-    filter =
-      cities - lista de cidades, [] = todas 
-      products - produto a ser exibido, UNITARIO (recebido por parametro)
-      beginPeriod - data inicial
-      endPeriod - data final
-      sortValue - dado utilizado como padrão (peso ou valor fob)
-  */
-  const filter = {
-    cities: filterAux.cities,
-    products: [selected],
-    beginPeriod: filterAux.beginPeriod,
-    endPeriod: filterAux.endPeriod,
-    sortValue: filterAux.sortValue == 'fob' ? 'VL_FOB' : 'KG_LIQUIDO'
-  }
+  let filter = await JSON.parse(localStorage.getItem('filter'));
+  filter.products = selected == 0 ? filter.products : [selected]
+  filter.sortValue = filter.sortValue == 'fob' ? 'VL_FOB' : 'KG_LIQUIDO';
 
   changeLoadingMessage('Atualizando o mapa...');
 
-  // Atualizando o input de alternância de produtos, recebe o produto que está selecionado no momento
+  // Atualizando o input de alternância de produtos
   updateMapSh4Input(selected);
 
   // Realiza a query do filtro inserido
-  const response = await fetch('https://mighty-taiga-07455.herokuapp.com/mapdata', {
+  // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/mapdata', {
+  // const response = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/mapa', {
+  const response = await fetch('http://127.0.0.1:5000/exportacao/mapa', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -196,7 +183,11 @@ export async function updateMap(selected) {
   const colors = createFrequencyScale(mapData, filter.sortValue);
 
   // Preenche o mapa com os dados recebidos
-  updateMapData(mapData, colors, filter.sortValue);
+  updateMapData(mapData, colors, filter.sortValue, selected);
+
+
+  // Preenche o mapa mundi
+  updateMapMundi()
 
 
   $('#input-classnumber').on('change', function () {
@@ -204,13 +195,13 @@ export async function updateMap(selected) {
     const colors = createFrequencyScale(mapData, filter.sortValue);
 
     // Preenche o mapa com os dados recebidos
-    updateMapData(mapData, colors, filter.sortValue);
+    updateMapData(mapData, colors, filter.sortValue, selected);
   });
 }
 
 // Atualiza o input de produtos que podem ser exibidos no mapa
-async function updateMapSh4Input(selectedSh4) {
-  // Recupera o filtro para realizar a query dos dados do mapa
+async function updateMapSh4Input(selected) {
+  // // Recupera o filtro para realizar a query dos dados do mapa
   const filter = await JSON.parse(localStorage.getItem('filter'));
 
   // Ordenando os produtos para facilitar a visibilidade
@@ -218,26 +209,27 @@ async function updateMapSh4Input(selectedSh4) {
 
   // Limpa o input de produtos anterior e constrói um novo
   $('#input-sh4-map-container').html('');
-  const input = $('<select type="text" class="form-select" id="input-sh4-map" style="width: 100%; height: 100%;"></select>');
+  const input = $('<select type="text" class="form-select" id="input-sh4-map"></select>');
   $('#input-sh4-map-container').append(input);
 
   // Populando o input de produtos
+  input.append(`<option value=0 label='Total' class='option-sh4'>Total</option>`);
+
   filter.products.forEach(d => {
     const option = $('<option></option>');
     option.attr({ "value": d });
     option.attr({ "label": d });
     option.addClass("option-sh4");
     option.text(d);
-    $('#input-sh4-map').append(option);
+    input.append(option);
   });
-  $(`#mainmap-container option[label='${selectedSh4}']`).attr('selected', 'selected');
-  input.select2();
-  // Selecionando o primeiro produto escolhido
-  // $(`#input-sh4-map`).val(selectedSh4);
+
+  input.select2({ sorter: data => data.sort((a, b) => a.value > b.value) });
+  input.val(selected).trigger('change.select2');
 
   // Ao trocar a opção selecionada no input ...
   input.on('change', () => {
-    const newProduct = $('option:selected', '#input-sh4-map ').val();
+    const newProduct = $('option:selected', '#input-sh4-map').val();
     // console.log('Novo produto selecionado', newProduct);
     // ... o mapa é atualizado
     updateMap(parseInt(newProduct));
@@ -245,10 +237,11 @@ async function updateMapSh4Input(selectedSh4) {
 }
 
 // Atualiza os dados do mapa
-export async function updateMapData(mapData, colors, sortValue) {
+export async function updateMapData(mapData, colors, sortValue, selected) {
   try {
     // Atualiza o título do mapa
-    changeMapTitle(mapData[0]['SH4'] + ' - ' + mapData[0]['NO_SH4_POR']);
+    if (selected == 0) changeMapTitle('Total de todos os SH4s');
+    else changeMapTitle(mapData[0]['SH4'] + ' - ' + mapData[0]['NO_SH4_POR']);
 
     // Limpa todas as cidades
     $('.city-active').each(function () {
@@ -299,7 +292,7 @@ function createFrequencyScale(data, dataType) {
   ];
 
   // Ordena, removendo repetidos
-  data = Array.from(new Set(data.map(d => d[dataType])));
+  data = Array.from(new Set(data.map(d => parseInt(d[dataType]))));
   data = data.sort(function (a, b) {
     return a - b;
   });
