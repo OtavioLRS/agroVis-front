@@ -1,5 +1,5 @@
 /* ***************************************************** */
-/* Map  */
+/* Mapa mundi  */
 #mundi-container {
   grid-area: m2;
   width: 100%;
@@ -21,4 +21,25 @@
 #mundi-svg {
   border-radius: 25px;
   background-color: white;
+}
+
+
+/* ***************************************************** */
+/* Botão de centralização de mapa */
+#mundimap-container #centralize-container{
+  width: fit-content;
+  height: fit-content;
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  background-color: white;
+  cursor: pointer;
+}
+
+#mundimap-container #centralize-container:hover {
+  opacity: 0.7;
+}
+
+#mundimap-container #centralize-container:active {
+  opacity: 0.5;
 }

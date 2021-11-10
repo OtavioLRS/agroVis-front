@@ -1,4 +1,3 @@
-import { buildCalendar } from './calendar.js';
 import { startLoading, finishLoading, changeLoadingMessage, getSortValue, getSortByValue, cleanDashboard, clearSelect2Input, createDraggable, fixMonth } from './extra.js'
 import { buildHorizon } from './horizon/horizon.js';
 import { updateMap } from './map.js';

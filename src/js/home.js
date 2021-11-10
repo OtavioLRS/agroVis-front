@@ -3,7 +3,6 @@ import { preLoad, startLoading, changeLoadingMessage, finishLoading } from './ex
 import { drawMainMap, getCitiesNames } from "./map.js";
 import { drawMundiMap } from "./mundi.js";
 import { buildFilters, handleFilter } from "./filter.js";
-import { buildCalendar } from "./calendar.js";
 import { validateLoginInHome } from "./loginFunctions";
 
 // Verifica login
@@ -21,7 +20,5 @@ drawMundiMap();
 // Filtros
 changeLoadingMessage('Construindo os filtros...')
 buildFilters();
-
-buildCalendar();
 
 // finishLoading();

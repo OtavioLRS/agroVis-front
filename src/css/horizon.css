@@ -1,4 +1,5 @@
-/* Horizon */
+/* ***************************************************** */
+/* Horizon principal */
 #horizon-container {
   grid-area: h;
   position: relative;
@@ -8,7 +9,8 @@
   max-width: none;
   padding: 0px !important;
 }
-
+/* ***************************************************** */
+/* Horizon - barra de opções */
 #horizonoptions-wrapper{
   border-radius: 25px 25px 0px 0px;
   background-color: whitesmoke;
@@ -49,7 +51,56 @@
   justify-content: center;
   flex-direction: column;
 }
+/* ***************************************************** */
+/* Horizon - charts */
+#horizon-wrapper {
+  width: 100%;
+  height: 90%;
+  padding-left: 10px;
+  padding-right: 10px;
+  overflow: scroll;
+}
+/* ***************************************************** */
+/* Misc do horizon */
+span.label{
+  font-weight: 700;
+  background-color: rgba(255, 255, 255, 0.65);
+  text-shadow: 1px 1px 1px lightgray;
+}
 
+.slider {
+  width: 80%;
+  height: 100%;
+}
+
+.sort-icon {
+  cursor: pointer;
+}
+
+.sort-icon:hover {
+  opacity: 0.5;
+}
+
+.sort-icon:active {
+  opacity: 0.3;
+}
+
+#sort-dec {
+  margin-left: 100px;
+}
+
+#sort-asc {
+  margin-left: 10px;
+}
+
+.horizon-series {
+  -webkit-transition: all 0.8s ease;
+  -moz-transition: all 0.8s ease;
+  -o-transition: all 0.8s ease;
+  transition: all 0.8s ease;
+}
+/* ***************************************************** */
+/* Aviso de click no horizon */
 #modal-click {
   z-index: 10;
   position: absolute;
@@ -61,15 +112,8 @@
   padding-bottom: 5%;
   /* text-align: center; */
 }
-
-#horizon-wrapper {
-  width: 100%;
-  height: 90%;
-  padding-left: 10px;
-  padding-right: 10px;
-  overflow: scroll;
-}
-
+/* ***************************************************** */
+/* Modal do horizon */
 #modal-horizon-barchart{
   overflow: scroll;
 }
@@ -108,56 +152,6 @@
   
 }
 
-/* #modal-horizon-notes-input-text{} */
-
 #modal-horizon-notes-input-btn{
   float: right;
-}
-
-
-
-
-
-
-
-
-
-
-span.label{
-  font-weight: 700;
-  background-color: rgba(255, 255, 255, 0.5);
-  text-shadow: 1px 1px 2px white;
-}
-
-.slider {
-  /* margin-left: 10%; */
-  width: 80%;
-  height: 100%;
-}
-
-.sort-icon {
-  cursor: pointer;
-}
-
-.sort-icon:hover {
-  opacity: 0.5;
-}
-
-.sort-icon:active {
-  opacity: 0.3;
-}
-
-#sort-dec {
-  margin-left: 100px;
-}
-
-#sort-asc {
-  margin-left: 10px;
-}
-
-.horizon-series {
-  -webkit-transition: all 0.8s ease;
-  -moz-transition: all 0.8s ease;
-  -o-transition: all 0.8s ease;
-  transition: all 0.8s ease;
 }
