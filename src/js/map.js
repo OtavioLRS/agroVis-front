@@ -1,5 +1,5 @@
 import { finishLoading, formatValues, changeLoadingMessage, getSortValue, cleanDashboard } from "./extra";
-import { updateMapMundi } from "./mundi";
+import { updateMundiData } from "./mundi";
 
 // Desenha o mapa
 export async function drawMainMap() {
@@ -32,11 +32,11 @@ export async function drawMainMap() {
     .projection(projection);
 
   // Aplica os shapes no SVG
-  svg.selectAll('.city')
+  svg.selectAll('.polygon')
     .data(mapData.features)
     .enter()
     .append('path')
-    .attr('class', 'city')
+    .attr('class', 'polygon')
     .attr('id', (shape) => {
       // Define o id do shape como o código de sua cidade
       return shape.properties.codarea;
@@ -140,20 +140,9 @@ export async function getCitiesNames() {
 }
 
 // Atualiza os dados do mapa com base em um filtro presente no 'localStorage'
+// Se tiver um SH4 selecionado, busca só esse SH4, senão, busca todos os SH4s com dados (total)
 export async function updateMap(selected = 0) {
-  /*
-    Recupera o filtro de dados do mapa
- 
-    filter =
-        cities - lista de cidades, [] = todas 
-        products - lista de produtos que possuem dados
-        continents - lista de continentes, [] = todos
-        beginPeriod - data inicial
-        endPeriod - data final
-        sortValue - dado utilizado como padrão (peso ou valor fob)
- 
-    OBS: produtos sem nenhum dado não podem ser selecionados para exibição no mapa
-  */
+  // Recupera o filtro de dados do mapa
   let filter = await JSON.parse(localStorage.getItem('filter'));
   filter.products = selected == 0 ? filter.products : [selected]
   filter.sortValue = filter.sortValue == 'fob' ? 'VL_FOB' : 'KG_LIQUIDO';
@@ -163,9 +152,22 @@ export async function updateMap(selected = 0) {
   // Atualizando o input de alternância de produtos
   updateMapSh4Input(selected);
 
+  // Preenche o mapa com os dados recebidos
+  await updateMapData(filter, selected);
+
+  // Preenche o mapa mundi
+  await updateMundiData(filter);
+
+  // Quando mudar o numero de classes, atualiza
+  $('#input-classnumber').on('change', async function () {
+    await updateMapData(filter, selected);
+    await updateMundiData(filter);
+  });
+}
+
+// Atualiza os dados do mapa
+export async function updateMapData(filter, selected) {
   // Realiza a query do filtro inserido
-  // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/mapdata', {
-  // const response = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/mapa', {
   const response = await fetch('http://127.0.0.1:5000/exportacao/mapa', {
     method: 'POST',
     headers: {
@@ -179,24 +181,25 @@ export async function updateMap(selected = 0) {
   const mapData = await response.json();
   // console.log('Map Data', mapData);
 
+  // Número de classes
+  const numClasses = $('#input-classnumber').val();
+
   // Função de calculo de cores
-  const colors = createFrequencyScale(mapData, filter.sortValue);
+  const colors = createFrequencyScale(mapData, numClasses, filter.sortValue, 'mainmap-container');
 
-  // Preenche o mapa com os dados recebidos
-  updateMapData(mapData, colors, filter.sortValue, selected);
+  // Atualiza o título do mapa
+  if (selected == 0) changeMapTitle('Total de todos os SH4s');
+  else changeMapTitle(mapData[0]['SH4'] + ' - ' + mapData[0]['NO_SH4_POR']);
 
+  // Limpa todas os poligonos de cidade
+  $('#map-svg .polygon-active').each(function () {
+    cleanPolygon($(this));
+  })
 
-  // Preenche o mapa mundi
-  updateMapMundi()
-
-
-  $('#input-classnumber').on('change', function () {
-    // Função de calculo de cores
-    const colors = createFrequencyScale(mapData, filter.sortValue);
-
-    // Preenche o mapa com os dados recebidos
-    updateMapData(mapData, colors, filter.sortValue, selected);
-  });
+  // Preenche cada poligono de cidade com os dados referentes
+  mapData.forEach(d => {
+    fillPolygon(d, colors[0](d[filter.sortValue]), colors[1](d[filter.sortValue]), '#map-svg', 'CO_MUN', 'NO_MUN_MIN');
+  })
 }
 
 // Atualiza o input de produtos que podem ser exibidos no mapa
@@ -236,35 +239,6 @@ async function updateMapSh4Input(selected) {
   })
 }
 
-// Atualiza os dados do mapa
-export async function updateMapData(mapData, colors, sortValue, selected) {
-  try {
-    // Atualiza o título do mapa
-    if (selected == 0) changeMapTitle('Total de todos os SH4s');
-    else changeMapTitle(mapData[0]['SH4'] + ' - ' + mapData[0]['NO_SH4_POR']);
-
-    // Limpa todas as cidades
-    $('.city-active').each(function () {
-      cleanCity($(this));
-    })
-
-    // Preenche cada shape de cidade com os dados referentes
-    mapData.forEach(d => {
-      fillCity(d, colors[0](d[sortValue]), colors[1](d[sortValue]));
-    })
-  }
-
-  catch (err) {
-    // Nenhum dado foi encontrado para os filtros
-    const modal = new bootstrap.Modal(document.getElementById('modal-nodata-found'));
-    modal.show();
-
-    cleanDashboard();
-
-    finishLoading();
-  }
-}
-
 // Atualiza o título do mapa
 export function changeMapTitle(title) {
   const sh4 = title.split(' - ')[0];
@@ -274,10 +248,7 @@ export function changeMapTitle(title) {
 }
 
 // Cria uma função para calcular a cor do mapa de uma cidade
-function createFrequencyScale(data, dataType) {
-  const numClasses = $('#input-classnumber').val();
-  // console.log(numClasses);
-
+export function createFrequencyScale(data, numClasses, dataType, parent) {
   /* Retirado de: https://colorbrewer2.org/#type=sequential&scheme=YlOrRd */
   const hexColors = [
     [], [],
@@ -333,29 +304,26 @@ function createFrequencyScale(data, dataType) {
     .domain([0, d3.max(data)]) // Classes absolutas de mesmo tamanho
     .range(Array.from(Array(classes.length + 1).keys()))
 
-  // Legenda antiga
-  // printScaleLegendSVG(0, d3.max(data.map(d => d[dataType])), hexColors[numClasses]);
-
   // Legenda nova
-  printScaleLegend(hexColors[numClasses]);
+  printScaleLegend(hexColors[numClasses], parent);
 
   return [colors, index];
 }
 
 // Desenha a legenda do mapa
-function printScaleLegend(colorScheme) {
+function printScaleLegend(colorScheme, parent) {
   // Remove legenda antiga e adiciona o container da nova
-  $('#map-legend').remove();
-  d3.select('#mainmap-container').append('div').attr('id', 'map-legend');
+  $(`#${parent}-legend`).remove();
+  d3.select(`#${parent}`).append('div').attr('id', `${parent}-legend`).attr('class', 'map-legend');
 
   colorScheme.forEach((c, i) => {
-    addLegendTick(c, i);
+    addLegendTick(c, i, parent);
   })
 }
 
 // Adiciona uma nova classe para a legenda
-function addLegendTick(color, index) {
-  d3.select('#map-legend')
+function addLegendTick(color, index, parent) {
+  d3.select(`#${parent}-legend`)
     .append('div')
     .attr('class', 'legend-tick legend-tick-clicked')
     .style('background-color', color)
@@ -368,40 +336,46 @@ function addLegendTick(color, index) {
       // Depois verifica se está selecionado
       if ($(elem[0]).hasClass("legend-tick-clicked")) {
         // Deve-se colorir as cidades associadas
-        $(`.city[color-index='${index}']`).each(function (x, e) { $(e).css('fill', color) });
+        $(`#${parent} .polygon[color-index='${index}']`).each(function (x, e) { $(e).css('fill', color) });
       }
       // Senão, fica branco
       else {
-        $(`.city[color-index='${index}']`).each(function (x, e) { $(e).css('fill', 'white') });
+        $(`#${parent} .polygon[color-index='${index}']`).each(function (x, e) { $(e).css('fill', 'white') });
       }
     })
 }
 
-// Recebe um elemento jquery referente ao desenho de uma cidade, e limpa seus dados
-export function cleanCity(element) {
+// Recebe um elemento jquery referente ao desenho de um poligono, e limpa seus dados
+export function cleanPolygon(element) {
   // Deseleciona a cidade
-  element.removeClass('city-active');
+  element.removeClass('polygon-active');
   // Limpa o texto dela, deixando somente o nome da cidade
   element.text(element.text().split(' <br>')[0]);
   // Limpa a cor 
   element.css('fill', '');
+  // Limpa o index de cor
   element.attr('color-index', '-1');
 }
 
-// Recebe um dataframe referente aos dados de uma cidade, e atualiza suas propriedades no mapa
-function fillCity(data, color, index) {
-  let cod = '#' + data['CO_MUN'].toString();
+// Recebe um dataframe referente aos dados de um poligono, e atualiza suas propriedades no mapa
+// parent - '#mainmap-container ou #mundimap-container'
+// id - atributo do dataframe referente ao código do poligono
+// text - atributo do dataframe referente ao 'nome' do poligono
+export function fillPolygon(data, color, index, parent, id, text) {
+  // Seletor do poligono -  - id do poligono
+  let cod = parent + ' #' + data[id].toString();
 
-  $(cod).text(`${data['NO_MUN_MIN']} 
+  $(cod).text(`${data[text]}
   <br>
   Valor FOB: U$ ${formatValues(data['VL_FOB'])}
   <br>
   Peso Líquido: ${formatValues(data['KG_LIQUIDO'])} kg`);
 
-  $(cod).addClass('city-active');
-
+  // Poligono possui dados
+  $(cod).addClass('polygon-active');
+  // Colore o poligono
   $(cod).css('fill', color);
-
+  // Index da cor para seletores futuros
   $(cod).attr('color-index', index);
 }
 
@@ -434,31 +408,3 @@ function fillCity(data, color, index) {
 
 
 
-
-
-function printScaleLegendSVG(min, max, colorScheme) {
-  const colors = d3.scaleQuantize()
-    .domain([0, colorScheme.length])
-    .range(colorScheme)
-
-  $('#map-legend').remove();
-  const svg = d3.select('#map-svg').append('g').attr('id', 'map-legend');
-
-  console.log(colors.range())
-  const bars = svg.selectAll("tick")
-    .data(colors.range())
-    .enter().append("rect")
-    .attr("class", "legend-tick")
-    .attr("x", (d, i) => { console.log("x", d, i); return i * 25 })
-    .attr("y", 0)
-    .attr("height", 20)
-    .attr("width", 25)
-    .style("fill", (d, i) => colors(i))
-    .on("mousemove", function (d, i) {
-      $('.city').each(function (x, elem) { $(elem).css('fill', colorScheme[$(elem).attr('color-index')]) })
-      $(`.city[color-index='${i}']`).each(function (x, elem) { $(elem).css('fill', 'lightgreen') })
-    })
-    .on("mouseout", (d, i) => $('.city').each(function (x, elem) { $(elem).css('fill', colorScheme[$(elem).attr('color-index')]) }))
-
-  // svg.select('#map-legend').attr("transform", "translate([10, 50])")
-}

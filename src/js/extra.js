@@ -1,6 +1,6 @@
 import { readFile, handleFilter } from "./filter";
 import { hideClickAlert } from "./horizon/horizon";
-import { changeMapTitle, cleanCity } from "./map";
+import { changeMapTitle, cleanPolygon } from "./map";
 import { handleSidebarExcel, handleSidebarList, handleSidebarRead, handleSidebarSave, handleLogout, listNotes } from "./sidebar";
 
 /*
@@ -262,8 +262,8 @@ export function cleanDashboard() {
   // Deleta o Horizon Chart anterior
   d3.select('#horizon-wrapper').select('div').remove();
   // Limpa o mapa
-  $('.city-active').each(function () {
-    cleanCity($(this));
+  $('.polygon-active').each(function () {
+    cleanPolygon($(this));
   });
   // Retira o titulo do mapa
   changeMapTitle('---');
@@ -271,7 +271,7 @@ export function cleanDashboard() {
   $('#input-sh4-map-container').html('');
 
   // Limpa a legenda do mapa
-  $('#map-legend').html('');
+  $('.map-legend').html('');
 
   // Limpa o calendário
   $('#calendar-title-wrapper').html('');

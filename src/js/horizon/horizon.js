@@ -1,7 +1,7 @@
 import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, getSortValue, cleanDashboard, getScaleByValue, fixMonth, blurElement, unblurElement, median, getSortOrder, } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
 import { HorizonUnit, HorizonData } from './horizonClasses';
-import { changeMapTitle, cleanCity } from '../map';
+import { changeMapTitle, cleanPolygon } from '../map';
 import { showHorizonModal } from './horizonModal';
 
 // Constroi o horizon chart
@@ -89,10 +89,11 @@ export async function buildHorizon(filter) {
   // Renderiza o novo
   d3.select('#horizon-wrapper').node().append(domElem);
 
+  // Dimensões do chart
   const { height, width } = d3.select('#horizon-wrapper').node().getBoundingClientRect();
   const pl = d3.select('#horizon-wrapper').style('padding-left').replace('px', '');
   const pr = d3.select('#horizon-wrapper').style('padding-right').replace('px', '');
-  console.log(pl, pr)
+  // console.log('padding-left', pl, 'padding-right', pr)
 
   const horizon = HorizonTSChart()(domElem)
     .data(horizonData.units) // Dataframe

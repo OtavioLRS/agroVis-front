@@ -205,7 +205,7 @@ export async function handleFilter() {
       // Seta o filterMap no localStorage, para ser acessado pelo mapa
       await localStorage.setItem('filter', JSON.stringify(filterMap));
 
-      // Atualiza os dados do mapa - filterMap.products[0] -> primeiro produto a ser exibido no mapa
+      // Atualiza os dados do mapa
       await updateMap();
 
       finishLoading();
