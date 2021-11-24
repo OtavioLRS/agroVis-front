@@ -77,7 +77,7 @@ export class HorizonData {
     // console.log(year, typeof year)
     // console.log(this.units[0].data.getFullYear())
 
-    const filtered = this.units.filter(unit => unit.data.getFullYear() == year && unit.sh4_codigo == sh4 && unit.fob != 0 && unit.peso != 0);
+    const filtered = this.units.filter(unit => unit.data.getFullYear() == year && unit.sh4_codigo == sh4 && (unit.fob != 0 || unit.peso != 0));
 
     // console.log('filtro essa buct', filtered);
 

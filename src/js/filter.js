@@ -1,6 +1,6 @@
 import { startLoading, finishLoading, changeLoadingMessage, getSortValue, getSortByValue, cleanDashboard, clearSelect2Input, createDraggable, fixMonth } from './extra.js'
 import { buildHorizon } from './horizon/horizon.js';
-import { updateMap } from './map.js';
+import { updateMap, updateMapSh4Input } from './map.js';
 
 // Função principal para a construção dos filtros
 export async function buildFilters() {
@@ -200,12 +200,16 @@ export async function handleFilter() {
 
       // Utilizar 'FOB' ou 'PESO'
       filterMap.sortValue = $('input[name=datatype-radio]:checked', '#container-datatype').val();
+      filterMap.sortValue = filterMap.sortValue == 'fob' ? 'VL_FOB' : 'KG_LIQUIDO';
 
       // Seta o filterMap no localStorage, para ser acessado pelo mapa
       await localStorage.setItem('filter', JSON.stringify(filterMap));
 
+      // Atualizando o input de alternância de produtos
+      await updateMapSh4Input();
+
       // Atualiza os dados do mapa
-      await updateMap();
+      await updateMap(0);
 
       finishLoading();
     }, 100);

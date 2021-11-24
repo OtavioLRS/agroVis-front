@@ -524,37 +524,106 @@
       </div>
 
     </div>
+
+
     <div class="dashboard-row" id="dashboard-bottom-row">
       <!-- Maps  -->
       <div class="container shadow-lg" id="map-container">
+        <div class="text-center text-wrap" id="maptitle-container"> --- </div>
+
+        <!-- Map -->
         <div id="mainmap-container">
-          <div class="text-center text-wrap" id="maptitle-container"> --- </div>
           <div id="input-sh4-map-container"></div>
 
           <div id="centralize-container" title="Centralizar o mapa">
             <i class="bi bi-pin-map-fill" id="centralize-map-icon"></i>
           </div>
+        </div>
 
-          <div class="btn-group dropstart" id="btn-map-config">
-            <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              <i class="bi bi-sliders"></i>
-            </button>
-
-            <ul class="dropdown-menu">
-              Numero de classes: <input type="number" min="2" max="9" id="input-classnumber" value="3">
-            </ul>
+        <!-- Loading -->
+        <div class="hidden soft-loader-wrapper">
+          <div class="spinner-border text-primary" id="soft-loader" role="status">
+            <span class="sr-only"></span>
           </div>
+        </div>
 
+        <!-- Config -->
+        <div class="btn-group btn-map-config dropstart">
+          <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-gear-fill"></i>
+          </button>
+
+          <ul class="dropdown-menu">
+            <div class="map-config-wrapper">
+
+              <div class="config-classnumber-wrapper">
+                Numero de classes:
+                <input type="number" min="2" max="9" id="input-classnumber-map" value="3">
+              </div>
+
+              <div class="config-classlimits-wrapper">
+
+
+                <div class="classlimits-wrapper" id="classlimits-map"></div>
+
+
+              </div>
+
+
+
+
+
+
+            </div>
+          </ul>
         </div>
       </div>
 
       <div class="container shadow-lg" id="mundi-container">
-        <div id="mundimap-container">
+        <div class="text-center text-wrap" id="mundititle-container"> Exportação por continentes </div>
 
+        <!-- Map -->
+        <div id="mundimap-container">
+          <div id="centralize-container" title="Centralizar o mapa">
+            <i class="bi bi-pin-map-fill" id="centralize-mundi-icon"></i>
+          </div>
         </div>
+
+        <!-- Loading -->
+        <div class="hidden soft-loader-wrapper">
+          <div class="spinner-border text-primary" id="soft-loader" role="status">
+            <span class="sr-only"></span>
+          </div>
+        </div>
+
+        <!-- Config -->
+        <div class="btn-group btn-map-config dropstart">
+          <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-gear-fill"></i>
+          </button>
+
+          <ul class="dropdown-menu">
+            <div class="map-config-wrapper">
+
+              <div class="config-classnumber-wrapper">
+                Numero de classes:
+                <input type="number" min="2" max="9" id="input-classnumber-mundi" value="3">
+              </div>
+
+              <div class="config-classlimits-wrapper">
+
+                <div class="classlimits-wrapper" id="classlimits-mundi"></div>
+
+              </div>
+
+
+
+            </div>
+        </div>
+        </ul>
       </div>
     </div>
+  </div>
 
   </div>
 </body>

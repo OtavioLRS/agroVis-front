@@ -18,7 +18,8 @@ export async function showHorizonModal(data1, data2) {
   $('#modal-horizon-title').html(title);
   $('#modal-horizon-period').html("Período: " + period);
 
-  const response = await fetch(`https://agrovis-back-flask.herokuapp.com/codigos/${sh4}`, {
+  // const response = await fetch(`https://agrovis-back-flask.herokuapp.com/codigos/${sh4}`, {
+  const response = await fetch(`http://127.0.0.1:5000/codigos/${sh4}`, {
     method: 'GET',
   });
 
@@ -68,7 +69,7 @@ export async function showHorizonModal(data1, data2) {
   }
 
   // const response2 = await fetch('https://mighty-taiga-07455.herokuapp.com/modaldata', {
-  const response2 = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/modal', {
+  const response2 = await fetch('http://127.0.0.1:5000/exportacao/modal', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -168,7 +169,7 @@ export async function showHorizonModal(data1, data2) {
 
 function addBarChartToModal(data, dataType) {
   // Tooltip do hover
-  const tooltip = d3.select("#modal-horizon-barchart").append("div").attr("class", "tooltip").style("display", "none");
+  const tooltip = d3.select("#modal-horizon-barchart").append("div").attr("class", "tooltip-custom").style("display", "none");
 
   const margin = { top: 30, right: 30, bottom: 100, left: 60 };
 

@@ -1,4 +1,4 @@
-import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showHorizonLoader, hideHorizonLoader, getSortValue, cleanDashboard, getScaleByValue, fixMonth, blurElement, unblurElement, median, getSortOrder, } from '../extra';
+import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showBluredLoader, hideBluredLoader, getSortValue, cleanDashboard, getScaleByValue, fixMonth, blurElement, unblurElement, median, getSortOrder, } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
 import { HorizonUnit, HorizonData } from './horizonClasses';
 import { changeMapTitle, cleanPolygon } from '../map';
@@ -116,7 +116,7 @@ export async function buildHorizon(filter) {
     })
     .tooltipContent(({ series, val, ts, points: [{ sh4_descricao, fob, peso }] }) => {
       ts = new Date(ts);
-      if (val != 0)
+      if (fob != 0 || peso != 0)
         return `<b>${series}</b> - ${sh4_descricao.length < 40 ? sh4_descricao : (sh4_descricao.substring(0, 40) + '...')}
         <br>
         <b>Data: ${fixMonth(ts.getMonth() + 1)}/${ts.getFullYear()}</b>
@@ -198,22 +198,20 @@ export async function buildHorizon(filter) {
       // unblurElement('#calendar-wrapper');
     });
 
-  // Muda o numero de bandas dinamicamente
+  // Muda o numero de layers dinamicamente
   $('#overlap-slider').off();
-  $('#overlap-slider').on('input', function () {
-    showHorizonLoader('#horizon-wrapper');
+  $('#overlap-slider').on('input', async function () {
+    await showBluredLoader('#horizon-wrapper');
 
     setTimeout(async () => {
       // Número de bands
       const bandNumber = $(this).val().toString();
       $('#overlap-label').html("Layers: " + bandNumber);
       // Re-renderiza o gráfico
-      await horizon
-        .horizonBands(bandNumber)
-      // .transitionDuration([1]);
+      horizon.horizonBands(bandNumber)
 
-      await hideHorizonLoader('#horizon-wrapper');
-    }, 100)
+      await hideBluredLoader('#horizon-wrapper');
+    }, 1)
   });
 
   // Controla o zoom
@@ -225,49 +223,40 @@ export async function buildHorizon(filter) {
 
   // Muda a escala do HorizonChart unitariamente
   $('#unit-scale-radio').off();
-  $('#unit-scale-radio').on('change', function () {
-    showHorizonLoader('#horizon-wrapper');
+  $('#unit-scale-radio').on('change', async () => {
+    await showBluredLoader('#horizon-wrapper');
 
     setTimeout(async () => {
-      await horizon
-        .yExtent(undefined)
-        // .seriesLabelFormatter(label => {
-        //   const totalValue = horizonData.findTotalValueOf(label, sortValue);
-        //   return label + ' - Total: ' +
-        //     ((sortValue == 'fob') ? 'U$ ' + formatValues(totalValue) : formatValues(totalValue) + ' kg');
-        // })
-        .transitionDuration([1]);
-      await hideHorizonLoader('#horizon-wrapper');
-    }, 100)
+      horizon.yExtent(undefined)
+
+      await hideBluredLoader('#horizon-wrapper');
+    }, 1)
   });
 
   // Muda a escala do HorizonChart para global
   $('#global-scale-radio').off();
-  $('#global-scale-radio').on('change', function () {
-    showHorizonLoader('#horizon-wrapper');
+  $('#global-scale-radio').on('change', async () => {
+    await showBluredLoader('#horizon-wrapper');
 
     // Valor máximo de todos os dados será utilizado como escala
     const maxValue = d3.max(uniqueSh4.map(sh4 => horizonData.findMaxValueOf(sh4, sortValue)));
 
     setTimeout(async () => {
-      await horizon
-        .yExtent(maxValue)
-        // .seriesLabelFormatter(label => label + ' - Escala: ' + formatValues(maxValue))
-        .transitionDuration([1]);
-      await hideHorizonLoader('#horizon-wrapper');
-    }, 100);
+      horizon.yExtent(maxValue)
+
+      await hideBluredLoader('#horizon-wrapper');
+    }, 1);
   });
 
   // Muda a ordenação do HorizonChart
-  const sortListener = () => {
-    showHorizonLoader('#horizon-wrapper');
+  const sortListener = async () => {
+    await showBluredLoader('#horizon-wrapper');
 
     setTimeout(async () => {
-      await horizon
-        .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, getSortByValue(), getSortOrder()))
-        .transitionDuration([1]);
-      hideHorizonLoader('#horizon-wrapper');
-    }, 100);
+      horizon.seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, getSortByValue(), getSortOrder()))
+
+      await hideBluredLoader('#horizon-wrapper');
+    }, 1);
   };
 
   $('#fob-sort-radio').on('click', () => sortListener());
@@ -432,7 +421,7 @@ export async function hideClickAlert() {
 //   // Balão com info
 //   let tooltip = d3.select('#horizon-wrapper')
 //     .append('div')
-//     .attr('class', 'hidden tooltip');
+//     .attr('class', 'hidden tooltip-custom');
 
 //   const rule = d3.select('#horizon-wrapper')
 //     .append('div')

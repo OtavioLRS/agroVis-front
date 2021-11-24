@@ -1,4 +1,4 @@
-import { finishLoading, formatValues, changeLoadingMessage, getSortValue, cleanDashboard } from "./extra";
+import { finishLoading, formatValues, changeLoadingMessage, getSortValue, cleanDashboard, showBluredLoader, hideBluredLoader } from "./extra";
 import { updateMundiData } from "./mundi";
 
 // Desenha o mapa
@@ -7,8 +7,9 @@ export async function drawMainMap() {
   let svg = d3.select('#map-container #mainmap-container')
     .append('svg') // insere um SVG para o mapa
     .attr('id', 'map-svg')
-    .attr('height', '90%')
-    .attr('width', '100%');
+    .attr('height', '100%')
+    .attr('width', '100%')
+    .lower();
 
   const { height, width } = svg.node().getBoundingClientRect();
   // console.log(height, width)
@@ -16,7 +17,7 @@ export async function drawMainMap() {
   // Div para os hovers com os titulos
   let tooltip = d3.select('#map-container #mainmap-container')
     .append('div')
-    .attr('class', 'hidden tooltip');
+    .attr('class', 'hidden tooltip-custom');
 
   // Requisita o geoJSON da API do IBGE
   const mapData = await d3.json('https://servicodados.ibge.gov.br/api/v2/malhas/35?resolucao=5&qualidade=4&formato=application/vnd.geo+json');
@@ -141,32 +142,46 @@ export async function getCitiesNames() {
 
 // Atualiza os dados do mapa com base em um filtro presente no 'localStorage'
 // Se tiver um SH4 selecionado, busca só esse SH4, senão, busca todos os SH4s com dados (total)
-export async function updateMap(selected = 0) {
-  // Recupera o filtro de dados do mapa
-  let filter = await JSON.parse(localStorage.getItem('filter'));
-  filter.products = selected == 0 ? filter.products : [selected]
-  filter.sortValue = filter.sortValue == 'fob' ? 'VL_FOB' : 'KG_LIQUIDO';
+export async function updateMap(selected) {
+  // await showBluredLoader('#map-svg');
+  await showBluredLoader('#mainmap-container');
+  // await showBluredLoader('#mundi-svg');
+  await showBluredLoader('#mundimap-container');
 
-  changeLoadingMessage('Atualizando o mapa...');
-
-  // Atualizando o input de alternância de produtos
-  updateMapSh4Input(selected);
-
-  // Preenche o mapa com os dados recebidos
-  await updateMapData(filter, selected);
+  // Preenche o mapa
+  await updateMapData(selected);
+  // await hideBluredLoader('#map-svg')
+  await hideBluredLoader('#mainmap-container')
 
   // Preenche o mapa mundi
-  await updateMundiData(filter);
+  await updateMundiData(selected);
+  // await hideBluredLoader('#mundi-svg');
+  await hideBluredLoader('#mundimap-container');
 
   // Quando mudar o numero de classes, atualiza
-  $('#input-classnumber').on('change', async function () {
-    await updateMapData(filter, selected);
-    await updateMundiData(filter);
+  $('#input-classnumber-map').off('change');
+  $('#input-classnumber-map').on('change', async function () {
+    await showBluredLoader('#mainmap-container');
+    await updateMapData(selected);
+    await hideBluredLoader('#mainmap-container')
+  });
+
+  $('#input-classnumber-mundi').off('change');
+  $('#input-classnumber-mundi').on('change', async function () {
+    await showBluredLoader('#mundimap-container');
+    await updateMundiData(selected);
+    await hideBluredLoader('#mundimap-container');
   });
 }
 
 // Atualiza os dados do mapa
-export async function updateMapData(filter, selected) {
+export async function updateMapData(selected) {
+  changeLoadingMessage('Atualizando o mapa...');
+
+  // Recupera o filtro para realizar a query dos dados do mapa
+  const filter = await JSON.parse(localStorage.getItem('filter'));
+  filter.products = selected == 0 ? filter.products : [selected];
+
   // Realiza a query do filtro inserido
   const response = await fetch('http://127.0.0.1:5000/exportacao/mapa', {
     method: 'POST',
@@ -182,7 +197,7 @@ export async function updateMapData(filter, selected) {
   // console.log('Map Data', mapData);
 
   // Número de classes
-  const numClasses = $('#input-classnumber').val();
+  const numClasses = $('#input-classnumber-map').val();
 
   // Função de calculo de cores
   const colors = createFrequencyScale(mapData, numClasses, filter.sortValue, 'mainmap-container');
@@ -203,8 +218,8 @@ export async function updateMapData(filter, selected) {
 }
 
 // Atualiza o input de produtos que podem ser exibidos no mapa
-async function updateMapSh4Input(selected) {
-  // // Recupera o filtro para realizar a query dos dados do mapa
+export async function updateMapSh4Input() {
+  // Recupera o filtro para realizar a query dos dados do mapa
   const filter = await JSON.parse(localStorage.getItem('filter'));
 
   // Ordenando os produtos para facilitar a visibilidade
@@ -228,15 +243,18 @@ async function updateMapSh4Input(selected) {
   });
 
   input.select2({ sorter: data => data.sort((a, b) => a.value > b.value) });
-  input.val(selected).trigger('change.select2');
+  input.val(0).trigger('change.select2');
 
   // Ao trocar a opção selecionada no input ...
-  input.on('change', () => {
+  const sh4Change = async () => {
     const newProduct = $('option:selected', '#input-sh4-map').val();
     // console.log('Novo produto selecionado', newProduct);
     // ... o mapa é atualizado
-    updateMap(parseInt(newProduct));
-  })
+    await updateMap(parseInt(newProduct));
+  };
+
+  input.off('change', sh4Change);
+  input.on('change', sh4Change);
 }
 
 // Atualiza o título do mapa
@@ -248,6 +266,9 @@ export function changeMapTitle(title) {
 }
 
 // Cria uma função para calcular a cor do mapa de uma cidade
+/*
+  'mainmap-container' ou 'mundimap-container'
+*/
 export function createFrequencyScale(data, numClasses, dataType, parent) {
   /* Retirado de: https://colorbrewer2.org/#type=sequential&scheme=YlOrRd */
   const hexColors = [
@@ -283,7 +304,6 @@ export function createFrequencyScale(data, numClasses, dataType, parent) {
     classes[i] = (i + 1) * gap;
   }
 
-
   classes.forEach((c, i) => {
     classes[i] = data[c];
   })
@@ -305,31 +325,63 @@ export function createFrequencyScale(data, numClasses, dataType, parent) {
     .range(Array.from(Array(classes.length + 1).keys()))
 
   // Legenda nova
-  printScaleLegend(hexColors[numClasses], parent);
+  printScaleLegend(hexColors[numClasses], colors, parent);
+
+  let buttons = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  let sim = buttons.map(function (e) {
+    let ttp = new bootstrap.Tooltip(e);
+    // ttp.on('focus', null);
+    return ttp;
+  })
 
   return [colors, index];
 }
 
 // Desenha a legenda do mapa
-function printScaleLegend(colorScheme, parent) {
+async function printScaleLegend(colorScheme, colors, parent) {
+  // Esconde as tooltips antes de deletar os elementos
+  $('[data-bs-toggle="tooltip"]').tooltip('hide');
+
   // Remove legenda antiga e adiciona o container da nova
   $(`#${parent}-legend`).remove();
   d3.select(`#${parent}`).append('div').attr('id', `${parent}-legend`).attr('class', 'map-legend');
 
+  // Limpa as classes da seção de configuração
+  const unit = await getSortValue();
+  let p = parent == 'mainmap-container' ? $('#classlimits-map') : $('#classlimits-mundi')
+  p.html(`<table id='classlist-table-${parent}'></table>`);
+  p = $(`#classlist-table-${parent}`);
+
   colorScheme.forEach((c, i) => {
-    addLegendTick(c, i, parent);
+    let [v1, v2] = colors.invertExtent(c)
+    v1 = Math.trunc(v1)
+    v2 = Math.trunc(v2)
+
+    // Adiciona uma classe no botão de configurações
+    addClassLimit(p, c, [v1, v2], [true, true], unit);
+
+    // Adiciona a legenda
+    addLegendTick(colors, c, i, parent);
   })
 }
 
 // Adiciona uma nova classe para a legenda
-function addLegendTick(color, index, parent) {
+function addLegendTick(fColors, color, index, parent) {
   d3.select(`#${parent}-legend`)
     .append('div')
     .attr('class', 'legend-tick legend-tick-clicked')
     .style('background-color', color)
     .attr('color-index', index) // Identifica a cor
+    .attr('data-bs-toggle', 'tooltip')
+    .attr('data-bs-placement', 'bottom')
+    .attr('data-trigger', 'hover')
+    .attr('title', () => { // Intervalo de valores da classe
+      let [v1, v2] = fColors.invertExtent(color)
+      v1 = formatValues(Math.trunc(v1));
+      v2 = formatValues(Math.trunc(v2));
+      return `${v1} - ${v2}`;
+    })
     .on('click', (a, b, elem) => {
-      // const colorIndex = elem[0].getAttribute('color-index');
       // Primeiro, adiciona ou remove a classe que sinaliza que está selecionado
       $(elem[0]).toggleClass("legend-tick-clicked");
 
@@ -342,6 +394,14 @@ function addLegendTick(color, index, parent) {
       else {
         $(`#${parent} .polygon[color-index='${index}']`).each(function (x, e) { $(e).css('fill', 'white') });
       }
+    })
+    .on('mouseenter', () => {
+      // Se der hover em um tick da legenda, deixa os poligonos desse tick sem cor
+      $(`#${parent} .polygon[color-index='${index}']`).each(function (x, e) { $(e).addClass('polygon-legend-active') });
+    })
+    .on('mouseout', () => {
+      // Quando sair do hover, volta as cores originais
+      $(`#${parent} .polygon[color-index='${index}']`).each(function (x, e) { $(e).removeClass('polygon-legend-active') });
     })
 }
 
@@ -379,7 +439,32 @@ export function fillPolygon(data, color, index, parent, id, text) {
   $(cod).attr('color-index', index);
 }
 
+// Adiciona uma classe a tela de configurações de classes
+/*
+  parent - elemento pai da lista de classes -> 'classlimits-map' ou 'classlimits-mundi'
+  color - cor referente a classe em HEX
+  values - lista com os dois valores referentes aos limites da classe
+  actives - lista com flags referentes a se os valores dos limites são editaveis ou não
+  unit - unidade de medida dos limites -> 'fob' ou 'peso'
+*/
+export function addClassLimit(parent, color, values, actives, unit) {
+  console.log(parent, parent.attr('id'), color, values, actives, unit);
 
+  let value1 = unit == 'VL_FOB' ? `U$ <span>${formatValues(values[0])}</span>` : `<span>${formatValues(values[1])}</span> Kg`;
+  let value2 = unit == 'VL_FOB' ? `U$ <span>${formatValues(values[1])}</span>` : `<span>${formatValues(values[1])}</span> Kg`;
+
+  let elem = `
+  <tr class='classlimits-row'>
+    <td class='legend-tick' style='background-color: ${color};'></td>
+    <td>${value1}</td>
+    <td>${value2}</td>
+  </tr>
+  `
+
+  // console.log(elem)
+  parent.append(elem);
+
+}
 
 
 

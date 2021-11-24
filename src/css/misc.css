@@ -120,6 +120,7 @@ body::-webkit-scrollbar {
 .container {
   border-radius: 25px;
   background-color: white;
+  position: relative;
 }
 
 .hidden {

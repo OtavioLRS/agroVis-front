@@ -242,19 +242,18 @@ export function unblurElement(elem) {
   $(elem).removeClass('blured');
 }
 
-// Exibe o loader de ordenação do HorizonChart
-export function showHorizonLoader(elem) {
-  // blurElement(elem);
-  $('#horizon-wrapper').addClass('blured');
-  $('.soft-loader-wrapper').removeClass('hidden');
-  $('.soft-loader-wrapper').addClass('show');
+// Exibe o loader e insere blur em um elemento
+export function showBluredLoader(elem) {
+  $(`${elem}`).addClass('blured');
+  $(`${elem} ~ .soft-loader-wrapper`).removeClass('hidden');
+  $(`${elem} ~ .soft-loader-wrapper`).addClass('show');
 }
 
-// Esconde o loader de ordenação do HorizonChart
-export function hideHorizonLoader(elem) {
-  $('.soft-loader-wrapper').removeClass('show');
-  $('.soft-loader-wrapper').addClass('hidden');
-  $('#horizon-wrapper').removeClass('blured');
+// Esconde o loader e retira o blur de um elemento
+export function hideBluredLoader(elem) {
+  $(`${elem} ~ .soft-loader-wrapper`).removeClass('show');
+  $(`${elem} ~ .soft-loader-wrapper`).addClass('hidden');
+  $(`${elem}`).removeClass('blured');
 }
 
 // Limpa completamente a interface do Dashboard

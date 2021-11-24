@@ -187,7 +187,7 @@ async function saveQuery() {
     products: filterAux.length == 0 ? '0' : filterAux.products.join(';'),
     beginPeriod: filterAux.beginPeriod + '-15',
     endPeriod: filterAux.endPeriod + '-15',
-    sortValue: filterAux.sortValue
+    sortValue: filterAux.sortValue == 'VL_FOB' ? 'fob' : 'peso'
   }
 
   // console.log(filter);
