@@ -1,4 +1,4 @@
-import { finishLoading, formatValues, changeLoadingMessage, getSortValue, cleanDashboard, showBluredLoader, hideBluredLoader } from "./extra";
+import { finishLoading, formatValues, changeLoadingMessage, getSortValue, cleanDashboard, showBluredLoader, hideBluredLoader, unformatValues } from "./extra";
 import { updateMundiData } from "./mundi";
 
 // Desenha o mapa
@@ -159,23 +159,27 @@ export async function updateMap(selected) {
   await hideBluredLoader('#mundimap-container');
 
   // Quando mudar o numero de classes, atualiza
-  $('#input-classnumber-map').off('change');
-  $('#input-classnumber-map').on('change', async function () {
-    await showBluredLoader('#mainmap-container');
-    await updateMapData(selected);
-    await hideBluredLoader('#mainmap-container')
-  });
+  // $('#input-classnumber-map').off('change');
+  // $('#input-classnumber-map').on('change', async function () {
+  //   await showBluredLoader('#mainmap-container');
+  //   await updateMapData(selected);
+  //   await hideBluredLoader('#mainmap-container');
+  // });
 
-  $('#input-classnumber-mundi').off('change');
-  $('#input-classnumber-mundi').on('change', async function () {
-    await showBluredLoader('#mundimap-container');
-    await updateMundiData(selected);
-    await hideBluredLoader('#mundimap-container');
-  });
+  // $('#input-classnumber-mundi').off('change');
+  // $('#input-classnumber-mundi').on('change', async function () {
+  //   await showBluredLoader('#mundimap-container');
+  //   await updateMundiData(selected);
+  //   await hideBluredLoader('#mundimap-container');
+  // });
 }
 
-// Atualiza os dados do mapa
-export async function updateMapData(selected) {
+/** Atualiza os dados do mapa
+ * 
+ * @param {number} selected sh4 selecionado no mapa, o valor '0' utilizará o total de todos os sh4s
+ * @param {object[]} colorFunctions escalas customizadas para as classes do mapa
+ */
+export async function updateMapData(selected, colorFunctions = []) {
   changeLoadingMessage('Atualizando o mapa...');
 
   // Recupera o filtro para realizar a query dos dados do mapa
@@ -196,11 +200,25 @@ export async function updateMapData(selected) {
   const mapData = await response.json();
   // console.log('Map Data', mapData);
 
-  // Número de classes
+  /** Número de classes */
   const numClasses = $('#input-classnumber-map').val();
 
-  // Função de calculo de cores
-  const colors = createFrequencyScale(mapData, numClasses, filter.sortValue, 'mainmap-container');
+  /** Escalas relacionadas as cores
+   * 
+   * [0] - escala das cores 
+   * 
+   * [1] - escala dos indexes das cores
+   */
+  let colors;
+  if (colorFunctions.length == 0) {
+    console.log('atualizei os dado');
+    colors = createFrequencyScale(mapData, numClasses, filter.sortValue);
+    changeConfigClasses(colors[0], 'mainmap-container');
+  }
+
+  else {
+    colors = colorFunctions;
+  }
 
   // Atualiza o título do mapa
   if (selected == 0) changeMapTitle('Total de todos os SH4s');
@@ -215,6 +233,26 @@ export async function updateMapData(selected) {
   mapData.forEach(d => {
     fillPolygon(d, colors[0](d[filter.sortValue]), colors[1](d[filter.sortValue]), '#map-svg', 'CO_MUN', 'NO_MUN_MIN');
   })
+
+  // Legenda nova
+  printScaleLegend(colors[0], 'mainmap-container');
+
+  $('#input-classnumber-map').off('change');
+  $('#input-classnumber-map').on('change', async function () {
+    const numClasses = parseInt($('#input-classnumber-map').val());
+    let colorFunctions = createFrequencyScale(mapData, numClasses, filter.sortValue);
+    changeConfigClasses(colorFunctions[0], 'mainmap-container');
+  });
+
+  $('#config-mainmap').off('click');
+  $('#config-mainmap').on('click', async function () {
+    const numClasses = parseInt($('#input-classnumber-map').val());
+    let colorFunctions = createCustomFrequencyScale('main', numClasses);
+
+    await showBluredLoader('#mainmap-container');
+    await updateMapData(selected, colorFunctions);
+    await hideBluredLoader('#mainmap-container')
+  });
 }
 
 // Atualiza o input de produtos que podem ser exibidos no mapa
@@ -265,12 +303,57 @@ export function changeMapTitle(title) {
   // $(`.label:contains(${sh4})`)[0].parentElement.focus();
 }
 
-// Cria uma função para calcular a cor do mapa de uma cidade
-/*
-  'mainmap-container' ou 'mundimap-container'
-*/
-export function createFrequencyScale(data, numClasses, dataType, parent) {
-  /* Retirado de: https://colorbrewer2.org/#type=sequential&scheme=YlOrRd */
+export function createCustomFrequencyScale(parent, numClasses) {
+  /** Retirado de: https://colorbrewer2.org/#type=sequential&scheme=YlOrRd */
+  const hexColors = [
+    [], [],
+    ["#ffeda0", "#f03b20"],
+    ["#ffeda0", "#feb24c", "#f03b20"],
+    ["#ffffb2", "#fecc5c", "#fd8d3c", "#e31a1c"],
+    ["#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"],
+    ["#ffffb2", "#fed976", "#feb24c", "#fd8d3c", "#f03b20", "#bd0026"],
+    ["#ffffb2", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a", "#e31a1c", "#b10026"],
+    ["#ffffcc", "#ffeda0", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a", "#e31a1c", "#b10026"],
+    ["#ffffcc", "#ffeda0", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a", "#e31a1c", "#bd0026", "#800026"]
+  ];
+
+  let values = getClassLimitsFromConfigModal(parent);
+
+  // Cria função para as cores
+  const colors = d3.scaleThreshold()
+    .domain(values) // Classes absolutas de mesmo tamanho 10
+    .range(hexColors[numClasses]);
+
+  const index = d3.scaleThreshold()
+    .domain(values) // Classes absolutas de mesmo tamanho
+    .range([...Array(numClasses).keys()]);
+
+  return [colors, index];
+}
+
+/** Extrai os dados de um modal de configuração e retorna uma lista com os limites das classes
+ * 
+ * @param {string} whichModal 'main' ou 'mundi', de qual modal deseja retirar os dados
+ */
+export function getClassLimitsFromConfigModal(whichModal) {
+  let parentElem = whichModal == 'main' ? $('#classlimits-map table') : $('#classlimits-mundi table');
+  let values = [];
+  parentElem.children().each(function (i, child) {
+    values.push(unformatValues($(child).find(`#limit-sup-${i}`).val()) + 1)
+  });
+
+  return values;
+}
+
+/** Cria as escalas referentes as cores dos mapas
+ * 
+ * @param {object[]} data lista de elementos com os dados
+ * @param {number} numClasses numero de classes que serão criadas
+ * @param {string} dataType dimensão utilizada para calcular as escalas - 'VL_FOB' ou 'KG_LIQUIDO'
+ * @returns 
+ */
+export function createFrequencyScale(data, numClasses, dataType) {
+  /** Retirado de: https://colorbrewer2.org/#type=sequential&scheme=YlOrRd */
   const hexColors = [
     [], [],
     ["#ffeda0", "#f03b20"],
@@ -324,21 +407,16 @@ export function createFrequencyScale(data, numClasses, dataType, parent) {
     .domain([0, d3.max(data)]) // Classes absolutas de mesmo tamanho
     .range(Array.from(Array(classes.length + 1).keys()))
 
-  // Legenda nova
-  printScaleLegend(hexColors[numClasses], colors, parent);
-
-  let buttons = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-  let sim = buttons.map(function (e) {
-    let ttp = new bootstrap.Tooltip(e);
-    // ttp.on('focus', null);
-    return ttp;
-  })
-
   return [colors, index];
 }
 
-// Desenha a legenda do mapa
-async function printScaleLegend(colorScheme, colors, parent) {
+/** Desenha a legenda do mapa
+ * @param {object} colors f(x) das cores
+ * @param {string} parent 'mainmap-container' ou 'mundimap-container'
+ */
+export async function printScaleLegend(colors, parent) {
+  let colorScheme = colors.range();
+
   // Esconde as tooltips antes de deletar os elementos
   $('[data-bs-toggle="tooltip"]').tooltip('hide');
 
@@ -346,30 +424,151 @@ async function printScaleLegend(colorScheme, colors, parent) {
   $(`#${parent}-legend`).remove();
   d3.select(`#${parent}`).append('div').attr('id', `${parent}-legend`).attr('class', 'map-legend');
 
+  // Adiciona a legenda
+  colorScheme.forEach((c, i) => addLegendTick(colors, c, i, parent));
+
+  let buttons = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  buttons.map(function (e) {
+    let ttp = new bootstrap.Tooltip(e);
+    // ttp.on('focus', null);
+    return ttp;
+  })
+}
+
+/** Atualiza os valores no modal de configuração
+ * 
+ * @param {object} colors f(x) das cores
+ * @param {string} parent 'mainmap-container' ou 'mundimap-container'
+ */
+export async function changeConfigClasses(colors, parent) {
   // Limpa as classes da seção de configuração
+  let colorScheme = colors.range();
   const unit = await getSortValue();
-  let p = parent == 'mainmap-container' ? $('#classlimits-map') : $('#classlimits-mundi')
+  let p = parent == 'mainmap-container' ? $('#classlimits-map') : $('#classlimits-mundi');
   p.html(`<table id='classlist-table-${parent}'></table>`);
   p = $(`#classlist-table-${parent}`);
 
-  colorScheme.forEach((c, i) => {
+
+  let [_, maxValue] = colors.invertExtent(colorScheme[colorScheme.length - 1]);
+  maxValue = Math.trunc(maxValue);
+
+  // Adiciona as classes na configuração
+  for (let i = 0; i < colorScheme.length - 1; i++) {
+    let c = colorScheme[i];
     let [v1, v2] = colors.invertExtent(c)
-    v1 = Math.trunc(v1)
-    v2 = Math.trunc(v2)
+    v1 = v1 == undefined || v1 == '0' ? '0' : formatValues(Math.trunc(v1) + 1);
+    v2 = formatValues(Math.trunc(v2));
+    addClassLimit(p, c, [v1, v2], [false, true], unit, i, maxValue, colorScheme.length - 1);
+  }
+  // Ultima linha não deve ser editavel
+  let c = colorScheme[colorScheme.length - 1];
+  let [v1, v2] = colors.invertExtent(c)
+  v1 = formatValues(Math.trunc(v1) + 1);
+  v2 = formatValues(Math.trunc(v2));
+  addClassLimit(p, c, [v1, v2], [false, false], unit, colorScheme.length - 1, maxValue, colorScheme.length - 1);
 
-    // Adiciona uma classe no botão de configurações
-    addClassLimit(p, c, [v1, v2], [true, true], unit);
+  p.children().each((i, child) => { // Iterando pelas <tr>
+    let curRow = $(child).find(`#limit-sup-${i}`);
+    let otherRow = $(child).find(`#limit-inf-${i}`);
 
-    // Adiciona a legenda
-    addLegendTick(colors, c, i, parent);
+    $(curRow).on('input', () => {
+      let curValue = unformatValues(curRow.val());
+      let [nextLimit, _, __] = getNextLimit(p, 'sup', i);
+      nextLimit.val(formatValues(curValue + 1));
+
+      updatePrevClassLimit(p, $(curRow), 'sup', i);
+      updateNextClassLimit(p, $(curRow), 'sup', i);
+    })
+
+    $(curRow).on('change', function () {
+      if (unformatValues($(this).val()) < $(this).attr('min') || $(this).val() == '') $(this).val(formatValues($(this).attr('min')));
+      if (unformatValues($(this).val()) > $(this).attr('max') || $(this).val() == '') $(this).val(formatValues($(this).attr('max')));
+    });
+    $(otherRow).on('change', function () {
+      if (unformatValues($(this).val()) < $(this).attr('min') || $(this).val() == '') $(this).val(formatValues($(this).attr('min')));
+      if (unformatValues($(this).val()) > $(this).attr('max') || $(this).val() == '') $(this).val(formatValues($(this).attr('max')));
+    });
   })
+}
+
+function updatePrevClassLimit(parent, current, sup_inf, index) {
+  let [prevLimit, prevLimitS_P, prevLimitIndex] = getPrevLimit(parent, sup_inf, index);
+  if (!$(prevLimit)[0]) return;
+
+  let value = unformatValues(current.val());
+
+  // console.log('estou no ', sup_inf, index)
+  // console.log('antes é o ', prevLimitS_P, prevLimitIndex)
+
+
+  try {
+    let prevLimitValue = unformatValues(prevLimit.val());
+
+    let newValue = value - 1;
+    if (newValue < prevLimit.attr('min')) newValue = prevLimit.attr('min');
+    else if (newValue > prevLimit.attr('max')) newValue = prevLimit.attr('max');
+
+    if (value <= prevLimitValue || isNaN(prevLimitValue)) {
+      prevLimit.val(formatValues(newValue)).trigger('change');
+      updatePrevClassLimit(parent, prevLimit, prevLimitS_P, prevLimitIndex);
+    }
+  }
+  catch (e) {
+    console.log(e);
+    return;
+  }
+}
+
+function updateNextClassLimit(parent, current, sup_inf, index) {
+  let [nextLimit, nextLimitS_P, nextLimitIndex] = getNextLimit(parent, sup_inf, index);
+  if (!$(nextLimit)[0]) return;
+
+  let value = unformatValues(current.val());
+
+  // console.log('estou no ', sup_inf, index)
+  // console.log('depois é o ', nextLimitS_P, nextLimitIndex)
+
+  try {
+    let nextLimitValue = unformatValues(nextLimit.val());
+
+    let newValue = value + 1;
+    if (newValue < nextLimit.attr('min')) newValue = nextLimit.attr('min');
+    else if (newValue > nextLimit.attr('max')) newValue = nextLimit.attr('max');
+
+    if (value >= nextLimitValue || isNaN(nextLimitValue) || nextLimitValue == value + 1) {
+      nextLimit.val(formatValues(newValue)).trigger('change');
+      updateNextClassLimit(parent, nextLimit, nextLimitS_P, nextLimitIndex);
+    }
+  }
+  catch (e) {
+    return;
+  }
+}
+
+function getPrevLimit(parent, sup_inf, index) {
+  let supOrInf = sup_inf == 'sup' ? 'inf' : 'sup'; // Se é superior, o anterior é o inferior e viceversa
+  let i = sup_inf == 'sup' ? index : index - 1; // Se é superior, o index do anterior é index, senão é index-1
+
+  let elem = parent.find(`#limit-${supOrInf}-${i}`);
+  return [elem, supOrInf, i]; // Encontro o proximo elemento
+}
+
+function getNextLimit(parent, sup_inf, index) {
+  let supOrInf = sup_inf == 'sup' ? 'inf' : 'sup'; // Se é superior, o proximo é o inferior e viceversa
+  let i = sup_inf == 'sup' ? index + 1 : index; // Se é superior, o index do proximo é index+1, senão é index
+
+  return [parent.find(`#limit-${supOrInf}-${i}`), supOrInf, i]; // Encontro o proximo elemento
 }
 
 // Adiciona uma nova classe para a legenda
 function addLegendTick(fColors, color, index, parent) {
   d3.select(`#${parent}-legend`)
     .append('div')
-    .attr('class', 'legend-tick legend-tick-clicked')
+    .attr('class', () => {
+      let count = $(`#${parent} .polygon[color-index='${index}']`).length;
+      if (count != 0) return 'legend-tick legend-tick-clicked';
+      else return 'legend-tick';
+    })
     .style('background-color', color)
     .attr('color-index', index) // Identifica a cor
     .attr('data-bs-toggle', 'tooltip')
@@ -377,6 +576,7 @@ function addLegendTick(fColors, color, index, parent) {
     .attr('data-trigger', 'hover')
     .attr('title', () => { // Intervalo de valores da classe
       let [v1, v2] = fColors.invertExtent(color)
+      v1 = v1 == undefined ? 0 : v1;
       v1 = formatValues(Math.trunc(v1));
       v2 = formatValues(Math.trunc(v2));
       return `${v1} - ${v2}`;
@@ -405,7 +605,9 @@ function addLegendTick(fColors, color, index, parent) {
     })
 }
 
-// Recebe um elemento jquery referente ao desenho de um poligono, e limpa seus dados
+/** Recebe um elemento jquery de um poligono, e limpa seus dados
+ * @param {object} element 
+ */
 export function cleanPolygon(element) {
   // Deseleciona a cidade
   element.removeClass('polygon-active');
@@ -417,10 +619,14 @@ export function cleanPolygon(element) {
   element.attr('color-index', '-1');
 }
 
-// Recebe um dataframe referente aos dados de um poligono, e atualiza suas propriedades no mapa
-// parent - '#mainmap-container ou #mundimap-container'
-// id - atributo do dataframe referente ao código do poligono
-// text - atributo do dataframe referente ao 'nome' do poligono
+/** Recebe um dataframe referente aos dados de um poligono, e atualiza suas propriedades no mapa
+ * @param {object} data dados a serem preenchidos no poligono
+ * @param {string} color cor em HEX do poligono
+ * @param {number} index index da cor
+ * @param {string} parent '#map-svg' ou '#mundi-svg'
+ * @param {string} id atributo do dataframe referente ao código do poligono
+ * @param {string} text atributo do dataframe referente ao 'nome' do poligono
+ */
 export function fillPolygon(data, color, index, parent, id, text) {
   // Seletor do poligono -  - id do poligono
   let cod = parent + ' #' + data[id].toString();
@@ -446,30 +652,75 @@ export function fillPolygon(data, color, index, parent, id, text) {
   values - lista com os dois valores referentes aos limites da classe
   actives - lista com flags referentes a se os valores dos limites são editaveis ou não
   unit - unidade de medida dos limites -> 'fob' ou 'peso'
+  index - index de qual linha os inputs pertencem
+  maxValue - maximo valor daquela escala
+  maxIndex - index maximo de cada campo, para calcular os index reversos
 */
-export function addClassLimit(parent, color, values, actives, unit) {
-  console.log(parent, parent.attr('id'), color, values, actives, unit);
+export function addClassLimit(parent, color, values, actives, unit, index, maxValue, maxIndex) {
+  let input1, input2;
+  let min = 2 * index;
+  let inverseIndex = (2 * maxIndex) - min;
+  let max = maxValue - inverseIndex;
+  // console.log('linha ', min, ' - max ', maxIndex, ' deveria ser ', (2 * maxIndex) - min, (2 * maxIndex) - min - 1)
 
-  let value1 = unit == 'VL_FOB' ? `U$ <span>${formatValues(values[0])}</span>` : `<span>${formatValues(values[1])}</span> Kg`;
-  let value2 = unit == 'VL_FOB' ? `U$ <span>${formatValues(values[1])}</span>` : `<span>${formatValues(values[1])}</span> Kg`;
+  let min1, min2, max1, max2;
+  if (index == 0) {
+    min1 = 0;
+    max1 = 0;
+    min2 = min + 1; // Normal
+    max2 = max; // Normal
+  }
+  else if (index == maxIndex) {
+    min1 = min; // Normal
+    max1 = max - 1; // Normal
+    min2 = maxValue;
+    max2 = maxValue;
+  }
+  else {
+    min1 = min; // Normal
+    max1 = max - 1; // Normal
+    min2 = min + 1; // Normal
+    max2 = max; // Normal
+  }
 
-  let elem = `
+  input1 = actives[0] == true ?
+    $(`<input value="${values[0]}" id="limit-inf-${index}" min="${min1}" max="${max1}" type="tel"/>`) :
+    $(`<input disabled value="${values[0]}" id="limit-inf-${index}" min="${min1}" max="${max1}" type="tel"/>`);
+
+  input2 = actives[1] == true ?
+    $(`<input value="${values[1]}" id="limit-sup-${index}" min="${min2}" max="${max2}" type="tel"/>`) :
+    $(`<input disabled value="${values[1]}" id="limit-sup-${index}" min="${min2}" max="${max2}" type="tel"/>`);
+
+  input1.on('input', function () { this.value = formatValues(this.value) })
+  input2.on('input', function () { this.value = formatValues(this.value) })
+
+  let row1 = $(`<td></td>`);
+  let row2 = $(`<td></td>`);
+
+  let elem = $(`
   <tr class='classlimits-row'>
     <td class='legend-tick' style='background-color: ${color};'></td>
-    <td>${value1}</td>
-    <td>${value2}</td>
-  </tr>
-  `
+  </tr>`)
 
-  // console.log(elem)
+  if (unit == 'VL_FOB') {
+    row1.append(`U$ `);
+    row1.append(input1);
+    // row2.append(`U$ `);
+    row2.append(input2);
+
+  } else {
+    row1.append(input1);
+    // row1.append(` kg`);
+    row2.append(input2);
+    row2.append(` kg`);
+  }
+
+  elem.append(row1)
+  elem.append('<span> ~ </span>')
+  elem.append(row2)
+
   parent.append(elem);
-
 }
-
-
-
-
-
 
 
 

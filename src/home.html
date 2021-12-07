@@ -234,7 +234,67 @@
     <span class="loader-message">Inicializando...</span>
   </div>
 
+  <!-- Modal Map -->
+  <div class="modal fade" id="map-modal" aria-labelledby="map-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="map-modal-label">Personalizar mapa</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
 
+        <div class="modal-body">
+          <div class="map-config-wrapper">
+
+            <div class="config-classnumber-wrapper">
+              Numero de classes:
+              <input type="number" min="2" max="9" id="input-classnumber-map" value="9">
+            </div>
+
+            <div class="config-classlimits-wrapper">
+              <div class="classlimits-wrapper" id="classlimits-map"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="config-mainmap">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Mundi -->
+  <div class="modal fade" id="mundi-modal" aria-labelledby="mundi-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="mundi-modal-label">Personalizar mapa mundi</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="map-config-wrapper">
+
+            <div class="config-classnumber-wrapper">
+              Numero de classes:
+              <input type="number" min="2" max="9" id="input-classnumber-mundi" value="9">
+            </div>
+
+            <div class="config-classlimits-wrapper">
+              <div class="classlimits-wrapper" id="classlimits-mundi"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="config-mundi">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
 
@@ -300,7 +360,7 @@
                 De
                 <input class="filter-input" type="month" id="input-date0" value="2021-01" min="1997-01" max="2021-10">
                 até
-                <input class="filter-input" type="month" id="input-date1" value="2021-10" min="1997-01" max="2021-10">
+                <input class="filter-input" type="month" id="input-date1" value="2021-05" min="1997-01" max="2021-10">
               </div>
             </div>
 
@@ -332,106 +392,110 @@
         </button>
       </div>
 
-      <!-- Calendario -->
-      <div class="container shadow-lg" id="calendar-container">
-        <div class="text-center text-wrap" id="calendar-title-wrapper"></div>
-        <div id="calendar-wrapper">
-          <div class="calendar-month" month-index='0'>
-            <div class="calendar-square">
-              <div class="calendar-square-color"></div>
-              <div class="calendar-square-text"></div>
-            </div>
-            <div class="calendar-month-name"><b>Jan</b></div>
-          </div>
+      <div id="calendarlogo-container">
+        <div id="logo-container"></div>
 
-          <div class="calendar-month" month-index='1'>
-            <div class="calendar-square">
-              <div class="calendar-square-color"></div>
-              <div class="calendar-square-text"></div>
+        <!-- Calendario -->
+        <div class="container shadow-lg" id="calendar-container">
+          <div class="text-center text-wrap" id="calendar-title-wrapper"></div>
+          <div id="calendar-wrapper">
+            <div class="calendar-month" month-index='0'>
+              <div class="calendar-square">
+                <div class="calendar-square-color"></div>
+                <div class="calendar-square-text"></div>
+              </div>
+              <div class="calendar-month-name"><b>Jan</b></div>
             </div>
-            <div class="calendar-month-name"><b>Fev</b></div>
-          </div>
 
-          <div class="calendar-month" month-index='2'>
-            <div class="calendar-square">
-              <div class="calendar-square-color"></div>
-              <div class="calendar-square-text"></div>
+            <div class="calendar-month" month-index='1'>
+              <div class="calendar-square">
+                <div class="calendar-square-color"></div>
+                <div class="calendar-square-text"></div>
+              </div>
+              <div class="calendar-month-name"><b>Fev</b></div>
             </div>
-            <div class="calendar-month-name"><b>Mar</b></div>
-          </div>
 
-          <div class="calendar-month" month-index='3'>
-            <div class="calendar-square">
-              <div class="calendar-square-color"></div>
-              <div class="calendar-square-text"></div>
+            <div class="calendar-month" month-index='2'>
+              <div class="calendar-square">
+                <div class="calendar-square-color"></div>
+                <div class="calendar-square-text"></div>
+              </div>
+              <div class="calendar-month-name"><b>Mar</b></div>
             </div>
-            <div class="calendar-month-name"><b>Abr</b></div>
-          </div>
 
-          <div class="calendar-month" month-index='4'>
-            <div class="calendar-square">
-              <div class="calendar-square-color"></div>
-              <div class="calendar-square-text"></div>
+            <div class="calendar-month" month-index='3'>
+              <div class="calendar-square">
+                <div class="calendar-square-color"></div>
+                <div class="calendar-square-text"></div>
+              </div>
+              <div class="calendar-month-name"><b>Abr</b></div>
             </div>
-            <div class="calendar-month-name"><b>Mai</b></div>
-          </div>
 
-          <div class="calendar-month" month-index='5'>
-            <div class="calendar-square">
-              <div class="calendar-square-color"></div>
-              <div class="calendar-square-text"></div>
+            <div class="calendar-month" month-index='4'>
+              <div class="calendar-square">
+                <div class="calendar-square-color"></div>
+                <div class="calendar-square-text"></div>
+              </div>
+              <div class="calendar-month-name"><b>Mai</b></div>
             </div>
-            <div class="calendar-month-name"><b>Jun</b></div>
-          </div>
 
-          <div class="calendar-month" month-index='6'>
-            <div class="calendar-square">
-              <div class="calendar-square-color"></div>
-              <div class="calendar-square-text"></div>
+            <div class="calendar-month" month-index='5'>
+              <div class="calendar-square">
+                <div class="calendar-square-color"></div>
+                <div class="calendar-square-text"></div>
+              </div>
+              <div class="calendar-month-name"><b>Jun</b></div>
             </div>
-            <div class="calendar-month-name"><b>Jul</b></div>
-          </div>
 
-          <div class="calendar-month" month-index='7'>
-            <div class="calendar-square">
-              <div class="calendar-square-color"></div>
-              <div class="calendar-square-text"></div>
+            <div class="calendar-month" month-index='6'>
+              <div class="calendar-square">
+                <div class="calendar-square-color"></div>
+                <div class="calendar-square-text"></div>
+              </div>
+              <div class="calendar-month-name"><b>Jul</b></div>
             </div>
-            <div class="calendar-month-name"><b>Ago</b></div>
-          </div>
 
-          <div class="calendar-month" month-index='8'>
-            <div class="calendar-square">
-              <div class="calendar-square-color"></div>
-              <div class="calendar-square-text"></div>
+            <div class="calendar-month" month-index='7'>
+              <div class="calendar-square">
+                <div class="calendar-square-color"></div>
+                <div class="calendar-square-text"></div>
+              </div>
+              <div class="calendar-month-name"><b>Ago</b></div>
             </div>
-            <div class="calendar-month-name"><b>Set</b></div>
-          </div>
 
-          <div class="calendar-month" month-index='9'>
-            <div class="calendar-square">
-              <div class="calendar-square-color"></div>
-              <div class="calendar-square-text"></div>
+            <div class="calendar-month" month-index='8'>
+              <div class="calendar-square">
+                <div class="calendar-square-color"></div>
+                <div class="calendar-square-text"></div>
+              </div>
+              <div class="calendar-month-name"><b>Set</b></div>
             </div>
-            <div class="calendar-month-name"><b>Out</b></div>
-          </div>
 
-          <div class="calendar-month" month-index='10'>
-            <div class="calendar-square">
-              <div class="calendar-square-color"></div>
-              <div class="calendar-square-text"></div>
+            <div class="calendar-month" month-index='9'>
+              <div class="calendar-square">
+                <div class="calendar-square-color"></div>
+                <div class="calendar-square-text"></div>
+              </div>
+              <div class="calendar-month-name"><b>Out</b></div>
             </div>
-            <div class="calendar-month-name"><b>Nov</b></div>
-          </div>
 
-          <div class="calendar-month" month-index='11'>
-            <div class="calendar-square">
-              <div class="calendar-square-color"></div>
-              <div class="calendar-square-text"></div>
+            <div class="calendar-month" month-index='10'>
+              <div class="calendar-square">
+                <div class="calendar-square-color"></div>
+                <div class="calendar-square-text"></div>
+              </div>
+              <div class="calendar-month-name"><b>Nov</b></div>
             </div>
-            <div class="calendar-month-name"><b>Dez</b></div>
-          </div>
 
+            <div class="calendar-month" month-index='11'>
+              <div class="calendar-square">
+                <div class="calendar-square-color"></div>
+                <div class="calendar-square-text"></div>
+              </div>
+              <div class="calendar-month-name"><b>Dez</b></div>
+            </div>
+
+          </div>
         </div>
       </div>
 
@@ -549,40 +613,17 @@
 
         <!-- Config -->
         <div class="btn-group btn-map-config dropstart">
-          <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#map-modal">
             <i class="bi bi-gear-fill"></i>
           </button>
-
-          <ul class="dropdown-menu">
-            <div class="map-config-wrapper">
-
-              <div class="config-classnumber-wrapper">
-                Numero de classes:
-                <input type="number" min="2" max="9" id="input-classnumber-map" value="3">
-              </div>
-
-              <div class="config-classlimits-wrapper">
-
-
-                <div class="classlimits-wrapper" id="classlimits-map"></div>
-
-
-              </div>
-
-
-
-
-
-
-            </div>
-          </ul>
         </div>
+
       </div>
 
       <div class="container shadow-lg" id="mundi-container">
         <div class="text-center text-wrap" id="mundititle-container"> Exportação por continentes </div>
 
-        <!-- Map -->
+        <!-- Mundi -->
         <div id="mundimap-container">
           <div id="centralize-container" title="Centralizar o mapa">
             <i class="bi bi-pin-map-fill" id="centralize-mundi-icon"></i>
@@ -598,32 +639,13 @@
 
         <!-- Config -->
         <div class="btn-group btn-map-config dropstart">
-          <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#mundi-modal">
             <i class="bi bi-gear-fill"></i>
           </button>
-
-          <ul class="dropdown-menu">
-            <div class="map-config-wrapper">
-
-              <div class="config-classnumber-wrapper">
-                Numero de classes:
-                <input type="number" min="2" max="9" id="input-classnumber-mundi" value="3">
-              </div>
-
-              <div class="config-classlimits-wrapper">
-
-                <div class="classlimits-wrapper" id="classlimits-mundi"></div>
-
-              </div>
-
-
-
-            </div>
         </div>
-        </ul>
+
       </div>
     </div>
-  </div>
 
   </div>
 </body>

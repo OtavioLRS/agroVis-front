@@ -161,17 +161,25 @@
 
 .map-config-wrapper{
   padding: 0px 10px 10px 10px;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-direction: column;
-  width: max-content;
-  height: max-content;
 }
 
-/* .classlimits-row{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
-} */
+.config-classlimits-wrapper{
+  width: 100%;
+}
+
+.classlimits-wrapper{
+  width: 100%;
+}
+
+#classlist-table-mainmap-container{
+  width: 100%;
+}
+
+#classlist-table-mainmap-container td {
+  text-align: center;
+}

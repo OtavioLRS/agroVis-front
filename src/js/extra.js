@@ -157,8 +157,22 @@ export function createDraggable(elem) {
 /*
   Formata o valor com virgulas a cada 3 espaços
 */
-export function formatValues(x) {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+export function formatValues(num) {
+  let numAsString = num.toString().replace(/\D/g, '');
+  let characters = numAsString.split('').reverse();
+
+  let parts = [];
+  for (let i = 0; i < characters.length; i += 3) {
+    let part = characters.slice(i, i + 3).reverse().join("");
+    parts.unshift(part);
+  }
+  return parts.join(",");
+  // return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+export function unformatValues(num) {
+  let numNoCommas = num.toString().replaceAll(',', '');
+  return parseInt(numNoCommas);
 }
 
 /*

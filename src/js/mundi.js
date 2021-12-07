@@ -1,5 +1,5 @@
-import { finishLoading, formatValues, changeLoadingMessage, getSortValue, cleanDashboard } from "./extra";
-import { cleanPolygon, createFrequencyScale, fillPolygon } from "./map";
+import { finishLoading, formatValues, changeLoadingMessage, getSortValue, cleanDashboard, showBluredLoader, hideBluredLoader } from "./extra";
+import { cleanPolygon, createFrequencyScale, fillPolygon, printScaleLegend, changeConfigClasses, createCustomFrequencyScale, } from "./map";
 
 // Desenha o mapa mundi
 export async function drawMundiMapContries() {
@@ -157,8 +157,12 @@ export function resetMap(svg, zoom) {
     .call(zoom.transform, d3.zoomIdentity);
 }
 
-// Atualiza os dados do mapa mundi
-export async function updateMundiData(selected) {
+/** Atualiza os dados do mapa mundi
+ * 
+ * @param {number} selected sh4 selecionado no mapa, o valor '0' utilizará o total de todos os sh4s
+ * @param {object[]} colorFunctions escalas customizadas para as classes do mapa
+ */
+export async function updateMundiData(selected, colorFunctions = []) {
   changeLoadingMessage('Atualizando o mapa mundi...');
 
   // Recupera o filtro para realizar a query dos dados do mapa
@@ -183,11 +187,24 @@ export async function updateMundiData(selected) {
   const mundiData = await response.json();
   // console.log('Mundi Data'. mundiData);
 
-  // Número de classes
+  /** Número de classes */
   const numClasses = $('#input-classnumber-mundi').val()
 
-  // Função de calculo de cores
-  const colors = createFrequencyScale(mundiData, numClasses, filter.sortValue, 'mundimap-container');
+  /** Escalas relacionadas as cores
+ * 
+ * [0] - escala das cores 
+ * 
+ * [1] - escala dos indexes das cores
+ */
+  let colors;
+  if (colorFunctions.length == 0) {
+    colors = createFrequencyScale(mundiData, numClasses, filter.sortValue);
+    changeConfigClasses(colors[0], 'mundimap-container');
+  }
+
+  else {
+    colors = colorFunctions;
+  }
 
   // Limpa todas os poligonos de continente
   $('#mundi-svg .polygon-active').each(function () {
@@ -204,4 +221,24 @@ export async function updateMundiData(selected) {
   mundiData.forEach(d => {
     fillPolygon(d, colors[0](d[filter.sortValue]), colors[1](d[filter.sortValue]), '#mundi-svg', block, blockName);
   })
+
+  // Legenda nova
+  printScaleLegend(colors[0], 'mundimap-container');
+
+  $('#input-classnumber-mundi').off('change');
+  $('#input-classnumber-mundi').on('change', async function () {
+    const numClasses = parseInt($('#input-classnumber-mundi').val());
+    let colorFunctions = createFrequencyScale(mundiData, numClasses, filter.sortValue);
+    changeConfigClasses(colorFunctions[0], 'mundimap-container');
+  });
+
+  $('#config-mundi').off('click');
+  $('#config-mundi').on('click', async function () {
+    const numClasses = parseInt($('#input-classnumber-mundi').val());
+    let colorFunctions = createCustomFrequencyScale('mundi', numClasses);
+
+    await showBluredLoader('#mundimap-container');
+    await updateMundiData(selected, colorFunctions);
+    await hideBluredLoader('#mundimap-container')
+  });
 }

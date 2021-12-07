@@ -72,6 +72,20 @@ body::-webkit-scrollbar {
   grid-template-areas:
   "m1 m2"
 }
+
+#calendarlogo-container {
+  grid-area: c;
+  width: 100%;
+  height: 100%;
+}
+
+#logo-container{
+  width: 100%;
+  height: 40%;
+  border-radius: 25px;
+  background-image: url('../png/logo.png');
+  background-size: cover;
+}
 /* ***************************************************** */
 /* Modal arrastavel */
 .draggable{

@@ -59,3 +59,11 @@
 #mundimap-container #centralize-container:active {
   opacity: 0.5;
 }
+
+#classlist-table-mundimap-container{
+  width: 100%;
+}
+
+#classlist-table-mundimap-container td {
+  text-align: center;
+}

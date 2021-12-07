@@ -98,7 +98,7 @@ export async function buildHorizon(filter) {
   const horizon = HorizonTSChart()(domElem)
     .data(horizonData.units) // Dataframe
     .width(width - pl - pr - 10) // Largura total - paddings - scrollbar
-    .height(100 * uniqueSh4.length) // Altura total: 100px * quantidade de charts
+    .height(80 * uniqueSh4.length) // Altura total: 100px * quantidade de charts
     .series('sh4_codigo') // Indicador do titulo de cada chart
     .ts('data') // Indicador da data do dado
     .val(sortValue) // Indicador do valor do chart
