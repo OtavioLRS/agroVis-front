@@ -3,13 +3,14 @@ import { hideClickAlert } from "./horizon/horizon";
 import { changeMapTitle, cleanPolygon } from "./map";
 import { handleSidebarExcel, handleSidebarList, handleSidebarRead, handleSidebarSave, handleLogout, listNotes } from "./sidebar";
 
-/*
-  Função com processamentos iniciais
-*/
+/** Função com processamentos iniciais */
 export async function preLoad() {
   // Nome do usuário
   const data = await JSON.parse(localStorage.getItem('session'));
   $('#sidebar-username').html(data.name);
+
+  // Divisão do mapa
+  await localStorage.setItem('mapDivision', 'country');
 
   // Funções da sidebar
   $('#sidebar-item-excel').on("click", handleSidebarExcel);
@@ -34,21 +35,47 @@ export async function preLoad() {
     $('#overlap-label').html("Layers: " + bandNumber);
   });
 
+  // Listeners de mudança de mapa
+  $('#country-maptype-radio').on('change', async () => {
+    hideInput('continent');
+    showInput('country');
+
+    $('#mundititle-container').html('Exportação por países');
+    // await showBluredLoader('#mundimap-container');
+    // await drawMundiMapCountries();
+    // await hideBluredLoader('#mundimap-container');
+  });
+
+  $('#continent-maptype-radio').on('change', async () => {
+    hideInput('country');
+    showInput('continent');
+
+    $('#mundititle-container').html('Exportação por continentes');
+    // await showBluredLoader('#mundimap-container');
+    // await drawMundiMap();
+    // await hideBluredLoader('#mundimap-container');
+  });
+
   // Construindo os select2
   $('#input-sh4').select2({ placeholder: 'Escolha os SH4s!', allowClear: true });
   $('#input-city').select2({
     placeholder: 'Escolhas as cidades!', allowClear: true,
     sorter: data => data.sort((a, b) => a.title.localeCompare(b.title))
   });
+  $('#input-country').select2({
+    placeholder: 'Escolha os paises!', allowClear: true
+  });
   $('#input-continent').select2({
     placeholder: 'Escolha os continentes!', allowClear: true,
     sorter: data => data.sort((a, b) => a.index > b.index)
   });
 
+  hideInput('continent');
+
   // 'Esc' fecha aviso
   $(document).keydown(function (e) {
     if (e.keyCode === 27) {
-      console.log('esc')
+      // console.log('esc')
       hideClickAlert();
     }
   });
@@ -59,16 +86,13 @@ export async function preLoad() {
   });
 
   // Listener de leitura de arquivo com lista de cidades para o filtro
-  $('#read-cities-input').on('change', (e) => {
-    readFile(e);
-    $('#read-cities-input').val('');
-  })
-
+  $('#read-input-city').on('change', (e) => { readFile(e); $('#read-input-city').val(''); });
   // Listener de leitura de arquivo com lista de sh4s para o filtro
-  $('#read-sh4-input').on('change', (e) => {
-    readFile(e);
-    $('#read-sh4-input').val('');
-  })
+  $('#read-input-sh4').on('change', (e) => { readFile(e); $('#read-input-sh4').val(''); });
+  // Listener de leitura de arquivo com lista de paises para o filtro
+  $('#read-input-country').on('change', (e) => { readFile(e); $('#read-input-country').val(''); });
+  // Listener de leitura de arquivo com lista de continentes para o filtro
+  $('#read-input-continent').on('change', (e) => { readFile(e); $('#read-input-continent').val(''); });
 
   // Mostra as notas
   $('#list-note-modal').on('show.bs.modal', listNotes);
@@ -88,34 +112,53 @@ export async function preLoad() {
   })
 }
 
-/*
-  Inicia a tela de carregamento
-*/
+/** Inicia a tela de carregamento */
 export function startLoading() {
   // $('.wrapper').addClass('hidden');
   $('.hard-loader-wrapper').fadeIn('fast');
 }
 
-/*
-  Fecha a tela de carregamento
-*/
+/** Fecha a tela de carregamento */
 export function finishLoading() {
   $('.hard-loader-wrapper').fadeOut(() => {
     // $('.wrapper').removeClass('hidden');
   });
 }
 
-/*
-  Muda a mensagem da tela de carregamento
-*/
-export function changeLoadingMessage(message) {
-  $('.loader-message').html(message);
-  // $('.sr-only').html(message);
+/** Esconde um input de países ou continentes no filtro
+ * 
+ * @param {string} inputName 'country' ou 'continent'
+ */
+export function hideInput(inputName) {
+  $(`#wrapper-input-${inputName}`).addClass('hidden');
+  $(`#wrapper-input-${inputName} span`).addClass('hidden');
+  $(`#wrapper-input-${inputName} svg`).addClass('hidden');
+  $(`#label-${inputName}`).addClass('hidden');
 }
 
-/*
-  Transforma o modal em draggable
-*/
+/** Mostra um input de países ou continentes no filtro
+ * 
+ * @param {string} inputName 'country' ou 'continent'
+ */
+export function showInput(inputName) {
+  $(`#wrapper-input-${inputName}`).removeClass('hidden');
+  $(`#wrapper-input-${inputName} span`).removeClass('hidden');
+  $(`#wrapper-input-${inputName} svg`).removeClass('hidden');
+  $(`#label-${inputName}`).removeClass('hidden');
+}
+
+/** Muda a mensagem da tela de carregamento
+ * 
+ * @param {string} message mensagem a ser mostrada
+ */
+export function changeLoadingMessage(message) {
+  $('.loader-message').html(message);
+}
+
+/** Transforma um modal em draggable
+ * 
+ * @param {string} elem selector css '.classe' ou '#id'
+ */
 export function createDraggable(elem) {
   let posX1 = 0, posY1 = 0, posX0 = 0, poxY0 = 0;
   $(elem + ' .modal-header').on('mousedown', dragMouseDown)
@@ -154,9 +197,11 @@ export function createDraggable(elem) {
   // return div;
 }
 
-/*
-  Formata o valor com virgulas a cada 3 espaços
-*/
+/** Formata um número com virgulas a cada 3 casas
+ * 
+ * @param {number} num número a ser formatado
+ * @returns {string}
+ */
 export function formatValues(num) {
   let numAsString = num.toString().replace(/\D/g, '');
   let characters = numAsString.split('').reverse();
@@ -167,26 +212,28 @@ export function formatValues(num) {
     parts.unshift(part);
   }
   return parts.join(",");
-  // return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
+/** Retira a formatação de um número 
+ * 
+ * @param {string} num número (string) que deve perder a formatação
+ * @returns {number}
+ */
 export function unformatValues(num) {
   let numNoCommas = num.toString().replaceAll(',', '');
   return parseInt(numNoCommas);
 }
 
-/*
-  Formata um mês adicionando 0 a ele
-*/
-export function fixMonth(x) {
-  return x <= 9 ? '0' + x.toString() : x;
+/** Formata adiciona um 0 na frente de um numero de 1 a 9
+ * 
+ * @param {number} month numero de 1 a 9
+ * @returns {string}
+ */
+export function fixMonth(month) {
+  return month <= 9 ? '0' + month.toString() : month;
 }
 
-/*
-  Limita a data de 'input-date0', baseado no valor de 'input-date1'
-  'input-date0' - input com a data inicial 
-  'input-date1' - input com a data final
-*/
+/** Limita a data de 'input-date0', baseado no valor de 'input-date1' */
 export function limitDate0() {
   // Data limite é retirada do 'input-date1'
   let fim = $('#input-date1').val();
@@ -199,11 +246,12 @@ export function limitDate0() {
     $('#input-date0').val(fim)
 }
 
-/* 
-  Compara datas no formato string 'YYYY-MM'
-  True - date0 > date1 
-  False - date0 <= date1
-*/
+/** Compara duas datas no formato string 'YYYY-MM'
+ * 
+ * @param {string} d0 'YYYY-MM'
+ * @param {string} d1 'YYYY-MM'
+ * @returns {boolean} True - date0 > date1 | False - date0 <= date1
+ */
 export function compareDates(d0, d1) {
   console.log(d0, d1)
   const date0 = new Date(d0.substring(0, 4), d0.substring(5));
@@ -212,65 +260,110 @@ export function compareDates(d0, d1) {
   return date0.getTime() > date1.getTime();
 }
 
-/* 
-  Recupera o tipo de dado que se deseja utilizar como unidade principal
-  'peso' ou 'fob'
-*/
+/** Recupera o tipo de dado que se deseja utilizar como unidade principal
+ * 
+ * @returns {string} 'fob' ou 'peso'
+ */
 export async function getSortValue() {
   const filter = await JSON.parse(localStorage.getItem('filter'));
   // console.log(filter)
   return filter['sortValue'];
 }
 
-/* 
-  Recupera o tipo de dados na qual se deve ordenar o horizonChart
-  'peso' ou 'fob'
-*/
+/** Recupera o tipo de dados na qual se deve ordenar o horizonChart
+ * 
+ * @returns {string} 'fob' ou 'peso'
+ */
 export function getSortByValue() {
   return $('input[name=sort-radio]:checked', '#horizonsort-wrapper').val();
 }
 
-/* 
-  Recupera a ordem que os dados devem ser ordenados no horizonChart
-  'asc' ou 'dec'
-*/
+/** Recupera a ordem que os dados devem ser ordenados no horizonChart
+ * 
+ * @returns {string} 'asc' ou 'dec'
+ */
 export function getSortOrder() {
   return $('input[name=sortorder-radio]:checked', '#horizonsort-wrapper').val();
 }
 
-/* 
-  Recupera o tipo de escala utilizado para construir o gráfico
-  Individual ou Global
-*/
+/** Recupera o tipo de escala utilizado para construir o horizonChart
+ * 
+ * @returns {string} 'unit' ou 'global'
+ */
 export function getScaleByValue() {
-  return $('input[name=scale-radio]:checked', '#horizonscale-wrapper').val()
+  return $('input[name=scale-radio]:checked', '#horizonscale-wrapper').val();
 }
 
-// Aplica efeito de blur em um elemento HTML
+/** Aplica efeito de blur em um seletor css
+ * 
+ * @param {string} elem '.class' ou '#id'
+ */
 export function blurElement(elem) {
   $(elem).addClass('blured');
 }
 
-// Remove efeito de blur em um elemento HTML
+/** Remove efeito de blur de um seletor css
+ * 
+ * @param {string} elem '.class' ou '#id'
+ */
 export function unblurElement(elem) {
   $(elem).removeClass('blured');
 }
 
-// Exibe o loader e insere blur em um elemento
+/** Insere blur em um elemento e mostra seu loader (irmão)
+ * 
+ * @param {string} elem '.class' ou '#id'
+ */
 export function showBluredLoader(elem) {
   $(`${elem}`).addClass('blured');
   $(`${elem} ~ .soft-loader-wrapper`).removeClass('hidden');
   $(`${elem} ~ .soft-loader-wrapper`).addClass('show');
 }
 
-// Esconde o loader e retira o blur de um elemento
+/** Retira o blur de um elemento e esconde seu loader (irmão)
+ * 
+ * @param {string} elem '.class' ou '#id'
+ */
 export function hideBluredLoader(elem) {
   $(`${elem} ~ .soft-loader-wrapper`).removeClass('show');
   $(`${elem} ~ .soft-loader-wrapper`).addClass('hidden');
   $(`${elem}`).removeClass('blured');
 }
 
-// Limpa completamente a interface do Dashboard
+/** Remove todas as options selecionadas de um elemento Select2
+ * 
+ * @param {strin} elem '.class' ou '#id' 
+ */
+export function clearSelect2Input(elem) {
+  $(elem).val(null).trigger('change.select2');
+}
+
+/** Calcula a mediana de um array
+ * 
+ * @param {number[]} values valores para se calcular a mediana
+ * @returns {number} mediana
+ */
+export function median(values) {
+  if (values.length === 0) return 0;
+
+  values.sort(function (a, b) {
+    return a - b;
+  });
+
+  let half = Math.floor(values.length / 2);
+
+  if (values.length % 2)
+    return values[half];
+
+  return (values[half - 1] + values[half]) / 2.0;
+}
+
+/** Fecha a sidebar */
+export function closeSidebar() {
+  $('#close-sidebar-button').trigger('click');
+}
+
+/** Limpa completamente a interface do Dashboard */
 export function cleanDashboard() {
   // Deleta o Horizon Chart anterior
   d3.select('#horizon-wrapper').select('div').remove();
@@ -294,31 +387,4 @@ export function cleanDashboard() {
 
   // Nenhuma query feita, desabilita opção de salvamento de query
   $('#sidebar-item-save').addClass('disabled');
-}
-
-// Remove todas as options selecionadas de um elemento Select2
-export function clearSelect2Input(path) {
-  $(path).val(null);
-  $(path).trigger('change');
-}
-
-// Calcular mediana de um array
-export function median(values) {
-  if (values.length === 0) return 0;
-
-  values.sort(function (a, b) {
-    return a - b;
-  });
-
-  let half = Math.floor(values.length / 2);
-
-  if (values.length % 2)
-    return values[half];
-
-  return (values[half - 1] + values[half]) / 2.0;
-}
-
-// Fechar a sidebar
-export function closeSidebar() {
-  $('#close-sidebar-button').trigger('click');
 }

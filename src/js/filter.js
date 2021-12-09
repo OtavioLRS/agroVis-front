@@ -1,70 +1,118 @@
-import { startLoading, finishLoading, changeLoadingMessage, getSortValue, getSortByValue, cleanDashboard, clearSelect2Input, createDraggable, fixMonth } from './extra.js'
+import { startLoading, finishLoading, changeLoadingMessage, cleanDashboard, clearSelect2Input, fixMonth } from './extra.js'
 import { buildHorizon } from './horizon/horizon.js';
 import { updateMap, updateMapSh4Input } from './map.js';
+import { drawMundiMap, drawMundiMapCountries } from './mundi.js';
 
-// Função principal para a construção dos filtros
+/** Constrói os inputs do filtro */
 export async function buildFilters() {
-  // Requisição para buscar os SH4s presentes no banco
+  // Opções padrões com todas as opções dos filtros
+  $('#input-sh4').append($('<option value=0>Todos os produtos</option>'));
+  $('#input-country').append($('<option value=0>Todos os países</option>'));
+  $('#input-continent').append($('<option value=0 index=0>Todos os continentes</option>'));
+
+  // Requisição para buscar os SH4s
   // await fetch('https://mighty-taiga-07455.herokuapp.com/produtos', {
-  await fetch('http://127.0.0.1:5000/produtos', {
-    // await fetch('https://agrovis-back-flask.herokuapp.com/produtos', {
+  // await fetch('https://agrovis-back-flask.herokuapp.com/produtos', {
+  const response = await fetch('http://127.0.0.1:5000/produtos', {
     method: 'GET',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json'
     }
-  })
-    .then(response => response.json())
-    .then(response => {
-      // console.log('SH4', response);
+  });
+  const products = await response.json();
+  // console.log('SH4', products);
 
-      // Opção padrão com todos os produtos
-      $('#input-sh4').append($('<option value=0>Todos os produtos</option>'));
+  // SH4s
+  products.forEach((product) => {
+    const option = $('<option></option>');
+    option.attr({ "value": product.CO_SH4 });
+    option.text(product.CO_SH4 + " - " + product.NO_SH4_POR);
+    option.attr({ "label": product.CO_SH4 });
+    option.addClass("option-sh4");
 
-      response.forEach((product) => {
-        const option = $('<option></option>');
-        option.attr({ "value": product.CO_SH4 });
-        option.text(product.CO_SH4 + " - " + product.NO_SH4_POR);
-        option.attr({ "label": product.CO_SH4 });
-        option.addClass("option-sh4");
+    $('#input-sh4').append(option);
+  });
 
-        $('#input-sh4').append(option);
-      });
-      // Seleciona a opção default com todos os sh4s
-      $('#input-sh4').val('0');
-      $('#input-sh4').trigger('change');
-      // Remove o aviso que foi exibido com o trigger de change
-      $('#filter-button span').addClass('hidden');
+  // Países
+  d3.dsv(';', 'src/json/paises.csv', (d) => {
+    let cod = d['CO_PAIS'];
+    let name = d['NO_PAIS'];
+    const option = $('<option></option>')
+    option.attr({ "value": cod });
+    option.text(name);
 
-      // Continentes
-      const continents = [
-        { id: 105, name: 'América Central e Caribe' },
-        { id: 107, name: 'América do Norte' },
-        { id: 48, name: 'América do Sul' },
-        { id: 51, name: 'África' },
-        { id: 39, name: 'Ásia (Exclusive Oriente Médio)' },
-        { id: 112, name: 'Europa' },
-        { id: 61, name: 'Oceania' },
-        { id: 41, name: 'Oriente Médio' },
-      ]
+    $('#input-country').append(option);
+  });
 
-      $('#input-continent').append($('<option value=0 index=0>Todos os continentes</option>'));
-      continents.forEach((c, i) => {
-        const option = $('<option></option>')
-        option.attr({ "value": c.id });
-        option.attr({ "index": i + 1 });
-        option.text(c.name);
-        option.addClass("option-continent");
+  // Continentes
+  const continents = [
+    { id: 105, name: 'América Central e Caribe' },
+    { id: 107, name: 'América do Norte' },
+    { id: 48, name: 'América do Sul' },
+    { id: 51, name: 'África' },
+    { id: 39, name: 'Ásia (Exclusive Oriente Médio)' },
+    { id: 112, name: 'Europa' },
+    { id: 61, name: 'Oceania' },
+    { id: 41, name: 'Oriente Médio' },
+  ];
 
-        $('#input-continent').append(option);
-      })
+  continents.forEach((c, i) => {
+    const option = $('<option></option>')
+    option.attr({ "value": c.id });
+    option.attr({ "index": i + 1 });
+    option.text(c.name);
+    option.addClass("option-continent");
 
-      $('#input-continent').val('0').trigger('change.select2');
-    })
-    .then(() => { finishLoading() });
+    $('#input-continent').append(option);
+  });
+
+  // Seleciona as opções defaults nos inputs
+  $('#input-sh4').val('0').trigger('change.select2');
+  $('#input-country').val('0').trigger('change.select2');
+  $('#input-continent').val('0').trigger('change.select2');
+
+  // Remove o aviso que foi exibido com o trigger de change
+  $('#filter-button span').addClass('hidden');
 }
 
-// Realiza a construção das visualizações com base no filtro
+/** Lê um arquivo CSV para preencher um input do filtro (cidade, sh4, pais ou continente)
+ * 
+ * @param {event} event evento referente ao click em um input de arquivo
+ */
+export function readFile(event) {
+  /** Identifica origem do arquivo */
+  const sourceElem = event.currentTarget
+  // console.log('Ler arquivo de', sourceElem.id)
+
+  /** Input a ser preenchido com os dados do CSV */
+  const fileModel = `#${sourceElem.id.split('read-')[1]}`;
+  // console.log('Input a ser preenchido', fileModel);
+
+  /** Arquivo CSV */
+  const file = sourceElem.files[0];
+  const reader = new FileReader();
+  reader.readAsText(file);
+  reader.onload = (e) => {
+    let rows = e.target.result.split('\n');
+    let ids = [];
+
+    // Limpa o input para depois preenche-lo com os novos inputs
+    clearSelect2Input(fileModel);
+
+    // Para cada linha do CSV, pega o elemento da primeira coluna, que deve ser um código de um elemento
+    for (let i = 1; i < rows.length - 1; i++) {
+      let id = rows[i].split(';')[0];
+      ids.push(id);
+    }
+
+    // Adiciona os ids dos elementos ao input
+    $(fileModel).val(ids).trigger('change.select2');
+    // console.log('Selecionar códigos', ids)
+  }
+}
+
+/** Inicia o processo principal de atualização do dashboard */
 export async function handleFilter() {
   // Fecha o(s) modal(is) de anotações
   $('#save-note-modal .btn-close').trigger('click');
@@ -72,24 +120,34 @@ export async function handleFilter() {
 
   const cities = $('#input-city').select2('data');
   const products = $('#input-sh4').select2('data');
+  const countries = $('#input-country').select2('data');
   const continents = $('#input-continent').select2('data');
   const date0 = $('#input-date0').val();
   const date1 = $('#input-date1').val();
+  /** 'country' ou 'continent' */
+  const mapDivision = $('input[name=maptype-radio]:checked', '#container-maptype').val();
+  /** 'fob' ou 'peso' */
+  const sortValue = $('input[name=datatype-radio]:checked', '#container-datatype').val();
 
-  if (products.length == 0) { // Nenhum produto foi selecionado, aborda
-    alert('Por favor, selecione pelo menos um SH4!');
-    return;
-  }
-  if (cities.length == 0) { // Nenhum produto foi selecionado, aborda
-    alert('Por favor, selecione pelo menos uma cidade!');
-    return;
-  }
-  if (continents.length == 0) { // Nenhum continente foi selecionado, aborda
-    alert('Por favor, selecione pelo menos um continente!');
-    return;
-  }
+  // Divisão do mapa
+  let curMapDivision = await localStorage.getItem('mapDivision');
+
+  // Nenhum produto foi selecionado, aborda
+  if (products.length == 0) { alert('Por favor, selecione pelo menos um SH4!'); return; }
+  // Nenhum produto foi selecionado, aborda
+  if (cities.length == 0) { alert('Por favor, selecione pelo menos uma cidade!'); return; }
+  // Nenhum paise foi selecionado, aborda
+  if (mapDivision == 'country') { if (countries.length == 0) { alert('Por favor, selecione pelo menos um país!'); return; } }
+  // Nenhum continente foi selecionado, aborda
+  else { if (continents.length == 0) { alert('Por favor, selecione pelo menos um continente!'); return; } }
 
   startLoading();
+
+  // Se divisão atual for diferente da nova divisão, redesenha o mapa
+  if (curMapDivision != mapDivision) {
+    await localStorage.setItem('mapDivision', mapDivision);
+    mapDivision == 'country' ? drawMundiMapCountries() : drawMundiMap();
+  }
 
   // Se for query salva, habilita visualização de anotação, senão desativa
   let savedQuery = await JSON.parse(localStorage.getItem('savedQuery'));
@@ -102,24 +160,27 @@ export async function handleFilter() {
   // Remove o aviso de atualização de busca
   $('#filter-button span').addClass('hidden');
 
-  // cleanDashboard();
-  changeLoadingMessage('Buscando dados...')
+  changeLoadingMessage('Buscando dados...');
 
   const filterHorizon = {
     cities: [],
     products: [],
+    countries: [],
     continents: [],
     beginPeriod: null,
-    endPeriod: null
+    endPeriod: null,
+    mapDivision: null,
   }
 
   const filterMap = {
     cities: [],
     products: [],
+    countries: [],
     continents: [],
     beginPeriod: null,
     endPeriod: null,
-    sortValue: null
+    sortValue: null,
+    mapDivision: null,
   }
 
   // Adicionando cidades no filtro
@@ -130,7 +191,6 @@ export async function handleFilter() {
       filterMap.cities = [];
       break;
     }
-
     // Caso normal, apenas adiciona cidade escolhida
     else {
       filterHorizon.cities.push(c.id);
@@ -149,6 +209,22 @@ export async function handleFilter() {
     // Caso normal, apenas adiciona produto escolhido
     else {
       filterHorizon.products.push(e.id);
+    }
+  }
+
+  // Adicionando paises no filtro
+  for (const e of countries) {
+    // Todos os paises selecionadas, não é necessário filtro
+    if (e.id == '0') {
+      filterHorizon.countries = [];
+      filterMap.countries = [];
+      break;
+    }
+
+    // Caso normal, apenas adiciona pais escolhido
+    else {
+      filterHorizon.countries.push(e.id);
+      filterMap.countries.push(e.id);
     }
   }
 
@@ -173,19 +249,16 @@ export async function handleFilter() {
   filterHorizon.endPeriod = date1;
   filterMap.beginPeriod = date0;
   filterMap.endPeriod = date1;
+  // Divisão do destinos, por pais ou por continentes
+  filterHorizon.mapDivision = mapDivision;
+  filterMap.mapDivision = mapDivision;
+  // FOB ou Peso sendo utilizado como medida
+  filterMap.sortValue = sortValue == 'fob' ? 'VL_FOB' : 'KG_LIQUIDO';
+
 
   // Filtro foi construído, agora serão feitos os processamentos:
   try {
-    /*
-      Constroi o HorizonChart
-    
-      filterHorizon =
-        cities - lista de cidades, [] = todas 
-        products - lista de produtos, [] = todos
-        continents - lista de continentes, [] = todos
-        beginPeriod - data inicial
-        endPeriod - data final
-    */
+    // Constroi o HorizonChart
     await buildHorizon(filterHorizon);
 
     // Espera 100 ms para construção do HorizonChart
@@ -193,16 +266,10 @@ export async function handleFilter() {
       // Lista de produtos com dados (label = uma série do HorizonChart / um produto)
       const products = document.getElementsByClassName('label');
       // Adiciona os produtos com dados no filtro de dados do mapa (filterMap)
-      for (const d of products) {
-        filterMap.products.push(parseInt(d.innerHTML.split(' - ')[0]));
-      }
+      for (const d of products) { filterMap.products.push(parseInt(d.innerHTML.split(' - ')[0])); }
       // console.log('Produtos com dados', filterMap.products);
 
-      // Utilizar 'FOB' ou 'PESO'
-      filterMap.sortValue = $('input[name=datatype-radio]:checked', '#container-datatype').val();
-      filterMap.sortValue = filterMap.sortValue == 'fob' ? 'VL_FOB' : 'KG_LIQUIDO';
-
-      // Seta o filterMap no localStorage, para ser acessado pelo mapa
+      // Seta o filterMap no localStorage
       await localStorage.setItem('filter', JSON.stringify(filterMap));
 
       // Atualizando o input de alternância de produtos
@@ -229,32 +296,13 @@ export async function handleFilter() {
 }
 
 
-// Le um arquivo de cidades ou sh4's
-export function readFile(event) {
-  // Identifica origem do arquivo e completa o input de acordo
-  const sourceElem = event.currentTarget
-  console.log('Ler arquivo de:', sourceElem.id)
-  const fileModel = (sourceElem.id == 'read-cities-input') ? '#input-city' : '#input-sh4';
-  const file = sourceElem.files[0];
 
-  const reader = new FileReader();
-  reader.readAsText(file);
-  reader.onload = (e) => {
-    let rows = e.target.result.split('\n');
-    let ids = [];
 
-    clearSelect2Input(fileModel);
 
-    for (let i = 1; i < rows.length - 1; i++) {
-      let id = rows[i].split(';')[0];
-      ids.push(id);
-    }
 
-    $(fileModel).val(ids);
-    $(fileModel).trigger('change');
-    // console.log(ids)
-  }
-}
+
+
+
 
 
 // Preenche o filtro com base em um objeto recebido por parametro
@@ -293,6 +341,4 @@ export async function setFilter(data) {
 
   // Número de classes selecionadas no mapa
   $('#input-classnumber').val(data['NUM_CLASS']);
-
-  // $(`#mainmap-container option[label='${data['MAP_SH4']}']`).attr('selected', 'selected');
 }

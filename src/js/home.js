@@ -1,7 +1,7 @@
 import "@babel/polyfill";
 import { preLoad, startLoading, changeLoadingMessage, finishLoading } from './extra.js'
 import { drawMainMap, getCitiesNames } from "./map.js";
-import { drawMundiMap, drawMundiMapContries } from "./mundi.js";
+import { drawMundiMap, drawMundiMapCountries } from "./mundi.js";
 import { buildFilters, handleFilter } from "./filter.js";
 import { validateLoginInHome } from "./loginFunctions";
 
@@ -16,10 +16,8 @@ preLoad();
 changeLoadingMessage('Desenhando o mapa...')
 drawMainMap().then(getCitiesNames);
 // drawMundiMap();
-drawMundiMapContries();
+drawMundiMapCountries();
 
 // Filtros
 changeLoadingMessage('Construindo os filtros...')
-buildFilters();
-
-// finishLoading();
+buildFilters().then(finishLoading)

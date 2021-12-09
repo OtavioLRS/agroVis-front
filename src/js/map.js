@@ -3,6 +3,12 @@ import { updateMundiData } from "./mundi";
 
 // Desenha o mapa
 export async function drawMainMap() {
+  $('#mainmap-container').html(`
+    <div id="input-sh4-map-container"></div>
+    <div id="centralize-container" title="Centralizar o mapa">
+      <i class="bi bi-pin-map-fill" id="centralize-map-icon"></i>
+    </div>`);
+
   // Container do mapa
   let svg = d3.select('#map-container #mainmap-container')
     .append('svg') // insere um SVG para o mapa
@@ -211,7 +217,6 @@ export async function updateMapData(selected, colorFunctions = []) {
    */
   let colors;
   if (colorFunctions.length == 0) {
-    console.log('atualizei os dado');
     colors = createFrequencyScale(mapData, numClasses, filter.sortValue);
     changeConfigClasses(colors[0], 'mainmap-container');
   }
@@ -471,7 +476,7 @@ export async function changeConfigClasses(colors, parent) {
     let curRow = $(child).find(`#limit-sup-${i}`);
     let otherRow = $(child).find(`#limit-inf-${i}`);
 
-    $(curRow).on('input', () => {
+    $(curRow).on('change', () => {
       let curValue = unformatValues(curRow.val());
       let [nextLimit, _, __] = getNextLimit(p, 'sup', i);
       nextLimit.val(formatValues(curValue + 1));

@@ -2,7 +2,13 @@ import { finishLoading, formatValues, changeLoadingMessage, getSortValue, cleanD
 import { cleanPolygon, createFrequencyScale, fillPolygon, printScaleLegend, changeConfigClasses, createCustomFrequencyScale, } from "./map";
 
 // Desenha o mapa mundi
-export async function drawMundiMapContries() {
+export async function drawMundiMapCountries() {
+
+  $('#mundimap-container').html(`
+    <div id="centralize-container" title="Centralizar o mapa">
+      <i class="bi bi-pin-map-fill" id="centralize-mundi-icon"></i>
+    </div>`);
+
   // Container do mapa
   let svg = d3.select('#mundi-container #mundimap-container')
     .append('svg') // insere um SVG para o mapa
@@ -78,6 +84,11 @@ export async function drawMundiMapContries() {
 
 // Desenha o mapa mundi
 export async function drawMundiMap() {
+  $('#mundimap-container').html(`
+    <div id="centralize-container" title="Centralizar o mapa">
+      <i class="bi bi-pin-map-fill" id="centralize-mundi-icon"></i>
+    </div>`);
+
   // Container do mapa
   let svg = d3.select('#mundi-container #mundimap-container')
     .append('svg') // insere um SVG para o mapa
@@ -170,8 +181,7 @@ export async function updateMundiData(selected, colorFunctions = []) {
   filter.products = selected == 0 ? filter.products : [selected];
 
   // Divisão por continente ou países
-  // const division = 'continente'
-  const division = 'pais'
+  const division = filter.mapDivision == 'country' ? 'pais' : 'continente'
 
   // Realiza a query do filtro inserido
   const response = await fetch(`http://127.0.0.1:5000/exportacao/mundi/${division}`, {
@@ -214,8 +224,8 @@ export async function updateMundiData(selected, colorFunctions = []) {
   // Divide por continente ou pais
   // const block = 'CO_BLOCO';
   // const blockName = 'NO_BLOCO';
-  const block = 'CO_PAIS';
-  const blockName = 'NO_PAIS';
+  const block = filter.mapDivision == 'country' ? 'CO_PAIS' : 'CO_BLOCO';
+  const blockName = filter.mapDivision == 'country' ? 'NO_PAIS' : 'NO_BLOCO';
 
   // Preenche cada poligono de continente com os dados referentes
   mundiData.forEach(d => {

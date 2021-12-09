@@ -315,14 +315,14 @@
 
 
           <label id="label-city" for="input-city"><b>Cidades</b></label>
-          <div class="filter-input-wrapper">
+          <div class="filter-input-wrapper" id="wrapper-input-city">
             <select class="filter-input select2-flag" type="text" id="input-city" multiple="multiple"
               style="width: 90%;"></select>
 
-            <input type="file" accept=".csv" class="hidden" id="read-cities-input">
+            <input type="file" accept=".csv" class="hidden" id="read-input-city">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
               class="bi bi-folder hover-icon" id="read-cities-icon"
-              onclick="document.getElementById('read-cities-input').click();" viewBox="0 0 16 16">
+              onclick="document.getElementById('read-input-city').click();" viewBox="0 0 16 16">
               <path
                 d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z" />
             </svg>
@@ -330,26 +330,48 @@
           <hr style="width: 100%; margin-bottom: 0px;">
 
           <label id="label-sh4" for="input-sh4"><b>SH4</b></label>
-          <div class="filter-input-wrapper">
+          <div class="filter-input-wrapper" id="wrapper-input-sh4">
             <select class="filter-input select2-flag" type="text" id="input-sh4" multiple="multiple"
               style="width: 90%;"></select>
 
-            <input type="file" accept=".csv" class="hidden" id="read-sh4-input">
+            <input type="file" accept=".csv" class="hidden" id="read-input-sh4">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
               class="bi bi-folder hover-icon" id="read-sh4-icon"
-              onclick="document.getElementById('read-sh4-input').click();" viewBox="0 0 16 16">
+              onclick="document.getElementById('read-input-sh4').click();" viewBox="0 0 16 16">
               <path
                 d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z" />
             </svg>
           </div>
           <hr style="width: 100%; margin-bottom: 0px;">
 
+          <label id="label-country" for="input-country"><b>Paises</b></label>
+          <div class="filter-input-wrapper" id="wrapper-input-country">
+            <select class="filter-input select2-flag" type="text" id="input-country" multiple="multiple"
+              style="width: 90%;"></select>
+
+            <input type="file" accept=".csv" class="hidden" id="read-input-country">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+              class="bi bi-folder hover-icon" id="read-country-icon"
+              onclick="document.getElementById('read-input-country').click();" viewBox="0 0 16 16">
+              <path
+                d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z" />
+            </svg>
+          </div>
+
           <label id="label-continent" for="input-continent"><b>Continentes</b></label>
-          <div class="filter-input-wrapper">
+          <div class="filter-input-wrapper" id="wrapper-input-continent">
             <select class="filter-input select2-flag" type="text" id="input-continent" multiple="multiple"
               style="width: 90%;"></select>
-            <svg width="16" height="16" fill="currentColor"></svg>
+
+            <input type="file" accept=".csv" class="hidden" id="read-input-continent">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+              class="bi bi-folder hover-icon" id="read-continent-icon"
+              onclick="document.getElementById('read-input-continent').click();" viewBox="0 0 16 16">
+              <path
+                d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z" />
+            </svg>
           </div>
+
           <hr style="width: 100%; margin-bottom: 0px;">
 
           <div id="container-date-datatype">
@@ -360,7 +382,7 @@
                 De
                 <input class="filter-input" type="month" id="input-date0" value="2021-01" min="1997-01" max="2021-10">
                 até
-                <input class="filter-input" type="month" id="input-date1" value="2021-05" min="1997-01" max="2021-10">
+                <input class="filter-input" type="month" id="input-date1" value="2021-11" min="1997-01" max="2021-11">
               </div>
             </div>
 
@@ -379,17 +401,37 @@
               </div>
             </div>
           </div>
+
+
+
+
+
+
+          <div id="container-maptype-filter">
+            <div id="container-maptype">
+              <label id="label-maptype" for="container-maptype"><b>Divisão do Mapa</b></label>
+              <div id="wrapper-maptype">
+                <span>
+                  <input type="radio" id="country-maptype-radio" name="maptype-radio" value="country" checked>
+                  <label for="country-maptype-radio">Paises</label>
+                </span>
+                <span>
+                  <input type="radio" id="continent-maptype-radio" name="maptype-radio" value="continent">
+                  <label for="continent-maptype-radio">Continentes</label>
+                </span>
+              </div>
+            </div>
+
+            <button id="filter-button" class="btn btn-success shadow position-relative">
+              <span title="Filtre novamente sua pesquisa!"
+                class="hidden position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+              </span>
+              Filtrar
+            </button>
+
+          </div>
+
         </div>
-
-
-
-
-        <button id="filter-button" class="btn btn-success shadow position-relative">
-          <span title="Filtre novamente sua pesquisa!"
-            class="hidden position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
-          </span>
-          Filtrar
-        </button>
       </div>
 
       <div id="calendarlogo-container">
@@ -621,13 +663,11 @@
       </div>
 
       <div class="container shadow-lg" id="mundi-container">
-        <div class="text-center text-wrap" id="mundititle-container"> Exportação por continentes </div>
+        <div class="text-center text-wrap" id="mundititle-container">Exportação por países</div>
 
         <!-- Mundi -->
         <div id="mundimap-container">
-          <div id="centralize-container" title="Centralizar o mapa">
-            <i class="bi bi-pin-map-fill" id="centralize-mundi-icon"></i>
-          </div>
+
         </div>
 
         <!-- Loading -->
