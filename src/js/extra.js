@@ -39,21 +39,11 @@ export async function preLoad() {
   $('#country-maptype-radio').on('change', async () => {
     hideInput('continent');
     showInput('country');
-
-    $('#mundititle-container').html('Exportação por países');
-    // await showBluredLoader('#mundimap-container');
-    // await drawMundiMapCountries();
-    // await hideBluredLoader('#mundimap-container');
   });
 
   $('#continent-maptype-radio').on('change', async () => {
     hideInput('country');
     showInput('continent');
-
-    $('#mundititle-container').html('Exportação por continentes');
-    // await showBluredLoader('#mundimap-container');
-    // await drawMundiMap();
-    // await hideBluredLoader('#mundimap-container');
   });
 
   // Construindo os select2
@@ -127,7 +117,7 @@ export function finishLoading() {
 
 /** Esconde um input de países ou continentes no filtro
  * 
- * @param {string} inputName 'country' ou 'continent'
+ * @param {('country'|'continent')} inputName qual input deseja esconder
  */
 export function hideInput(inputName) {
   $(`#wrapper-input-${inputName}`).addClass('hidden');
@@ -138,7 +128,7 @@ export function hideInput(inputName) {
 
 /** Mostra um input de países ou continentes no filtro
  * 
- * @param {string} inputName 'country' ou 'continent'
+ * @param {('country'|'continent')} inputName qual input deseja mostrar
  */
 export function showInput(inputName) {
   $(`#wrapper-input-${inputName}`).removeClass('hidden');
@@ -157,7 +147,7 @@ export function changeLoadingMessage(message) {
 
 /** Transforma um modal em draggable
  * 
- * @param {string} elem selector css '.classe' ou '#id'
+ * @param {('.class'|'#id')} elem
  */
 export function createDraggable(elem) {
   let posX1 = 0, posY1 = 0, posX0 = 0, poxY0 = 0;
@@ -233,7 +223,7 @@ export function fixMonth(month) {
   return month <= 9 ? '0' + month.toString() : month;
 }
 
-/** Limita a data de 'input-date0', baseado no valor de 'input-date1' */
+/** Limita a data de `input-date0`, baseado no valor de `input-date1` */
 export function limitDate0() {
   // Data limite é retirada do 'input-date1'
   let fim = $('#input-date1').val();
@@ -246,11 +236,11 @@ export function limitDate0() {
     $('#input-date0').val(fim)
 }
 
-/** Compara duas datas no formato string 'YYYY-MM'
+/** Compara duas datas no formato string `YYYY-MM`
  * 
- * @param {string} d0 'YYYY-MM'
- * @param {string} d1 'YYYY-MM'
- * @returns {boolean} True - date0 > date1 | False - date0 <= date1
+ * @param {string} d0 `YYYY-MM`
+ * @param {string} d1 `YYYY-MM`
+ * @returns {boolean} `True` - date0 > date1 | `False` - date0 <= date1
  */
 export function compareDates(d0, d1) {
   console.log(d0, d1)
@@ -262,7 +252,7 @@ export function compareDates(d0, d1) {
 
 /** Recupera o tipo de dado que se deseja utilizar como unidade principal
  * 
- * @returns {string} 'fob' ou 'peso'
+ * @returns {('fob'|'peso')}
  */
 export async function getSortValue() {
   const filter = await JSON.parse(localStorage.getItem('filter'));
@@ -272,7 +262,7 @@ export async function getSortValue() {
 
 /** Recupera o tipo de dados na qual se deve ordenar o horizonChart
  * 
- * @returns {string} 'fob' ou 'peso'
+ * @returns {('fob'|'peso')}
  */
 export function getSortByValue() {
   return $('input[name=sort-radio]:checked', '#horizonsort-wrapper').val();
@@ -280,7 +270,7 @@ export function getSortByValue() {
 
 /** Recupera a ordem que os dados devem ser ordenados no horizonChart
  * 
- * @returns {string} 'asc' ou 'dec'
+ * @returns {('asc'|'dec')}
  */
 export function getSortOrder() {
   return $('input[name=sortorder-radio]:checked', '#horizonsort-wrapper').val();
@@ -288,7 +278,7 @@ export function getSortOrder() {
 
 /** Recupera o tipo de escala utilizado para construir o horizonChart
  * 
- * @returns {string} 'unit' ou 'global'
+ * @returns {('unit'|'global')}
  */
 export function getScaleByValue() {
   return $('input[name=scale-radio]:checked', '#horizonscale-wrapper').val();
@@ -296,7 +286,7 @@ export function getScaleByValue() {
 
 /** Aplica efeito de blur em um seletor css
  * 
- * @param {string} elem '.class' ou '#id'
+ * @param {('.class'|'#id')} elem
  */
 export function blurElement(elem) {
   $(elem).addClass('blured');
@@ -304,7 +294,7 @@ export function blurElement(elem) {
 
 /** Remove efeito de blur de um seletor css
  * 
- * @param {string} elem '.class' ou '#id'
+ * @param {('.class'|'#id')} elem
  */
 export function unblurElement(elem) {
   $(elem).removeClass('blured');
@@ -312,7 +302,7 @@ export function unblurElement(elem) {
 
 /** Insere blur em um elemento e mostra seu loader (irmão)
  * 
- * @param {string} elem '.class' ou '#id'
+ * @param {('.class'|'#id')} elem
  */
 export function showBluredLoader(elem) {
   $(`${elem}`).addClass('blured');
@@ -322,7 +312,7 @@ export function showBluredLoader(elem) {
 
 /** Retira o blur de um elemento e esconde seu loader (irmão)
  * 
- * @param {string} elem '.class' ou '#id'
+ * @param {('.class'|'#id')} elem
  */
 export function hideBluredLoader(elem) {
   $(`${elem} ~ .soft-loader-wrapper`).removeClass('show');
@@ -332,7 +322,7 @@ export function hideBluredLoader(elem) {
 
 /** Remove todas as options selecionadas de um elemento Select2
  * 
- * @param {strin} elem '.class' ou '#id' 
+ * @param {('.class'|'#id')} elem selector do elemento `Select2` a ser limpo
  */
 export function clearSelect2Input(elem) {
   $(elem).val(null).trigger('change.select2');

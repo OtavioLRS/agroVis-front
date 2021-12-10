@@ -1,3 +1,4 @@
+/** Unidade de dados do HorizonChart */
 export class HorizonUnit {
 
   constructor(data, sh4_codigo, sh4_descricao, fob, peso, num_regs) {
@@ -17,7 +18,7 @@ export class HorizonUnit {
   }
 }
 
-// Classe container para os dados do Horizon Chart
+/** Classe container para os dados do HorizonChart */
 export class HorizonData {
   // Conjunto de unidades de dados, identificados pela data e codigo do SH4
   constructor() {
@@ -49,8 +50,6 @@ export class HorizonData {
   // Encontra o maior valor de um sh4 ('fob' ou 'peso')
   findMaxValueOf(sh4, mode) {
     const filtered = this.units.filter(unit => unit.sh4_codigo == sh4)
-
-    // console.log('sh4', sh4, 'valores', mode, filtered.map(unit => unit[mode]))
     return d3.max(filtered.map(unit => unit[mode]));
   }
 
@@ -74,29 +73,10 @@ export class HorizonData {
   }
 
   countRegs(sh4, year) {
-    // console.log(year, typeof year)
-    // console.log(this.units[0].data.getFullYear())
-
     const filtered = this.units.filter(unit => unit.data.getFullYear() == year && unit.sh4_codigo == sh4 && (unit.fob != 0 || unit.peso != 0));
-
-    // console.log('filtro essa buct', filtered);
 
     let values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     filtered.forEach(d => { values[d.data.getMonth()] = d.num_regs });
-    // console.log('valeu', values)
     return values;
   }
-
-  // // Funde os valores de uma HorizonUnit com os de uma já existente em 'unit'
-  // concatUnit(unit, index) {
-  //   this.units[index].fob += unit.fob;
-  //   this.units[index].peso += unit.peso;
-  // }
-
-  // // Verifica se uma unit já está na estrutura
-  // alreadyIn(unit) {
-  //   const result = this.units.findIndex(obj => obj.equivalent(unit));
-  //   // Retorna o index do elemento, se não encontrar, retorna -1
-  //   return result;
-  // }
 }

@@ -1,8 +1,10 @@
-import { finishLoading, formatValues, changeLoadingMessage, getSortValue, cleanDashboard, showBluredLoader, hideBluredLoader } from "./extra";
+import { changeLoadingMessage, showBluredLoader, hideBluredLoader } from "./extra";
 import { cleanPolygon, createFrequencyScale, fillPolygon, printScaleLegend, changeConfigClasses, createCustomFrequencyScale, } from "./map";
 
-// Desenha o mapa mundi
+/** Desenha o mapa mundi dividido por países */
 export async function drawMundiMapCountries() {
+  // Atualiza o titulo
+  $('#mundititle-container').html('Exportação por países');
 
   $('#mundimap-container').html(`
     <div id="centralize-container" title="Centralizar o mapa">
@@ -11,27 +13,26 @@ export async function drawMundiMapCountries() {
 
   // Container do mapa
   let svg = d3.select('#mundi-container #mundimap-container')
-    .append('svg') // insere um SVG para o mapa
+    .append('svg') // SVG para o mapa
     .attr('id', 'mundi-svg')
     .attr('height', '100%')
     .attr('width', '100%')
     .lower();
 
+  // Dimensões do mapa
   const { height, width } = svg.node().getBoundingClientRect();
-  // console.log(height, width)
+  // console.log('Dimensões', height, width)
 
   // Div para os hovers com os titulos
   let tooltip = d3.select('#mundi-container')
     .append('div')
     .attr('class', 'hidden tooltip-custom');
 
-  // Requisita o geoJSON da API do IBGE
-  // const file = 'wm'
-  const file = 'paises-final'
-  const mapData = await d3.json(`src/json/${file}.json`);
-  // console.log('Mapa', mapData, width, height)
+  // Abre o geoJSON correspondente
+  const mapData = await d3.json(`src/json/paises.json`);
+  // console.log('Mapa', mapData)
 
-  // Projecao
+  // Projeção
   const projection = d3.geoNaturalEarth1()
     // .fitSize([width, height], mapData);
     .fitExtent([[5, 25], [width, height - 5]], mapData);
@@ -51,22 +52,14 @@ export async function drawMundiMapCountries() {
     .attr('nome', (shape) => shape.properties.nome[0])
     .text((shape) => shape.properties.nome[0])
     .attr('d', path)
-    // Mostra cidade no hover
-    .on('mouseover', (d) => {
-      // Mostra o nome da cidade
+    .on('mouseover', (d) => { // Mostra o nome do território no hover
       tooltip.classed('hidden', false)
         .style("left", (d3.event.pageX + 30).toString() + "px")
         .style("top", (d3.event.pageY - 50).toString() + "px")
-        .html(() => {
-          // Exibe o nome do municipio selecionado
-          return $('#' + d.properties['id-pais']).text();
-        })
+        .html(() => $('#' + d.properties['id-pais']).text())
     })
-
     // Esconde titulo
-    .on('mouseout', () => {
-      tooltip.classed('hidden', true);
-    })
+    .on('mouseout', () => tooltip.classed('hidden', true))
 
   //Zoom
   const zoom = d3.zoom()
@@ -74,16 +67,16 @@ export async function drawMundiMapCountries() {
     .on('zoom', () => {
       svg.selectAll('path').attr('transform', d3.event.transform)
     });
-
   svg.call(zoom)
-
-  $('#centralize-mundi-icon').on('click', function () {
-    resetMap(svg, zoom);
-  });
+  // Listener de reset de Zoom
+  $('#centralize-mundi-icon').on('click', () => { resetMap(svg, zoom); });
 }
 
-// Desenha o mapa mundi
+/** Desenha o mapa mundi dividido por continentes */
 export async function drawMundiMap() {
+  // Atualiza o titulo
+  $('#mundititle-container').html('Exportação por continentes');
+
   $('#mundimap-container').html(`
     <div id="centralize-container" title="Centralizar o mapa">
       <i class="bi bi-pin-map-fill" id="centralize-mundi-icon"></i>
@@ -91,27 +84,26 @@ export async function drawMundiMap() {
 
   // Container do mapa
   let svg = d3.select('#mundi-container #mundimap-container')
-    .append('svg') // insere um SVG para o mapa
+    .append('svg') // SVG para o mapa
     .attr('id', 'mundi-svg')
     .attr('height', '100%')
     .attr('width', '100%')
     .lower();
 
+  // Dimensões do mapa
   const { height, width } = svg.node().getBoundingClientRect();
-  // console.log(height, width)
+  // console.log('Dimensões', height, width)
 
   // Div para os hovers com os titulos
   let tooltip = d3.select('#mundi-container')
     .append('div')
     .attr('class', 'hidden tooltip-custom');
 
-  // Requisita o geoJSON da API do IBGE
-  // const file = 'wm'
-  const file = 'blocos-final-sembr'
-  const mapData = await d3.json(`src/json/${file}.json`);
-  // console.log('Mapa', mapData, width, height)
+  // Abre o geoJSON correspondente
+  const mapData = await d3.json(`src/json/continentes.json`);
+  // console.log('Mapa', mapData)
 
-  // Projecao
+  // Projeção
   const projection = d3.geoNaturalEarth1()
     // .fitSize([width, height], mapData);
     .fitExtent([[5, 25], [width, height - 5]], mapData);
@@ -130,22 +122,14 @@ export async function drawMundiMap() {
     .attr('bloco', (shape) => shape.properties.bloco[0])
     .text((shape) => shape.properties.bloco[0])
     .attr('d', path)
-    // Mostra cidade no hover
-    .on('mousemove', (d) => {
-      // Mostra o nome da cidade
+    .on('mousemove', (d) => { // Mostra o nome do território no hover
       tooltip.classed('hidden', false)
         .style("left", (d3.event.pageX + 30).toString() + "px")
         .style("top", (d3.event.pageY - 50).toString() + "px")
-        .html(() => {
-          // Exibe o nome do municipio selecionado
-          return $('#' + d.properties.id).text();
-        })
+        .html(() => $('#' + d.properties.id).text())
     })
-
     // Esconde titulo
-    .on('mouseout', () => {
-      tooltip.classed('hidden', true);
-    })
+    .on('mouseout', () => tooltip.classed('hidden', true))
 
   //Zoom
   const zoom = d3.zoom()
@@ -153,15 +137,16 @@ export async function drawMundiMap() {
     .on('zoom', () => {
       svg.selectAll('path').attr('transform', d3.event.transform)
     });
-
   svg.call(zoom)
-
-  $('#centralize-mundi-icon').on('click', function () {
-    resetMap(svg, zoom);
-  });
+  // Listener de reset de Zoom
+  $('#centralize-mundi-icon').on('click', () => { resetMap(svg, zoom); });
 }
 
-// Retorna o mapa para as dimensões originais
+/** Reseta um mapa para seu zoom original
+ * 
+ * @param {object} svg svg com o mapa
+ * @param {object} zoom `d3.zoom`
+ */
 export function resetMap(svg, zoom) {
   svg.transition()
     .duration(750)
@@ -170,8 +155,8 @@ export function resetMap(svg, zoom) {
 
 /** Atualiza os dados do mapa mundi
  * 
- * @param {number} selected sh4 selecionado no mapa, o valor '0' utilizará o total de todos os sh4s
- * @param {object[]} colorFunctions escalas customizadas para as classes do mapa
+ * @param {number} selected sh4 selecionado no mapa, `0` utilizará o total de todos os sh4s
+ * @param {object[]} colorFunctions escalas customizadas para as classes do mapa `(opcional)`
  */
 export async function updateMundiData(selected, colorFunctions = []) {
   changeLoadingMessage('Atualizando o mapa mundi...');
@@ -221,10 +206,9 @@ export async function updateMundiData(selected, colorFunctions = []) {
     cleanPolygon($(this));
   })
 
-  // Divide por continente ou pais
-  // const block = 'CO_BLOCO';
-  // const blockName = 'NO_BLOCO';
+  /** Coluna do dataframe referente ao código dos terriórios */
   const block = filter.mapDivision == 'country' ? 'CO_PAIS' : 'CO_BLOCO';
+  /** Coluna do dataframe referente ao nome dos terriórios */
   const blockName = filter.mapDivision == 'country' ? 'NO_PAIS' : 'NO_BLOCO';
 
   // Preenche cada poligono de continente com os dados referentes
@@ -235,6 +219,7 @@ export async function updateMundiData(selected, colorFunctions = []) {
   // Legenda nova
   printScaleLegend(colors[0], 'mundimap-container');
 
+  // Atualizar os campos de classes quando mudar o número de classes
   $('#input-classnumber-mundi').off('change');
   $('#input-classnumber-mundi').on('change', async function () {
     const numClasses = parseInt($('#input-classnumber-mundi').val());
@@ -242,6 +227,7 @@ export async function updateMundiData(selected, colorFunctions = []) {
     changeConfigClasses(colorFunctions[0], 'mundimap-container');
   });
 
+  // Atualizar o mapa quando clicar em salvar
   $('#config-mundi').off('click');
   $('#config-mundi').on('click', async function () {
     const numClasses = parseInt($('#input-classnumber-mundi').val());
