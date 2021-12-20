@@ -39,11 +39,20 @@ export async function preLoad() {
   $('#country-maptype-radio').on('change', async () => {
     hideInput('continent');
     showInput('country');
+    if (!$('#see-continent-modal').hasClass('hidden'))
+      $('#see-country-modal').removeClass('hidden');
+
+    $('#see-continent-modal').addClass('hidden');
   });
 
   $('#continent-maptype-radio').on('change', async () => {
     hideInput('country');
     showInput('continent');
+    if (!$('#see-country-modal').hasClass('hidden'))
+      $('#see-continent-modal').removeClass('hidden');
+
+    $('#see-country-modal').addClass('hidden');
+
   });
 
   // Construindo os select2
@@ -60,6 +69,99 @@ export async function preLoad() {
     sorter: data => data.sort((a, b) => a.index > b.index)
   });
 
+  createDraggable("#see-cities-modal");
+  createDraggable("#see-sh4-modal");
+  createDraggable("#see-country-modal");
+  createDraggable("#see-continent-modal");
+
+  // Listeners para abrir os modals com os conteúdos de cada um dos filtros
+  $("#see-cities-icon").click(function () {
+    $("#see-cities-modal").removeClass('hidden');
+  });
+  $("#see-sh4-icon").click(function () {
+    $("#see-sh4-modal").removeClass('hidden');
+  });
+  $("#see-country-icon").click(function () {
+    $("#see-country-modal").removeClass('hidden');
+  });
+  $("#see-continent-icon").click(function () {
+    $("#see-continent-modal").removeClass('hidden');
+  });
+
+
+  // Listeners dos botões de fechar os modals do filtro
+  $("#see-cities-modal .btn-close").click(function () {
+    $("#see-cities-modal").addClass('hidden');
+  });
+  $("#see-sh4-modal .btn-close").click(function () {
+    $("#see-sh4-modal").addClass('hidden');
+  });
+  $("#see-country-modal .btn-close").click(function () {
+    $("#see-country-modal").addClass('hidden');
+  });
+  $("#see-continent-modal .btn-close").click(function () {
+    $("#see-continent-modal").addClass('hidden');
+  });
+
+  // Atualiza os modals de quais elementos estão selecionados
+  $("#input-city").on('change', function () {
+    $("#see-cities-modal .modal-body").html('<table class="table table-bordered table-hover"><tbody></tbody></table>');
+    const cidades = $(this).select2('data');
+    cidades.map(d => d.id).indexOf('0') != -1 ?
+      $("#see-cities-modal .modal-body tbody").append(`
+      <tr> <td scope="row"> Todas as cidades </td> </tr>
+    `) :
+      cidades.forEach((d) => {
+        $("#see-cities-modal .modal-body tbody").append(`
+        <tr> <td scope="row"> ${d.text} </td> </tr>
+      `)
+      })
+  });
+
+  $("#input-sh4").on('change', function () {
+    $("#see-sh4-modal .modal-body").html('<table class="table table-bordered table-hover"><tbody></tbody></table>');
+    const sh4 = $(this).select2('data');
+    sh4.map(d => d.id).indexOf('0') != -1 ?
+      $("#see-sh4-modal .modal-body tbody").append(`
+    <tr> <td scope="row"> Todos os produtos </td> </tr>
+  `) :
+      sh4.forEach((d) => {
+        $("#see-sh4-modal .modal-body tbody").append(`
+      <tr> <td scope="row"> ${d.text} </td> </tr>
+      `)
+      })
+  });
+
+  $("#input-country").on('change', function () {
+    $("#see-country-modal .modal-body").html('<table class="table table-bordered table-hover"><tbody></tbody></table>');
+    const paises = $(this).select2('data');
+    paises.map(d => d.id).indexOf('0') != -1 ?
+      $("#see-country-modal .modal-body tbody").append(`
+    <tr> <td scope="row"> Todos os países </td> </tr>
+  `) :
+      paises.forEach((d) => {
+        $("#see-country-modal .modal-body tbody").append(`
+      <tr> <td scope="row"> ${d.text} </td> </tr>
+      `)
+      })
+  });
+
+  $("#input-continent").on('change', function () {
+    $("#see-continent-modal .modal-body").html('<table class="table table-bordered table-hover"><tbody></tbody></table>');
+    const continentes = $(this).select2('data');
+    continentes.map(d => d.id).indexOf('0') != -1 ?
+      $("#see-continent-modal .modal-body tbody").append(`
+    <tr> <td scope="row"> Todos os continentes </td> </tr>
+  `) :
+      continentes.forEach((d) => {
+        $("#see-continent-modal .modal-body tbody").append(`
+        <tr> <td scope="row"> ${d.text} </td> </tr>
+      `)
+      })
+
+  });
+
+  // Esconde o input de continentes, que está escondido por padrão
   hideInput('continent');
 
   // 'Esc' fecha aviso
@@ -97,7 +199,7 @@ export async function preLoad() {
     const selected = $(this).select2('data').map(opt => opt.id);
     // console.log(selected, selected.indexOf('0'))
     if (selected.indexOf('0') != -1) {
-      $(this).val('0').trigger('change.select2')
+      $(this).val('0').trigger('change.select2');
     }
   })
 }
@@ -243,7 +345,7 @@ export function limitDate0() {
  * @returns {boolean} `True` - date0 > date1 | `False` - date0 <= date1
  */
 export function compareDates(d0, d1) {
-  console.log(d0, d1)
+  // console.log(d0, d1)
   const date0 = new Date(d0.substring(0, 4), d0.substring(5));
   const date1 = new Date(d1.substring(0, 4), d1.substring(5));
 

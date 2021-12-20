@@ -130,7 +130,7 @@
   </div>
 
   <!-- Modal criar anotação -->
-  <div class="modal modal-drag" id="save-note-modal">
+  <div class="modal modal-drag  alert alert-success" id="save-note-modal">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Complete as informações para salvar a anotação!</h5>
@@ -177,8 +177,50 @@
 
 
 
+  <!-- Modals da lista de elementos selecionados em cada input -->
+  <div class="modal-drag modal-see hidden" id="see-cities-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cidades selecionadas</h5>
+        <button type="button" class="btn-close"></button>
+      </div>
 
+      <div class="modal-body"> </div>
+    </div>
+  </div>
 
+  <div class="modal-drag modal-see hidden" id="see-sh4-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">SH4s selecionados</h5>
+        <button type="button" class="btn-close"></button>
+      </div>
+
+      <div class="modal-body"> </div>
+    </div>
+  </div>
+
+  <div class="modal-drag modal-see hidden" id="see-country-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Países selecionados</h5>
+        <button type="button" class="btn-close"></button>
+      </div>
+
+      <div class="modal-body"> </div>
+    </div>
+  </div>
+
+  <div class="modal-drag modal-see hidden" id="see-continent-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Continentes selecionados</h5>
+        <button type="button" class="btn-close"></button>
+      </div>
+
+      <div class="modal-body"> </div>
+    </div>
+  </div>
 
 
 
@@ -208,18 +250,16 @@
         <div class="modal-body">
           <h4 class="modal-title" id="modal-horizon-period"></h4>
 
+          <div class="soft-loader-wrapper" id="horizon-modal-loading">
+            <div class="spinner-border text-primary" id="soft-loader" role="status">
+              <span class="sr-only"></span>
+            </div>
+          </div>
+
           <div id="modal-horizon-barchart"></div>
 
           <div id="modal-horizon-conversion"></div>
 
-          <!-- <h5>Anotações</h5>
-          <div id="modal-horizon-notes"></div>
-
-          <br>
-          <div id="modal-horizon-notes-input">
-            <textarea class="form-control" id="modal-horizon-notes-input-text"></textarea>
-            <button class="btn btn-success" id="modal-horizon-notes-input-btn">Anotar</button>
-          </div> -->
         </div>
 
       </div>
@@ -319,6 +359,12 @@
             <select class="filter-input select2-flag" type="text" id="input-city" multiple="multiple"
               style="width: 90%;"></select>
 
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+              class="bi bi-search hover-icon" id="see-cities-icon" viewBox="0 0 16 16">
+              <path
+                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+            </svg>
+
             <input type="file" accept=".csv" class="hidden" id="read-input-city">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
               class="bi bi-folder hover-icon" id="read-cities-icon"
@@ -326,6 +372,8 @@
               <path
                 d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z" />
             </svg>
+
+
           </div>
           <hr style="width: 100%; margin-bottom: 0px;">
 
@@ -333,6 +381,12 @@
           <div class="filter-input-wrapper" id="wrapper-input-sh4">
             <select class="filter-input select2-flag" type="text" id="input-sh4" multiple="multiple"
               style="width: 90%;"></select>
+
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+              class="bi bi-search hover-icon" id="see-sh4-icon" viewBox="0 0 16 16">
+              <path
+                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+            </svg>
 
             <input type="file" accept=".csv" class="hidden" id="read-input-sh4">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -349,6 +403,12 @@
             <select class="filter-input select2-flag" type="text" id="input-country" multiple="multiple"
               style="width: 90%;"></select>
 
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+              class="bi bi-search hover-icon" id="see-country-icon" viewBox="0 0 16 16">
+              <path
+                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+            </svg>
+
             <input type="file" accept=".csv" class="hidden" id="read-input-country">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
               class="bi bi-folder hover-icon" id="read-country-icon"
@@ -362,6 +422,12 @@
           <div class="filter-input-wrapper" id="wrapper-input-continent">
             <select class="filter-input select2-flag" type="text" id="input-continent" multiple="multiple"
               style="width: 90%;"></select>
+
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+              class="bi bi-search hover-icon" id="see-continent-icon" viewBox="0 0 16 16">
+              <path
+                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+            </svg>
 
             <input type="file" accept=".csv" class="hidden" id="read-input-continent">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"

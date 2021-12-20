@@ -20,4 +20,4 @@ drawMundiMapCountries();
 
 // Filtros
 changeLoadingMessage('Construindo os filtros...')
-buildFilters().then(finishLoading)
+buildFilters().then(finishLoading);

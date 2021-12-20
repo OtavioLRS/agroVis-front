@@ -1,7 +1,6 @@
-import { startLoading, changeLoadingMessage, finishLoading, formatValues, getSortByValue, showBluredLoader, hideBluredLoader, getSortValue, cleanDashboard, getScaleByValue, fixMonth, blurElement, unblurElement, median, getSortOrder, compareDates, } from '../extra';
+import { changeLoadingMessage, formatValues, getSortByValue, showBluredLoader, hideBluredLoader, fixMonth, median, getSortOrder, compareDates, } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
 import { HorizonUnit, HorizonData } from './horizonClasses';
-import { changeMapTitle, cleanPolygon } from '../map';
 import { showHorizonModal } from './horizonModal';
 
 /** Constroi o horizon chart
@@ -14,8 +13,8 @@ export async function buildHorizon(filter) {
 
   // Requisição dos dados do HorizonChart 
   // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/horizondata', {
-  // const response = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/horizon', {
-  const response = await fetch('http://127.0.0.1:5000/exportacao/horizon', {
+  const response = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/horizon', {
+    // const response = await fetch('http://127.0.0.1:5000/exportacao/horizon', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -59,10 +58,16 @@ export async function buildHorizon(filter) {
   // Filtro de produtos dos dados auxiliares, contém somente SH4s com dados
   filter.products = uniqueSh4;
 
+  // console.log('Filtro antes de arrumar', filter);
+  // Se inicio e fim forem do mesmo ano, adiciona o ano completo no período
+  if (filter.beginPeriod.split('-')[0] == filter.endPeriod.split('-')[0])
+    [filter.beginPeriod, filter.endPeriod] = expandDate(filter.beginPeriod);
+  // console.log('Filtro depois de arrumar', filter);
+
   // Dados auxiliares do HorizonChart
   // const responseAux = await fetch('https://mighty-taiga-07455.herokuapp.com/horizondata-aux', {
-  const responseAux = await fetch('http://127.0.0.1:5000/exportacao/horizon/aux', {
-    // const responseAux = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/horizon/aux', {
+  // const responseAux = await fetch('http://127.0.0.1:5000/exportacao/horizon/aux', {
+  const responseAux = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/horizon/aux', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -349,16 +354,23 @@ async function horizonSecondClick(data1) {
 function showClickAlert(ts) {
   $('body').prepend(`
   <div class="alert alert-success alert-dismissible shadow-lg fade show border border-5 border-success" role="alert" id="modal-click">
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-    class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
-    <path
-      d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-  </svg>
-  <span> Clique novamente para escolher um período de tempo! </span> <br><br>
-  Período selecionado: <b><span id="click-begin"> ${fixMonth((ts.getMonth() + 1)) + '/' + ts.getFullYear()} </span> - <span id="click-end"> ${fixMonth((ts.getMonth() + 1)) + '/' + ts.getFullYear()} </span></b>
-  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+      class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
+        <path
+          d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+    </svg>
+    <span> Clique novamente para escolher um período de tempo! </span> <br><br>
+    Período selecionado: <b><span id="click-begin"> ${fixMonth((ts.getMonth() + 1)) + '/' + ts.getFullYear()} </span> - <span id="click-end"> ${fixMonth((ts.getMonth() + 1)) + '/' + ts.getFullYear()} </span></b>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-success">Período completo</button>
+    </div>
+  </div>
   `);
+
+  // Pega o período inteiro, sem precisar selecionar manualmente
+  $('#modal-click .modal-footer button').on('click', () => { getFullPeriod(); });
 
   // Fechar pelo botão
   $('#modal-click').on('closed.bs.alert', () => {
@@ -377,4 +389,40 @@ export async function hideClickAlert() {
 
   // Remove o blur
   $('.horizon-series').each(function () { $(this).removeClass('blured'); });
+}
+
+/** Mostra o modal do HorizonChart para o período todo de uma series */
+export async function getFullPeriod() {
+  // Dataframes utilizados para construir o modal
+  let data1 = await JSON.parse(localStorage.getItem('horizonclickdata'));
+  let data2 = Object.assign({}, data1);
+  // Filtro para retirar o intervalo total das datas
+  let filter = await JSON.parse(localStorage.getItem('filter'));
+
+  let [y1, m1] = filter['beginPeriod'].split('-');
+  let [y2, m2] = filter['endPeriod'].split('-');
+
+  data1.ts = new Date(y1, m1 - 1, 1)
+  data2.ts = new Date(y2, m2 - 1, 1)
+
+  // Esconde o alerta auxiliar
+  hideClickAlert();
+
+  // Mostra o modal do HorizonChart
+  showHorizonModal(data1, data2);
+}
+
+/** Expande uma determinada data de um mês para o ano inteiro onde se encontra
+ * 
+ * @param {string} date `YYYY-MM`
+ * @returns {string[]} [`YYYY-MM`ini, `YYYY-MM`fim]
+ */
+function expandDate(date) {
+  // const m = parseInt(date.split('-')[1]);
+  const y = parseInt(date.split('-')[0]);
+
+  let begin = `${y}-01`;
+  let end = `${y}-12`;
+
+  return [begin, end];
 }

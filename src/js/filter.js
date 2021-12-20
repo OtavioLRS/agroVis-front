@@ -12,8 +12,8 @@ export async function buildFilters() {
 
   // Requisição para buscar os SH4s
   // await fetch('https://mighty-taiga-07455.herokuapp.com/produtos', {
-  // await fetch('https://agrovis-back-flask.herokuapp.com/produtos', {
-  const response = await fetch('http://127.0.0.1:5000/produtos', {
+  await fetch('https://agrovis-back-flask.herokuapp.com/produtos', {
+    // const response = await fetch('http://127.0.0.1:5000/produtos', {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -68,9 +68,9 @@ export async function buildFilters() {
   });
 
   // Seleciona as opções defaults nos inputs
-  $('#input-sh4').val('0').trigger('change.select2');
-  $('#input-country').val('0').trigger('change.select2');
-  $('#input-continent').val('0').trigger('change.select2');
+  $('#input-sh4').val('0').trigger('change');
+  $('#input-country').val('0').trigger('change');
+  $('#input-continent').val('0').trigger('change');
 
   // Remove o aviso que foi exibido com o trigger de change
   $('#filter-button span').addClass('hidden');
@@ -107,7 +107,7 @@ export function readFile(event) {
     }
 
     // Adiciona os ids dos elementos ao input
-    $(fileModel).val(ids).trigger('change.select2');
+    $(fileModel).val(ids).trigger('change');
     // console.log('Selecionar códigos', ids)
   }
 }

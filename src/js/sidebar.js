@@ -110,8 +110,8 @@ export function saveNote() {
 
     // console.log({ filter, map, note: { title, text }, now })
     // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/addnote', {
-    // const response = await fetch('https://agrovis-back-flask.herokuapp.com/anotacoes', {
-    const response = await fetch('http://127.0.0.1:5000/anotacoes', {
+    const response = await fetch('https://agrovis-back-flask.herokuapp.com/anotacoes', {
+      // const response = await fetch('http://127.0.0.1:5000/anotacoes', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -132,8 +132,8 @@ export function saveNote() {
 export async function listNotes() {
   // Recupera a lista de anotações
   // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/getnotes', {
-  // const response = await fetch('https://agrovis-back-flask.herokuapp.com/anotacoes', {
-  const response = await fetch('http://127.0.0.1:5000/anotacoes', {
+  const response = await fetch('https://agrovis-back-flask.herokuapp.com/anotacoes', {
+    // const response = await fetch('http://127.0.0.1:5000/anotacoes', {
     method: 'GET',
   });
   const notes = await response.json();

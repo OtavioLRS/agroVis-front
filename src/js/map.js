@@ -90,8 +90,8 @@ export async function getCitiesNames() {
 
   // Requisição para recuperar os dados dos municípios
   // await fetch('https://mighty-taiga-07455.herokuapp.com/municipios', {
-  // await fetch('https://agrovis-back-flask.herokuapp.com/cidades', {
-  await fetch('http://127.0.0.1:5000/cidades', {
+  await fetch('https://agrovis-back-flask.herokuapp.com/cidades', {
+    // await fetch('http://127.0.0.1:5000/cidades', {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -117,7 +117,7 @@ export async function getCitiesNames() {
         $('#input-city').append(option);
       });
       // Seleciona a opção default com todas as cidades
-      $('#input-city').val('0').trigger('change.select2');
+      $('#input-city').val('0').trigger('change');
       // Remove o aviso que foi exibido com o trigger de change
       $('#filter-button span').addClass('hidden');
     });
@@ -154,7 +154,8 @@ export async function updateMapData(selected, colorFunctions = []) {
   filter.products = selected == 0 ? filter.products : [selected];
 
   // Realiza a query do filtro inserido
-  const response = await fetch('http://127.0.0.1:5000/exportacao/mapa', {
+  // const response = await fetch('http://127.0.0.1:5000/exportacao/mapa', {
+  const response = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/mapa', {
     method: 'POST',
     headers: {
       Accept: 'application/json',

@@ -169,7 +169,8 @@ export async function updateMundiData(selected, colorFunctions = []) {
   const division = filter.mapDivision == 'country' ? 'pais' : 'continente'
 
   // Realiza a query do filtro inserido
-  const response = await fetch(`http://127.0.0.1:5000/exportacao/mundi/${division}`, {
+  const response = await fetch(`https://agrovis-back-flask.herokuapp.com/exportacao/mundi/${division}`, {
+    // const response = await fetch(`http://127.0.0.1:5000/exportacao/mundi/${division}`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
