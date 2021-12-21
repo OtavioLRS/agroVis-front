@@ -12,7 +12,7 @@ export async function buildFilters() {
 
   // Requisição para buscar os SH4s
   // await fetch('https://mighty-taiga-07455.herokuapp.com/produtos', {
-  await fetch('https://agrovis-back-flask.herokuapp.com/produtos', {
+  const response = await fetch('https://agrovis-back-flask.herokuapp.com/produtos', {
     // const response = await fetch('http://127.0.0.1:5000/produtos', {
     method: 'GET',
     headers: {

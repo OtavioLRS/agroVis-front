@@ -15,7 +15,6 @@ preLoad();
 // Mapa
 changeLoadingMessage('Desenhando o mapa...')
 drawMainMap().then(getCitiesNames);
-// drawMundiMap();
 drawMundiMapCountries();
 
 // Filtros
