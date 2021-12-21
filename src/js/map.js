@@ -27,7 +27,8 @@ export async function drawMainMap() {
     .attr('class', 'hidden tooltip-custom');
 
   // Requisita o geoJSON da API do IBGE
-  const mapData = await d3.json('https://servicodados.ibge.gov.br/api/v2/malhas/35?resolucao=5&qualidade=4&formato=application/vnd.geo+json');
+  // const mapData = await d3.json('https://servicodados.ibge.gov.br/api/v2/malhas/35?resolucao=5&qualidade=4&formato=application/vnd.geo+json');
+  const mapData = await d3.json('src/json/saopaulo.json');
   // console.log('Mapa', mapData)
 
   // Projeção
