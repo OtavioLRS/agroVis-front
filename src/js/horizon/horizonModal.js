@@ -1,3 +1,4 @@
+import { back } from "../env";
 import { fixMonth, formatValues } from "../extra";
 
 /** Mostra o modal do HorizonChart
@@ -30,20 +31,20 @@ export async function showHorizonModal(data1, data2) {
     products: [sh4],
     beginPeriod: year1 + '-' + month1,
     endPeriod: year2 + '-' + month2,
+    continents: auxFilter.continents,
+    countries: auxFilter.countries,
+    mapDivision: auxFilter.mapDivision,
   }
 
   // Requisição das conversões de SH4
-  // const response = await fetch(`http://127.0.0.1:5000/codigos/${sh4}`, {
-  const response = await fetch(`https://agrovis-back-flask.herokuapp.com/codigos/${sh4}`, {
+  const response = await fetch(`${back}/codigos/${sh4}`, {
     method: 'GET',
   });
   const conversion = await response.json();
   // console.log('conversão de códigos', conversion);
 
   // Requisição dos dados dos gráficos
-  // const response2 = await fetch('http://127.0.0.1:5000/exportacao/horizon/modal', {
-  const response2 = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/horizon/modal', {
-    // const response2 = await fetch('https://mighty-taiga-07455.herokuapp.com/modaldata', {
+  const response2 = await fetch(`${back}/exportacao/horizon/modal`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',

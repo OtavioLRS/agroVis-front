@@ -1,3 +1,4 @@
+import { back } from './env.js';
 import { startLoading, finishLoading, changeLoadingMessage, cleanDashboard, clearSelect2Input, fixMonth } from './extra.js'
 import { buildHorizon } from './horizon/horizon.js';
 import { updateMap, updateMapSh4Input } from './map.js';
@@ -11,9 +12,7 @@ export async function buildFilters() {
   $('#input-continent').append($('<option value=0 index=0>Todos os continentes</option>'));
 
   // Requisição para buscar os SH4s
-  // await fetch('https://mighty-taiga-07455.herokuapp.com/produtos', {
-  const response = await fetch('https://agrovis-back-flask.herokuapp.com/produtos', {
-    // const response = await fetch('http://127.0.0.1:5000/produtos', {
+  const response = await fetch(`${back}/produtos`, {
     method: 'GET',
     headers: {
       Accept: 'application/json',

@@ -1,0 +1,16 @@
+Codigo;Nome;;;;;;;;;;;;;;;;
+61;Oceania;;;;;;;;;;;;;;;;
+107;América do Norte;;;;;;;;;;;;;;;;
+48;América do Sul;;;;;Este arquivo contém todos os continentes disponíveis para escolha.;;;;;;;;;;;
+112;Europa;;;;;Fique tranquilo, este texto não irá afetar o funcionamento do arquivo.;;;;;;;;;;;
+51;África;;;;;;;;;;;;;;;;
+41;Oriente Médio;;;;;Na segunda coluna, estão os nomes dos continentes para identificar cada código.;;;;;;;;;;;
+105;América Central e Caribe;;;;;;;;;;;;;;;;
+39;Ásia (Exclusive Oriente Médio);;;;;Caso queira remover alguma opção desta seleção:;;;;;;;;;;;
+;;;;;;;1-;Movimentar os dados de uma linha para a direita, de forma que a primeira coluna fique vazia;;;;;;;;;
+;;;;;;;OU;;;;;;;;;;
+;;;;;;;2-;Excluir a linha;;;;;;;;;
+;;;;;;;;;;;;;;;;;
+;;;;;;OBS: A LISTAGEM DE CÓDIGOS DEVE SER INICIADA A PARTIR DA PRIMEIRA LINHA!;;;;;;;;;;;
+;;;;;;SÓ SERÃO COMPUTADOS OS CÓDIGOS A PARTIR DA LINHA NÚMERO 2!;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;

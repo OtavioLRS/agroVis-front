@@ -184,3 +184,84 @@
 #classlist-table-mainmap-container td {
   text-align: center;
 }
+/* ***************************************************** */
+/* Modal de dados */
+#map-click-modal-title,
+#mundi-click-modal-title{
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 90%;
+}
+#map-click-modal-body,
+#mundi-click-modal-body{
+  min-height: 100px;
+}
+
+.sh4-modal-container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  overflow-y: hidden;
+}
+
+.sh4-modal-title{
+  width: 35%;
+  font-size: medium;
+}
+
+.sh4-modal-container-totalvalue{
+  width: 20%;
+  display: flex;
+  justify-content: center;
+}
+
+.sh4-modal-container-values{
+  width: 45%;
+  min-height: 150px;
+  max-height: 150px;
+  overflow-y: hidden;
+}
+
+.sh4-modal-table{
+  table-layout:fixed;
+  vertical-align: middle;
+}
+
+.sh4-modal-table th{
+  width: 10%;
+}
+
+.sh4-modal-table th+th{
+  width: auto;
+}
+
+
+
+
+
+
+
+.read-more-label{
+  position: absolute;
+  bottom: 0;
+  left: 45%;
+  width: 10%;
+  margin-top: 10px;
+  color: blue;
+  cursor: pointer;
+}
+
+.read-more-label:after{
+  content: "mais";
+}
+
+.read-more-input:checked~.read-more-label:after{
+  content: "menos";
+}
+
+.read-more-input:checked+.sh4-modal-container-values{
+  max-height: max-content;
+}

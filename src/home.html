@@ -32,11 +32,12 @@
 
 
 
-
+  <!-- Sidebar -->
   <div class="offcanvas offcanvas-start w-20" tabindex="-1" id="offcanvas">
 
     <div class="offcanvas-header sidebar-header shadow-lg">
-      <h3 class="offcanvas-title d-none d-sm-block bg-transparent text-white" id="offcanvas">AgroVis - FCT</h3>
+      <!-- <h3 class="offcanvas-title d-none d-sm-block bg-transparent text-white" id="offcanvas">AgroVis - FCT</h3> -->
+      <img src="src/png/agrovisText.png" style="width: 150px; height: 50px; object-fit: contain; overflow: hidden;">
       <button type="button" id="close-sidebar-button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
         aria-label="Close"></button>
     </div>
@@ -55,7 +56,7 @@
         <div class="list-group-item px-3 rounded border-0 mb-2 sidebar-item cursor-pointer" id="sidebar-item-excel">
           <div class="d-flex w-100 justify-content-start flex-row align-items-center">
             <i class="bi bi-file-earmark-excel fs-5"></i>
-            <h6 class="mb-1 ms-3">Modelos excel</h6>
+            <h6 class="mb-1 ms-3">Arquivos CSV</h6>
           </div>
         </div>
 
@@ -99,9 +100,52 @@
 
   </div>
 
+  <!-- Modal arquivos para o filtro -->
+  <div class="modal fade" id="excel-files-modal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Arquivos CSV base para utilização no filtro</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body d-flex flex-column justify-content-center flex align-items-center"
+          id="excel-files-modal-body">
 
+          <a id="download-cidades-file" href="/src/csv/cidades.csv" download></a>
+          <a id="download-sh4s-file" href="/src/csv/sh4s.csv" download></a>
+          <a id="download-paises-file" href="/src/csv/paises.csv" download></a>
+          <a id="download-continentes-file" href="/src/csv/continentes.csv" download></a>
 
+          <p>Para utilizar os arquivos CSV no filtro, selecione o icone
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder"
+              viewBox="0 0 16 16">
+              <path
+                d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z" />
+            </svg>
+            referente ao filtro desejado e escolha o arquivo que deseja carregar.
+            <br>
+            <br>
+            Para que um arquivo seja lido corretamente, apenas é necessário que os códigos referentes as
+            opções que se deseja selecionar estejam na primeira coluna da planilha.
+            <br>
+            Todos os dados a partir da segunda coluna são ignorados, podendo ser utilizados para quaisquer fins
+            desejados.
+          </p>
 
+          <hr style="width: 100%; height: 1px;">
+
+          <select id="download-files" style="margin-bottom: 10px">
+            <option value="cidades-file">Todas as cidades</option>
+            <option value="sh4s-file">Todos os SH4s</option>
+            <option value="paises-file">Todos os países</option>
+            <option value="continentes-file">Todos os continentes</option>
+          </select>
+
+          <button id="download-button" class="btn btn-success shadow">Download</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal ver anotação -->
   <div class="modal modal-drag" id="read-note-modal">
@@ -335,21 +379,67 @@
     </div>
   </div>
 
+  <!-- Modal Map Click -->
+  <div class="modal fade" id="map-click-modal" aria-labelledby="map-click-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title" id="map-click-modal-title"> </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body" id="map-click-modal-body">
+
+          <div class="soft-loader-wrapper hidden" id="map-modal-loading">
+            <div class="spinner-border text-primary" id="soft-loader" role="status">
+              <span class="sr-only"></span>
+            </div>
+          </div>
+
+          <div class="click-modal-wrapper"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Mundi Click -->
+  <div class="modal fade" id="mundi-click-modal" aria-labelledby="mundi-click-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title" id="mundi-click-modal-title"> </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body" id="mundi-click-modal-body">
+
+          <div class="soft-loader-wrapper hidden" id="mundi-modal-loading">
+            <div class="spinner-border text-primary" id="soft-loader" role="status">
+              <span class="sr-only"></span>
+            </div>
+          </div>
+
+          <div class="click-modal-wrapper"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
   <!-- Dashboard  -->
   <div id="dashboard-wrapper">
 
     <div class="dashboard-row" id="dashboard-top-row">
+
       <!-- Filtro  -->
       <div class="container shadow-lg" id="filter-container">
-
         <!-- Botão da sidebar -->
         <button class="btn sidebar-icon" id="sidebar-icon-open" data-bs-toggle="offcanvas" data-bs-target="#offcanvas"
           role="button">
           <i class="bi bi-list fs-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvas"></i>
         </button>
 
+        <!-- Filtro  -->
         <div id="filter-wrapper">
 
 
@@ -444,7 +534,6 @@
             <div id="container-date">
               <label id="label-date" for="input-date0"><b>Data</b></label>
               <div id="wrapper-date">
-                De
                 <input class="filter-input" type="month" id="input-date0" value="2021-01" min="1997-01" max="2021-12">
                 até
                 <input class="filter-input" type="month" id="input-date1" value="2021-12" min="1997-01" max="2021-12">
@@ -456,11 +545,13 @@
               <label id="label-datatype" for="container-datatype"><b>Dados</b></label>
               <div id="wrapper-datatype">
                 <span>
-                  <input type="radio" id="fob-datatype-radio" name="datatype-radio" value="fob" checked>
+                  <input type="radio" class="form-check-input" id="fob-datatype-radio" name="datatype-radio" value="fob"
+                    checked>
                   <label for="fob-datatype-radio">FOB</label>
                 </span>
                 <span>
-                  <input type="radio" id="peso-datatype-radio" name="datatype-radio" value="peso">
+                  <input type="radio" class="form-check-input" id="peso-datatype-radio" name="datatype-radio"
+                    value="peso">
                   <label for="peso-datatype-radio">Peso</label>
                 </span>
               </div>
@@ -477,11 +568,13 @@
               <label id="label-maptype" for="container-maptype"><b>Divisão do Mapa</b></label>
               <div id="wrapper-maptype">
                 <span>
-                  <input type="radio" id="country-maptype-radio" name="maptype-radio" value="country" checked>
+                  <input type="radio" class="form-check-input" id="country-maptype-radio" name="maptype-radio"
+                    value="country" checked>
                   <label for="country-maptype-radio">Paises</label>
                 </span>
                 <span>
-                  <input type="radio" id="continent-maptype-radio" name="maptype-radio" value="continent">
+                  <input type="radio" class="form-check-input" id="continent-maptype-radio" name="maptype-radio"
+                    value="continent">
                   <label for="continent-maptype-radio">Continentes</label>
                 </span>
               </div>
@@ -499,8 +592,10 @@
         </div>
       </div>
 
+      <!-- Logo -->
       <div id="calendarlogo-container">
         <div id="logo-container"><img src="/src/png/logo.png" height="100%" width="100%" /></div>
+        <!-- <div id="logo-container"><img src="/src/png/LogoAgroVis5.jpg" height="60%" width="90%" /></div> -->
 
         <!-- Calendario -->
         <div class="container shadow-lg" id="calendar-container">

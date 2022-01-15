@@ -1,3 +1,4 @@
+import { back } from "./env";
 import { formatValues, changeLoadingMessage, getSortValue, showBluredLoader, hideBluredLoader, unformatValues } from "./extra";
 import { updateMundiData } from "./mundi";
 
@@ -58,8 +59,19 @@ export async function drawMainMap() {
     // Esconde titulo
     .on('mouseout', () => tooltip.classed('hidden', true))
     // Trata o clique na cidade
-    .on('click', (clickedShape) => {
+    .on('click', (clickedShape, index, elems) => {
+      // Só mostra o modal se tiver dados
+      const iHTML = elems[index].innerHTML;
+      if (iHTML.split('&lt;br&gt;').length > 1) {
+        $('#map-modal-loading').removeClass('hidden');
+        const modalMap = bootstrap.Modal.getOrCreateInstance(document.getElementById('map-click-modal'));
+        $('#map-click-modal').on('hidden.bs.modal', () => {
+          $(`#map-click-modal-body .click-modal-wrapper`).html('');
+        });
+        modalMap.show()
 
+        fillMapModal(clickedShape, iHTML.split('&lt;br&gt;')[0], 'map');
+      }
     })
 
   //Zoom
@@ -90,9 +102,7 @@ export function resetMap(svg, zoom) {
 export async function getCitiesNames() {
 
   // Requisição para recuperar os dados dos municípios
-  // await fetch('https://mighty-taiga-07455.herokuapp.com/municipios', {
-  await fetch('https://agrovis-back-flask.herokuapp.com/cidades', {
-    // await fetch('http://127.0.0.1:5000/cidades', {
+  await fetch(`${back}/cidades`, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -155,8 +165,7 @@ export async function updateMapData(selected, colorFunctions = []) {
   filter.products = selected == 0 ? filter.products : [selected];
 
   // Realiza a query do filtro inserido
-  // const response = await fetch('http://127.0.0.1:5000/exportacao/mapa', {
-  const response = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/mapa', {
+  const response = await fetch(`${back}/exportacao/mapa`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -352,10 +361,8 @@ export function createFrequencyScale(data, numClasses, dataType) {
     ["#ffffcc", "#ffeda0", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a", "#e31a1c", "#bd0026", "#800026"]
   ];
 
-  // Ordena, removendo repetidos
+  // Remove repetidos
   data = Array.from(new Set(data.map(d => parseInt(d[dataType]))));
-  data = data.sort((a, b) => a - b);
-  // console.log('Dados ordenados', dataType, data);
 
   /** Intervalo entre as classes */
   const gap = Math.ceil(data.length / numClasses);
@@ -721,4 +728,98 @@ export function fillPolygon(data, color, index, parent, id, text) {
   $(cod).css('fill', color);
   // Index da cor para seletores futuros
   $(cod).attr('color-index', index);
+}
+
+
+
+export async function fillMapModal(data, poligonName, originMap) {
+  let filter = await JSON.parse(localStorage.getItem('filter'));
+
+  filter['aggregationType'] = originMap;
+
+  if (originMap == 'map') {
+    filter['cities'] = [data.properties['codarea']];
+  } else if (filter['mapDivision'] == 'country') {
+    filter['countries'] = [data.properties['id-pais']]
+  } else {
+    filter['continents'] = [data.properties['id']]
+  }
+
+  let title = `
+  <h3> Território: ${poligonName} </h3>
+  <h4> Período: ${filter['beginPeriod']} / ${filter['endPeriod']} </h4>`;
+
+  $(`#${originMap}-click-modal-title`).html(title);
+
+  const response = await fetch(`${back}/exportacao/mapa/modal`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      filter,
+    })
+  });
+
+  const modalData = await response.json();
+
+  // console.log(modalData);
+
+  const modalBody = $(`#${originMap}-click-modal-body .click-modal-wrapper`);
+
+  // console.log(modalData[0]["AGGREGATION"], modalData[0]["TYPE"])
+
+  let aggregationHead, unitHead, totalValue;
+  if (modalData[0]["AGGREGATION"] == "NO_MUN_MIN")
+    aggregationHead = "Cidade";
+  else if (modalData[0]["AGGREGATION"] == "NO_PAIS")
+    aggregationHead = "Pais";
+  else aggregationHead = "Continente";
+
+  if (modalData[0]["TYPE"] == "VL_FOB")
+    unitHead = "Valor FOB (U$)";
+  else unitHead = "Peso líquido (kg)";
+
+  modalData.forEach((row, i) => {
+    totalValue = row["TYPE"] == "VL_FOB" ? "U$ " + formatValues(row["SUM"]) : formatValues(row["SUM"]) + " kg";
+
+    modalBody.append(`
+      <div class="sh4-modal-container alert alert-light shadow">
+      
+        <div class="sh4-modal-title">${row['SH4']} - ${row['SH4_NAME']} </div>
+
+        <div class="sh4-modal-container-totalvalue"><h5>Total: <br> ${totalValue} </h5></div>
+        
+        <input type="checkbox" id="readmore-${originMap}-${i}" class="read-more-input hidden">
+        <div class="sh4-modal-container-values">
+          <table class="sh4-modal-table table table-bordered table-striped" id="sh4-table-${originMap}-${i}">
+            <thead> 
+              <tr> 
+                <th> </th>
+                <th> ${aggregationHead} </th>
+                <th> ${unitHead} </th>
+                <th> Porcentagem </th>
+              </tr>
+            </thead>
+            <tbody> </tbody>
+          </table>
+        </div>
+        <label class="read-more-label" for="readmore-${originMap}-${i}">Ver </label>
+
+      </div>`);
+
+    let curTable = $(`#sh4-table-${originMap}-${i} tbody`);
+
+    row['DATA'].forEach((rowData, iTable) => {
+
+      curTable.append(`<tr> <td>${iTable + 1}</td> 
+      <td>${rowData[row["AGGREGATION"]]}</td> 
+      <td>${formatValues(rowData[row["TYPE"]])}</td> 
+      <td>${rowData[row["TYPE"] + "_PERCENT"]} % </td> </tr>`);
+
+    })
+  })
+
+  $(`#${originMap}-modal-loading`).addClass('hidden');
 }

@@ -2,6 +2,7 @@ import { changeLoadingMessage, formatValues, getSortByValue, showBluredLoader, h
 import HorizonTSChart from 'horizon-timeseries-chart';
 import { HorizonUnit, HorizonData } from './horizonClasses';
 import { showHorizonModal } from './horizonModal';
+import { back } from '../env';
 
 /** Constroi o horizon chart
  * 
@@ -12,9 +13,7 @@ export async function buildHorizon(filter) {
   await localStorage.setItem('horizonclick', '1');
 
   // Requisição dos dados do HorizonChart 
-  // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/horizondata', {
-  const response = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/horizon', {
-    // const response = await fetch('http://127.0.0.1:5000/exportacao/horizon', {
+  const response = await fetch(`${back}/exportacao/horizon`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -65,9 +64,7 @@ export async function buildHorizon(filter) {
   // console.log('Filtro depois de arrumar', filter);
 
   // Dados auxiliares do HorizonChart
-  // const responseAux = await fetch('https://mighty-taiga-07455.herokuapp.com/horizondata-aux', {
-  // const responseAux = await fetch('http://127.0.0.1:5000/exportacao/horizon/aux', {
-  const responseAux = await fetch('https://agrovis-back-flask.herokuapp.com/exportacao/horizon/aux', {
+  const responseAux = await fetch(`${back}/exportacao/horizon/aux`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',

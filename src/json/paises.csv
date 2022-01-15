@@ -27,7 +27,7 @@ Bermudas;90
 Mianmar;93
 Bolívia;97
 Bósnia-Herzegovina;98
-Bonaire, Saint Eustatius e Saba;99
+Saint Eustatius e Saba Bonaire;99
 Botsuana;101
 Brasil;105
 Brunei;108
@@ -35,29 +35,29 @@ Bulgária;111
 Burundi;115
 Butão;119
 Cabo Verde;127
-Cayman, Ilhas;137
+Ilhas Cayman;137
 Camboja;141
 Camarões;145
 Canadá;149
-Canal, Ilhas do (Guernsey);150
-Canárias, Ilhas;151
+Ilhas do Canal (Guernsey);150
+Ilhas Canárias;151
 Cazaquistão;153
 Catar;154
 Chile;158
 China;160
-Taiwan (Formosa);161
+Taiwan;161
 Chipre;163
-Cocos (Keeling), Ilhas;165
+Ilhas Cocos (Keeling);165
 Colômbia;169
 Comores;173
 Congo;177
-Cook, Ilhas;183
+Ilhas Cook;183
 Coreia do Norte;187
 Coreia do Sul;190
 Costa do Marfim;193
 Croácia;195
 Costa Rica;196
-Coveite (Kuweit);198
+Kuwait;198
 Cuba;199
 Curaçao;200
 Benin;229
@@ -73,8 +73,8 @@ Eslováquia;247
 Estados Unidos;249
 Estônia;251
 Etiópia;253
-Falkland (Malvinas);255
-Faroe, Ilhas;259
+Ilhas Malvinas;255
+Ilhas Faroe;259
 Filipinas;267
 Finlândia;271
 França;275
@@ -125,19 +125,19 @@ Luxemburgo;445
 Macau;447
 Macedônia;449
 Madagascar;450
-Madeira, Ilha da;452
+Ilha da Madeira;452
 Malásia;455
 Malavi;458
 Maldivas;461
 Mali;464
 Malta;467
 Marrocos;474
-Marshall, Ilhas;476
+Ilhas Marshall;476
 Martinica;477
 Maurício;485
 Mauritânia;488
 Mayotte;489
-Midway, Ilhas;490
+Ilhas Midway;490
 México;493
 Moldávia;494
 Mônaco;495
@@ -148,20 +148,20 @@ Montserrat;501
 Moçambique;505
 Namíbia;507
 Nauru;508
-Christmas (Navidad), Ilha;511
+Ilha Christmas (Navidad);511
 Nepal;517
 Nicarágua;521
 Níger;525
 Nigéria;528
 Niue;531
-Norfolk, Ilha;535
+Ilha Norfolk;535
 Noruega;538
 Nova Caledônia;542
 Papua Nova Guiné;545
 Nova Zelândia;548
 Vanuatu;551
 Omã;556
-Pacífico, Ilhas do (EUA);566
+Ilhas do Pacífico (EUA);566
 Países Baixos (Holanda);573
 Palau;575
 Paquistão;576
@@ -183,13 +183,13 @@ Zimbábue;665
 Romênia;670
 Ruanda;675
 Rússia;676
-Salomão, Ilhas;677
+Ilhas Salomão;677
 El Salvador;687
 Samoa;690
 Samoa Americana;691
 São Cristóvão e Névis;695
 San Marino;697
-São Martinho, Ilha de (parte francesa);698
+Ilha de São Martinho (parte francesa);698
 Sint Maarten;699
 São Pedro e Miquelon;700
 São Vicente e Granadinas;705
@@ -219,13 +219,13 @@ Território Britânico do Oceano Índico;782
 Djibuti;783
 Chade;788
 Tchecoslováquia;790
-Tcheca, República;791
+República Tcheca;791
 Timor Leste;795
 Togo;800
 Tonga;810
 Trinidad e Tobago;815
 Tunísia;820
-Turcas e Caicos, Ilhas;823
+Ilhas Turcas e Caicos;823
 Turcomenistão;824
 Turquia;827
 Tuvalu;828
@@ -235,12 +235,12 @@ Uruguai;845
 Uzbequistão;847
 Venezuela;850
 Vietnã;858
-Virgens, Ilhas (Britânicas);863
-Virgens, Ilhas (Americanas);866
+Ilhas Virgens (Britânicas);863
+Ilhas Virgens (Americanas);866
 Fiji;870
-Wake, Ilha;873
-Wallis e Futuna, Ilhas;875
-Congo, República Democrática;888
+Ilha Wake;873
+Ilhas Wallis e Futuna;875
+República Democrática Congo;888
 Zâmbia;890
 Zona do Canal do Panamá;895
 Bancos Centrais;995

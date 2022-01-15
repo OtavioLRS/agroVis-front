@@ -1,3 +1,5 @@
+import { back } from "./env";
+
 // Valida o login
 export async function validateLogin() {
   // Se tiver erro de login,
@@ -35,9 +37,7 @@ export async function handleLogin() {
   const email = document.getElementById('emailInput').value;
   const password = document.getElementById('passwordInput').value;
 
-  // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/login', {
-  const response = await fetch('https://agrovis-back-flask.herokuapp.com/user/login', {
-    // const response = await fetch('http://127.0.0.1:5000/user/login', {
+  const response = await fetch(`${back}/user/login`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',

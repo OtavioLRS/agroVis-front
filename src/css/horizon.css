@@ -112,6 +112,10 @@ span.label{
 }
 /* ***************************************************** */
 /* Modal do horizon */
+#modal-horizon .modal-body{
+  min-height: 100px;
+}
+
 #modal-horizon-inner {
   max-width: none !important;
   width: 80%;

@@ -1,8 +1,12 @@
+import { back } from "./env";
 import { closeSidebar, createDraggable, fixMonth } from "./extra";
 import { setFilter } from "./filter";
 
 export function handleSidebarExcel() {
-  console.log('1')
+  closeSidebar();
+
+  const modal1 = bootstrap.Modal.getOrCreateInstance(document.getElementById('excel-files-modal'));
+  modal1.show();
 }
 
 // Ação do botão de ler anotação
@@ -109,9 +113,7 @@ export function saveNote() {
     const { filter, map } = await saveQuery();
 
     // console.log({ filter, map, note: { title, text }, now })
-    // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/addnote', {
-    const response = await fetch('https://agrovis-back-flask.herokuapp.com/anotacoes', {
-      // const response = await fetch('http://127.0.0.1:5000/anotacoes', {
+    const response = await fetch(`${back}/anotacoes`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -131,9 +133,7 @@ export function saveNote() {
 // Mostra o modal com a lista de anotações disponíveis
 export async function listNotes() {
   // Recupera a lista de anotações
-  // const response = await fetch('https://mighty-taiga-07455.herokuapp.com/getnotes', {
-  const response = await fetch('https://agrovis-back-flask.herokuapp.com/anotacoes', {
-    // const response = await fetch('http://127.0.0.1:5000/anotacoes', {
+  const response = await fetch(`${back}/anotacoes`, {
     method: 'GET',
   });
   const notes = await response.json();

@@ -1,5 +1,6 @@
+import { back } from "./env";
 import { changeLoadingMessage, showBluredLoader, hideBluredLoader } from "./extra";
-import { cleanPolygon, createFrequencyScale, fillPolygon, printScaleLegend, changeConfigClasses, createCustomFrequencyScale, } from "./map";
+import { cleanPolygon, createFrequencyScale, fillPolygon, printScaleLegend, changeConfigClasses, createCustomFrequencyScale, fillMapModal, } from "./map";
 
 /** Desenha o mapa mundi dividido por países */
 export async function drawMundiMapCountries() {
@@ -60,6 +61,21 @@ export async function drawMundiMapCountries() {
     })
     // Esconde titulo
     .on('mouseout', () => tooltip.classed('hidden', true))
+    // Trata o clique no pais
+    .on('click', (clickedShape, index, elems) => {
+      // Só mostra o modal se tiver dados
+      const iHTML = elems[index].innerHTML;
+      if (iHTML.split('&lt;br&gt;').length > 1) {
+        $('#mundi-modal-loading').removeClass('hidden');
+        const modalMundi = bootstrap.Modal.getOrCreateInstance(document.getElementById('mundi-click-modal'));
+        $('#mundi-click-modal').on('hidden.bs.modal', () => {
+          $(`#mundi-click-modal-body .click-modal-wrapper`).html('');
+        });
+        modalMundi.show();
+
+        fillMapModal(clickedShape, iHTML.split('&lt;br&gt;')[0], 'mundi');
+      }
+    })
 
   //Zoom
   const zoom = d3.zoom()
@@ -130,6 +146,22 @@ export async function drawMundiMap() {
     })
     // Esconde titulo
     .on('mouseout', () => tooltip.classed('hidden', true))
+    // Trata o clique no continente
+    .on('click', (clickedShape, index, elems) => {
+      // Só mostra o modal se tiver dados
+      const iHTML = elems[index].innerHTML;
+      if (iHTML.split('&lt;br&gt;').length > 1) {
+        $('#mundi-modal-loading').removeClass('hidden');
+        const modalMundi = bootstrap.Modal.getOrCreateInstance(document.getElementById('mundi-click-modal'));
+        $('#mundi-click-modal').on('hidden.bs.modal', () => {
+          $(`#mundi-click-modal-body .click-modal-wrapper`).html('');
+        });
+        modalMundi.show();
+
+        fillMapModal(clickedShape, iHTML.split('&lt;br&gt;')[0], 'mundi');
+      }
+    })
+
 
   //Zoom
   const zoom = d3.zoom()
@@ -169,8 +201,7 @@ export async function updateMundiData(selected, colorFunctions = []) {
   const division = filter.mapDivision == 'country' ? 'pais' : 'continente'
 
   // Realiza a query do filtro inserido
-  const response = await fetch(`https://agrovis-back-flask.herokuapp.com/exportacao/mundi/${division}`, {
-    // const response = await fetch(`http://127.0.0.1:5000/exportacao/mundi/${division}`, {
+  const response = await fetch(`${back}/exportacao/mundi/${division}`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',

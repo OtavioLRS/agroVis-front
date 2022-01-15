@@ -194,6 +194,12 @@ export async function preLoad() {
     $('#list-note-modal-body').html('');
   });
 
+  // Download do arquivo selecionado
+  $('#download-button').on('click', () => {
+    let choosen = $('#download-files :selected').val();
+    $(`#download-${choosen}`)[0].click();
+  })
+
   // Quando selecionar a opção global em um input do filtro, desseleciona todas as outras
   $('.select2-flag').on('change', function () {
     const selected = $(this).select2('data').map(opt => opt.id);
