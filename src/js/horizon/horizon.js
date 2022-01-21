@@ -1,4 +1,4 @@
-import { changeLoadingMessage, formatValues, getSortByValue, showBluredLoader, hideBluredLoader, fixMonth, median, getSortOrder, compareDates, } from '../extra';
+import { changeLoadingMessage, formatValues, getSortByValue, showBluredLoader, hideBluredLoader, fixMonth, median, getSortOrder, compareDates, getScaleByValue, } from '../extra';
 import HorizonTSChart from 'horizon-timeseries-chart';
 import { HorizonUnit, HorizonData } from './horizonClasses';
 import { showHorizonModal } from './horizonModal';
@@ -115,6 +115,7 @@ export async function buildHorizon(filter) {
 
   let firstLimit = '';
 
+  // console.log('aqui', getScaleByValue(), getSortByValue(), getSortOrder(),)
   const horizon = HorizonTSChart()(domElem)
     .data(horizonData.units) // Dataframe
     .width(width - pl - pr - 10) // Largura total - paddings - scrollbar
@@ -128,6 +129,13 @@ export async function buildHorizon(filter) {
     .transitionDuration([1]) // Duração das tranformações do gráfico
     .seriesComparator((a, b) => compareSeriesBy(a, b, horizonData, getSortByValue(), getSortOrder()))
     .interpolationCurve(d3.curveBasis) // curveBasis, curveLinear, curveStep
+    .yExtent(() => { // Escala de cada chart
+      if (getScaleByValue() == 'unit') return undefined;
+      else {
+        const maxValue = d3.max(uniqueSh4.map(sh4 => horizonData.findMaxValueOf(sh4, sortValue)));
+        return maxValue;
+      }
+    })
     .seriesLabelFormatter((label) => {
       // Total de cada series
       const totalValue = horizonData.findTotalValueOf(label, sortValue);

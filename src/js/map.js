@@ -242,8 +242,11 @@ export async function updateMapData(selected, colorFunctions = []) {
   });
 }
 
-/** Atualiza o input de produtos que podem ser exibidos no mapa */
-export async function updateMapSh4Input() {
+/** Atualiza o input de produtos que podem ser exibidos no mapa
+* 
+* @param {integer} selected sh4 selecionado no mapa
+*/
+export async function updateMapSh4Input(selected = 0) {
   // Recupera o filtro para realizar a query dos dados do mapa
   const filter = await JSON.parse(localStorage.getItem('filter'));
 
@@ -268,7 +271,7 @@ export async function updateMapSh4Input() {
   });
 
   input.select2({ sorter: data => data.sort((a, b) => a.value > b.value) });
-  input.val(0).trigger('change.select2');
+  input.val(selected).trigger('change.select2');
 
   // Ao trocar a opção selecionada no input ...
   const sh4Change = async () => {
@@ -730,12 +733,19 @@ export function fillPolygon(data, color, index, parent, id, text) {
   $(cod).attr('color-index', index);
 }
 
-
-
+/** Preenche os dados de um modal de clique no mapa
+ * 
+ * @param {object} data dados do poligono clicado
+ * @param {string} poligonName nome do polígono (território) clicado
+ * @param {('map'|'mundi')} originMap identifica qual modal deve ser preenchido
+ */
 export async function fillMapModal(data, poligonName, originMap) {
   let filter = await JSON.parse(localStorage.getItem('filter'));
 
+  // Identifica se foi clicado no mapa ou no mundi
   filter['aggregationType'] = originMap;
+
+  // Código para a filtragem
 
   if (originMap == 'map') {
     filter['cities'] = [data.properties['codarea']];
@@ -745,12 +755,13 @@ export async function fillMapModal(data, poligonName, originMap) {
     filter['continents'] = [data.properties['id']]
   }
 
+  /** Titulo do modal */
   let title = `
   <h3> Território: ${poligonName} </h3>
   <h4> Período: ${filter['beginPeriod']} / ${filter['endPeriod']} </h4>`;
-
   $(`#${originMap}-click-modal-title`).html(title);
 
+  // Requisição dos dados
   const response = await fetch(`${back}/exportacao/mapa/modal`, {
     method: 'POST',
     headers: {
@@ -761,16 +772,21 @@ export async function fillMapModal(data, poligonName, originMap) {
       filter,
     })
   });
-
   const modalData = await response.json();
-
   // console.log(modalData);
 
   const modalBody = $(`#${originMap}-click-modal-body .click-modal-wrapper`);
 
   // console.log(modalData[0]["AGGREGATION"], modalData[0]["TYPE"])
 
-  let aggregationHead, unitHead, totalValue;
+
+  /** Titulo da coluna de territórios - "Cidade", "País", "Continente" */
+  let aggregationHead;
+  /** Titulo da coluna de valores - "Valor FOB (U$)", "Peso líquido (kg)" */
+  let unitHead;
+  /** Titulo da coluna de valores - "U$ <valor>", "<valor> kg" */
+  let totalValue;
+
   if (modalData[0]["AGGREGATION"] == "NO_MUN_MIN")
     aggregationHead = "Cidade";
   else if (modalData[0]["AGGREGATION"] == "NO_PAIS")
@@ -784,6 +800,7 @@ export async function fillMapModal(data, poligonName, originMap) {
   modalData.forEach((row, i) => {
     totalValue = row["TYPE"] == "VL_FOB" ? "U$ " + formatValues(row["SUM"]) : formatValues(row["SUM"]) + " kg";
 
+    // Estrutura container dos dados de um SH4
     modalBody.append(`
       <div class="sh4-modal-container alert alert-light shadow">
       
@@ -811,6 +828,7 @@ export async function fillMapModal(data, poligonName, originMap) {
 
     let curTable = $(`#sh4-table-${originMap}-${i} tbody`);
 
+    // Para cada SH4, adiciona os territorios correspondentes
     row['DATA'].forEach((rowData, iTable) => {
 
       curTable.append(`<tr> <td>${iTable + 1}</td> 
@@ -821,5 +839,6 @@ export async function fillMapModal(data, poligonName, originMap) {
     })
   })
 
+  // Remove o simbolo de carregamento
   $(`#${originMap}-modal-loading`).addClass('hidden');
 }

@@ -194,7 +194,7 @@ export async function preLoad() {
     $('#list-note-modal-body').html('');
   });
 
-  // Download do arquivo selecionado
+  // Download do arquivo CSV selecionado
   $('#download-button').on('click', () => {
     let choosen = $('#download-files :selected').val();
     $(`#download-${choosen}`)[0].click();

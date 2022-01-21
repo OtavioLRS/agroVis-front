@@ -111,8 +111,12 @@ export function readFile(event) {
   }
 }
 
-/** Inicia o processo principal de atualização do dashboard */
-export async function handleFilter() {
+/** Inicia o processo principal de atualização do dashboard
+* 
+* @param {integer} selected SH4 selecionado no mapa, se não for definido, vai para o total ('0')
+
+*/
+export async function handleFilter(selected = 0) {
   // Fecha o(s) modal(is) de anotações
   $('#save-note-modal .btn-close').trigger('click');
   $('#read-note-modal .btn-close').trigger('click');
@@ -272,10 +276,10 @@ export async function handleFilter() {
       await localStorage.setItem('filter', JSON.stringify(filterMap));
 
       // Atualizando o input de alternância de produtos
-      await updateMapSh4Input();
+      await updateMapSh4Input(selected);
 
       // Atualiza os dados do mapa
-      await updateMap(0);
+      await updateMap(selected);
 
       finishLoading();
     }, 100);
@@ -304,40 +308,61 @@ export async function handleFilter() {
 
 
 
-// Preenche o filtro com base em um objeto recebido por parametro
+/** Preenche o filtro com base em um objeto recebido por parametro
+ * 
+ * @param {object} data objeto com todos os registros necessários para carregar o filtro
+ */
 export async function setFilter(data) {
   console.log(data)
 
   // Input de SH4
   clearSelect2Input('#input-sh4');
-  $('#input-sh4').val(data['PRODUCTS'].split(';'));
+  $('#input-sh4').val(data['FILTER_PRODUCTS'].split(';'));
   $('#input-sh4').trigger('change');
 
   // Input de cidades
   clearSelect2Input('#input-city');
-  $('#input-city').val(data['CITIES'].split(';'));
+  $('#input-city').val(data['FILTER_CITIES'].split(';'));
   $('#input-city').trigger('change');
 
+  // Input de paises
+  clearSelect2Input('#input-country');
+  $('#input-country').val(data['FILTER_COUNTRIES'].split(';'));
+  $('#input-country').trigger('change');
+
+  // Input de continentes
+  clearSelect2Input('#input-continent');
+  $('#input-continent').val(data['FILTER_CONTINENTS'].split(';'));
+  $('#input-continent').trigger('change');
 
   // Input de data inicial e final
-  const date1 = new Date(data['BEGIN_PERIOD'])
-  const date2 = new Date(data['END_PERIOD'])
-  $('#input-date0').val(date1.getFullYear() + '-' + fixMonth(date1.getMonth() + 1))
-  $('#input-date1').val(date2.getFullYear() + '-' + fixMonth(date2.getMonth() + 1))
+  const date1 = new Date(data['FILTER_BEGIN_PERIOD'])
+  const date2 = new Date(data['FILTER_END_PERIOD']);
+  $('#input-date0').val(date1.getFullYear() + '-' + fixMonth(date1.getMonth() + 1));
+  $('#input-date1').val(date2.getFullYear() + '-' + fixMonth(date2.getMonth() + 1));
 
-  console.log($('#input-date0').val())
-  console.log($('#input-date1').val())
+  // console.log($('#input-date0').val())
+  // console.log($('#input-date1').val())
 
   // Tipo de dado base
-  $('#' + data['SORT_VALUE'] + '-datatype-radio').prop('checked', true);
+  $('#' + data['FILTER_SORT_VALUE'] + '-datatype-radio').prop('checked', true).trigger('change');
+  // Tipo de divisão do mapa mundi
+  $('#' + data['FILTER_MAP_DIVISION'] + '-maptype-radio').prop('checked', true).trigger('change');
+
+  // Número de classes selecionadas no mapa
+  $('#input-classnumber-map').val(data['MAP_NUM_CLASSES']).trigger('change');
+  $('#input-classnumber-mundi').val(data['MUNDI_NUM_CLASSES']).trigger('change');
 
   // Esconde o modal de lista de anotações
   const modal = bootstrap.Modal.getInstance(document.querySelector('#list-note-modal'))
   modal.hide();
 
   // Realiza a query
-  handleFilter();
+  handleFilter(data['MAP_SH4']);
 
-  // Número de classes selecionadas no mapa
-  $('#input-classnumber').val(data['NUM_CLASS']);
+  // Configurações do horizonChart
+  $('#overlap-slider').val(data['HORIZON_OVERLAP']).trigger('input');
+  $('#' + data['HORIZON_TYPE'] + '-sort-radio').prop('checked', true).trigger('change');
+  $('#sort-' + data['HORIZON_ORDER']).prop('checked', true).trigger('change');
+  $('#' + data['HORIZON_SCALE'] + '-scale-radio').prop('checked', true).trigger('change');
 }

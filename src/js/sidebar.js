@@ -1,7 +1,8 @@
 import { back } from "./env";
-import { closeSidebar, createDraggable, fixMonth } from "./extra";
+import { closeSidebar, createDraggable, fixMonth, getScaleByValue, getSortByValue, getSortOrder } from "./extra";
 import { setFilter } from "./filter";
 
+/** Ação do botão de baixar CSV */
 export function handleSidebarExcel() {
   closeSidebar();
 
@@ -9,19 +10,19 @@ export function handleSidebarExcel() {
   modal1.show();
 }
 
-// Ação do botão de ler anotação
+/** Ação do botão de ler anotação */
 export function handleSidebarRead() {
   closeSidebar();
   readNote();
 }
 
-// Ação do botão de salvar anotação
+/** Ação do botão de salvar anotação */
 export function handleSidebarSave() {
   closeSidebar();
   saveNote();
 }
 
-// Ação do botão de abrir lista de anotações
+/** Ação do botão de abrir lista de anotações */
 export function handleSidebarList() {
   closeSidebar();
 
@@ -29,23 +30,30 @@ export function handleSidebarList() {
   modal1.show();
 }
 
-
-// Ação do botão de logout
+/** Ação do botão de logout */
 export async function handleLogout() {
   await localStorage.removeItem('session');
 
   document.getElementById('logout-link').click();
 }
 
+/** Transforma uma Date em uma string
+ * 
+ * @param {Date} date 
+ * @returns 'DD/MM/YYY - HH:MM
+ */
+function getDateStr(date) {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hour = date.getHours();
+  const minute = date.getMinutes();
+  const dateStr = `${fixMonth(day)}/${fixMonth(month)}/${year} - ${fixMonth(hour)}:${fixMonth(minute)}`;
 
+  return dateStr;
+}
 
-
-
-
-
-
-
-// Mostra o modal com dados da anotação atual
+/** Mostra o modal com dados da anotação atual */
 export async function readNote() {
   // Fecha o modal de ler anotação
   $('#read-note-modal .btn-close').on('click', () => {
@@ -64,13 +72,15 @@ export async function readNote() {
   const data = await JSON.parse(localStorage.getItem('queryData'));
 
   // Formatando a data de registro da anotação em uma string simplificada
-  data['REGISTER_DATE'] = new Date(data['REGISTER_DATE']);
-  const year = data['REGISTER_DATE'].getFullYear();
-  const month = data['REGISTER_DATE'].getMonth() + 1;
-  const day = data['REGISTER_DATE'].getDate();
-  const hour = data['REGISTER_DATE'].getHours();
-  const minute = data['REGISTER_DATE'].getMinutes();
-  const dateStr = `${fixMonth(day)}/${fixMonth(month)}/${year} - ${fixMonth(hour)}:${fixMonth(minute)}`;
+  const dateStr = getDateStr(new Date(data['REGISTER_DATE']));
+
+  // data['REGISTER_DATE'] = new Date(data['REGISTER_DATE']);
+  // const year = data['REGISTER_DATE'].getFullYear();
+  // const month = data['REGISTER_DATE'].getMonth() + 1;
+  // const day = data['REGISTER_DATE'].getDate();
+  // const hour = data['REGISTER_DATE'].getHours();
+  // const minute = data['REGISTER_DATE'].getMinutes();
+  // const dateStr = `${fixMonth(day)}/${fixMonth(month)}/${year} - ${fixMonth(hour)}:${fixMonth(minute)}`;
 
   // Atualiza titulo, texto e data da anotação no modal
   $('#read-note-modal-title').val(data['TITLE']);
@@ -82,7 +92,7 @@ export async function readNote() {
   createDraggable('#read-note-modal');
 }
 
-// Mostra o modal para salvar um anotação
+/** Mostra o modal para salvar um anotação */
 export function saveNote() {
   // Fecha o modal de salvar anotações
   $('#save-note-modal .btn-close').on('click', () => {
@@ -97,7 +107,9 @@ export function saveNote() {
   });
 
   // Insere data de inicio do processo de salvamento no modal
-  $('#save-note-ts-modal').html(new Date(Date.now()));
+  const dateNow = new Date(Date.now());
+  const dateStr = getDateStr(dateNow);
+  $('#save-note-ts-modal').html(dateStr);
 
   // Mostra o modal de salvamento de anotação
   $('#save-note-modal').css('display', 'block');
@@ -110,7 +122,7 @@ export function saveNote() {
     const text = $('#save-note-modal-text').val();
 
     // Salva o 'state' da query atual para reprodução futura
-    const { filter, map } = await saveQuery();
+    const { filter, map, horizon } = await saveQuery();
 
     // console.log({ filter, map, note: { title, text }, now })
     const response = await fetch(`${back}/anotacoes`, {
@@ -119,7 +131,7 @@ export function saveNote() {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ filter, map, note: { title, text } })
+      body: JSON.stringify({ filter, map, horizon, note: { title, text } })
     });
 
     // Fecha o modal de salvamento, e exibe um aviso de processo concluído
@@ -130,7 +142,7 @@ export function saveNote() {
   })
 }
 
-// Mostra o modal com a lista de anotações disponíveis
+/** Mostra o modal com a lista de anotações disponíveis */
 export async function listNotes() {
   // Recupera a lista de anotações
   const response = await fetch(`${back}/anotacoes`, {
@@ -177,25 +189,40 @@ export async function listNotes() {
   })
 }
 
-// Salva a query atual do usuário
+/** Salva a query atual do usuário
+ * 
+ * @returns [dados do filtro, dados do mapa, dados do horizon]
+ */
 async function saveQuery() {
   let filterAux = await JSON.parse(localStorage.getItem('filter'));
   if (filterAux == null) return null;
 
   const filter = {
-    cities: filterAux.cities.length == 0 ? '0' : filterAux.cities.join(';'),
     products: filterAux.length == 0 ? '0' : filterAux.products.join(';'),
+    cities: filterAux.cities.length == 0 ? '0' : filterAux.cities.join(';'),
+    countries: filterAux.countries.length == 0 ? '0' : filterAux.countries.join(';'),
+    continents: filterAux.continents.length == 0 ? '0' : filterAux.continents.join(';'),
+    sortValue: filterAux.sortValue == 'VL_FOB' ? 'fob' : 'peso',
+    mapDivision: filterAux.mapDivision == 'country' ? 'country' : 'continent',
     beginPeriod: filterAux.beginPeriod + '-15',
     endPeriod: filterAux.endPeriod + '-15',
-    sortValue: filterAux.sortValue == 'VL_FOB' ? 'fob' : 'peso'
   }
-
   // console.log(filter);
+
   let map = {
-    sh4: $('#select2-input-sh4-map-container').html(),
-    numClasses: $('#input-classnumber').val()
+    mapSh4: $('#select2-input-sh4-map-container').html(),
+    mapNumClasses: $('#input-classnumber-map').val(),
+    mundiNumClasses: $('#input-classnumber-mundi').val()
   }
   // console.log(map);
 
-  return { filter, map };
+  let horizon = {
+    overlap: $('#overlap-slider').val(),
+    horizonScale: getScaleByValue(),
+    horizonType: getSortByValue(),
+    horizonOrder: getSortOrder()
+  }
+  // console.log(horizon);
+
+  return { filter, map, horizon };
 }
