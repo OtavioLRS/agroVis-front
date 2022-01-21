@@ -313,7 +313,7 @@ export async function handleFilter(selected = 0) {
  * @param {object} data objeto com todos os registros necessários para carregar o filtro
  */
 export async function setFilter(data) {
-  console.log(data)
+  // console.log(data)
 
   // Input de SH4
   clearSelect2Input('#input-sh4');
